@@ -1,0 +1,12 @@
+{
+	"name": "tenuki",
+	"authors": [
+		"hikaen2"
+	],
+	"dependencies": {
+		"undead": "~>1.0.9"
+	},
+	"description": "A minimal D application.",
+	"copyright": "Copyright © 2018, hikaen2",
+	"license": "MIT License"
+}

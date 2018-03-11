@@ -1,10 +1,12 @@
 import types;
+import text;
+import player;
 import position;
-import std.stdio;
-import std.socket;
-import std.regex;
 import std.conv;
 import std.format;
+import std.regex;
+import std.socket;
+import std.stdio;
 import undead.socketstream;
 
 int main(string[] args)
@@ -28,8 +30,33 @@ int main(string[] args)
     s.writeLine("AGREE");
     s.readLineUntil(regex("START"));
 
-    Position p = createPosition("lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b 18p 1");
+    Position p = createPosition("lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
     stdout.writeln(p.toString());
+
+    for (;;) {
+        if (p.sideToMove == mySide) {
+            s.writeLine(ponder(p).toString(p));
+        }
+
+        move_t m;
+        for (bool retry = true; retry; ) {
+            try {
+                string line = readLine(s);
+                if (line == "#LOSE" || line == "#WIN" || line == "#DRAW" || line == "#CENSORED") {
+                    return 0;
+                }
+                m = parseMove(line, p);
+                retry = false;
+            } catch (Exception e) {
+                retry = true;
+            }
+        }
+        stderr.writeln(toString(m, p));
+        p = p.doMove(m);
+        stderr.writeln(toString(p));
+
+    }
+
     /*
 
     if (side == "-") {
@@ -42,17 +69,17 @@ int main(string[] args)
     writeln("Edit source/app.d to start your project.");
     */
 
-    return 0;
+}
+
+private string readLine(ref SocketStream s)
+{
+    string str = to!string(s.readLine());
+    stderr.writeln(str);
+    return str;
 }
 
 private RegexMatch!string readLineUntil(ref SocketStream s, Regex!char re)
 {
-    string readLine(ref SocketStream s)
-    {
-        string str = to!string(s.readLine());
-        stderr.writeln(str);
-        return str;
-    }
     RegexMatch!string m;
     for (string str = readLine(s); (m = str.match(re)).empty; str = readLine(s)) {}
     return m;

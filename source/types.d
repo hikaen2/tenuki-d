@@ -67,70 +67,6 @@ struct Square {
     enum W_PROMOTED_BISHOP = 28;
     enum W_PROMOTED_ROOK   = 29;
 
-    static bool isBlack(square_t sq) {
-        return sq <= Square.B_PROMOTED_ROOK;
-    }
-
-    static bool isWhite(square_t sq) {
-        return sq >= Square.W_PAWN;
-    }
-
-    static bool isFriend(square_t sq, side_t s) {
-        return s == Side.BLACK ? isBlack(sq) : isWhite(sq);
-    }
-
-    static bool isEnemy(square_t sq, side_t s) {
-        return s == Side.BLACK ? isWhite(sq) : isBlack(sq);
-    }
-
-    static type_t typeOf(square_t sq) {
-        return sq & 0b00001111;
-    }
-
-    static square_t promote(square_t sq) {
-        return sq | 0b00001000;
-    }
-
-    static square_t unpromote(square_t sq) {
-        return sq & 0b11110111;
-    }
-};
-
-/**
- * 手
- * 1xxxxxxx xxxxxxxx promote
- * x1xxxxxx xxxxxxxx drop
- * xx111111 1xxxxxxx from
- * xxxxxxxx x1111111 to
- */
-struct Move {
-    static move_t create(int from, int to) {
-        return cast(move_t)(from << 7 | to);
-    }
-
-    static move_t createPromote(int from, int to) {
-        return cast(move_t)(from << 7 | to | 0b1000000000000000);
-    }
-
-    static move_t createDrop(type_t t, int to) {
-        return cast(move_t)(t << 7 | to | 0b0100000000000000);
-    }
-
-    static ubyte from(move_t m) {
-        return cast(ubyte)((m >> 7) & 0b01111111);
-    }
-
-    static ubyte to(move_t m) {
-        return cast(ubyte)(m & 0b01111111);
-    }
-
-    static bool isPromote(move_t m) {
-        return (m & 0b1000000000000000) != 0;
-    }
-
-    static bool isDrop(move_t m) {
-        return (m & 0b0100000000000000) != 0;
-    }
 };
 
 /**
@@ -159,13 +95,6 @@ struct Dir
     enum FSE = SE | 1;
     enum FSW = SW | 1;
 
-    static bool isFly(dir_t d) {
-        return (d & 1) != 0;
-    }
-
-    static int value(dir_t d) {
-        return d >> 1;
-    }
 };
 
 /**
@@ -177,3 +106,36 @@ struct Position
     ubyte[8][2] piecesInHand;
     bool sideToMove;
 };
+
+
+/**
+ * 手
+ * 1xxxxxxx xxxxxxxx promote
+ * x1xxxxxx xxxxxxxx drop
+ * xx111111 1xxxxxxx from
+ * xxxxxxxx x1111111 to
+ */
+
+// square_tを引数にとる関数
+bool isBlack(square_t sq) { return sq <= Square.B_PROMOTED_ROOK; }
+bool isWhite(square_t sq) { return sq >= Square.W_PAWN; }
+bool isFriend(square_t sq, side_t s) { return s == Side.BLACK ? sq.isBlack() : sq.isWhite(); }
+bool isEnemy(square_t sq, side_t s) { return s == Side.BLACK ? sq.isWhite() : sq.isBlack(); }
+type_t type(square_t sq) { return sq & 0b00001111; }
+square_t promote(square_t sq) { return sq | 0b00001000; }
+square_t unpromote(square_t sq) { return sq & 0b11110111; }
+
+// move_tを返す関数
+move_t createMove(int from, int to) { return cast(move_t)(from << 7 | to); }
+move_t createPromote(int from, int to) { return cast(move_t)(from << 7 | to | 0b1000000000000000); }
+move_t createDrop(type_t t, int to) { return cast(move_t)(t << 7 | to | 0b0100000000000000); }
+
+// move_tを引数にとる関数
+ubyte from(move_t m) { return cast(ubyte)((m >> 7) & 0b01111111); }
+ubyte to(move_t m) { return cast(ubyte)(m & 0b01111111); }
+bool isPromote(move_t m) { return (m & 0b1000000000000000) != 0; }
+bool isDrop(move_t m) { return (m & 0b0100000000000000) != 0; }
+
+// dir_tを引数にとる関数
+bool isFly(dir_t d) { return (d & 1) != 0; }
+int value(dir_t d) { return d >> 1; }

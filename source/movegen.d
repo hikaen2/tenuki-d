@@ -12,25 +12,25 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
     // 盤上の駒を動かす
     int length = 0;
     for (int from = 11; from <= 99; from++) {
-        if (!Square.isFriend(p.squares[from], p.sideToMove)) {
+        if (!p.squares[from].isFriend(p.sideToMove)) {
             continue;
         }
-        foreach (dir_t d ; DIRECTIONS[Square.typeOf(p.squares[from])]) {
-            int v = (p.sideToMove == Side.BLACK ? Dir.value(d) : -Dir.value(d));
-            for (int to = from + v; p.squares[to] == Square.EMPTY || Square.isEnemy(p.squares[to], p.sideToMove);  to += v) {
-                if (Square.isEnemy(p.squares[to], p.sideToMove)) {
+        foreach (dir_t d ; DIRECTIONS[p.squares[from].type()]) {
+            int v = (p.sideToMove == Side.BLACK ? d.value() : -d.value());
+            for (int to = from + v; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += v) {
+                if (p.squares[to].isEnemy(p.sideToMove)) {
                     if (canPromote(p.squares[from], from, to)) {
-                        out_moves[length++] = Move.createPromote(from, to);
-                        if (Square.typeOf(p.squares[from]) == Type.SILVER
-                            || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (Square.typeOf(p.squares[from]) == Type.LANCE || Square.typeOf(p.squares[from]) == Type.KNIGHT))) {
-                            out_moves[length++] = Move.create(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
+                        out_moves[length++] = createPromote(from, to);
+                        if (p.squares[from].type() == Type.SILVER
+                            || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type() == Type.LANCE || p.squares[from].type() == Type.KNIGHT))) {
+                            out_moves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
                         }
                     } else if (RANK_MIN[p.squares[from]] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from]]) {
-                        out_moves[length++] = Move.create(from, to);
+                        out_moves[length++] = createMove(from, to);
                     }
                     break;
                 }
-                if (!Dir.isFly(d)) {
+                if (!d.isFly()) {
                     break;
                 }
             }
@@ -55,23 +55,23 @@ int legalMoves(const ref Position p, move_t[] out_moves)
 
     // 盤上の駒を動かす
     for (int from = 11; from <= 99; from++) {
-        if (!Square.isFriend(p.squares[from], p.sideToMove)) {
+        if (!p.squares[from].isFriend(p.sideToMove)) {
             continue;
         }
-        pawned[FILE_OF[from]] |= (Square.typeOf(p.squares[from]) == Type.PAWN);
-        foreach (dir_t d ; DIRECTIONS[Square.typeOf(p.squares[from])]) {
-            int v = (p.sideToMove == Side.BLACK ? Dir.value(d) : -Dir.value(d));
+        pawned[FILE_OF[from]] |= (p.squares[from].type() == Type.PAWN);
+        foreach (dir_t d ; DIRECTIONS[p.squares[from].type()]) {
+            int v = (p.sideToMove == Side.BLACK ? d.value() : -d.value());
             for (int to = from + v; p.squares[to] == Square.EMPTY; to += v) {
                 if (canPromote(p.squares[from], from, to)) {
-                    out_moves[length++] = Move.createPromote(from, to);
-                    if (Square.typeOf(p.squares[from]) == Type.SILVER
-                        || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (Square.typeOf(p.squares[from]) == Type.LANCE || Square.typeOf(p.squares[from]) == Type.KNIGHT))) {
-                        out_moves[length++] = Move.create(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
+                    out_moves[length++] = createPromote(from, to);
+                    if (p.squares[from].type() == Type.SILVER
+                        || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type() == Type.LANCE || p.squares[from].type() == Type.KNIGHT))) {
+                        out_moves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
                     }
                 } else if (RANK_MIN[p.squares[from]] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from]]) {
-                    out_moves[length++] = Move.create(from, to);
+                    out_moves[length++] = createMove(from, to);
                 }
-                if (!Dir.isFly(d)) {
+                if (!d.isFly()) {
                     break; // 飛び駒でなければここでbreak
                 }
             }
@@ -85,7 +85,7 @@ int legalMoves(const ref Position p, move_t[] out_moves)
         }
         for (type_t t = (pawned[FILE_OF[to]] ? Type.LANCE : Type.PAWN); t <= Type.GOLD; t++) { // 歩,香,桂,銀,角,飛,金
             if (p.piecesInHand[p.sideToMove][t] > 0 && RANK_OF[to] >= RANK_MIN[p.sideToMove << 4 | t] && RANK_MAX[p.sideToMove << 4 | t] >= RANK_OF[to]) {
-                out_moves[length++] = Move.createDrop(t, to);
+                out_moves[length++] = createDrop(t, to);
             }
         }
     }
@@ -94,10 +94,10 @@ int legalMoves(const ref Position p, move_t[] out_moves)
 
 private bool canPromote(square_t sq, int from, int to)
 {
-    if (Square.typeOf(sq) > Type.ROOK) {
+    if (sq.type() > Type.ROOK) {
         return false;
     }
-    return (Square.isBlack(sq) ? (RANK_OF[from] <= 3 || RANK_OF[to] <= 3) : (RANK_OF[from] >= 7 || RANK_OF[to] >= 7));
+    return (sq.isBlack() ? (RANK_OF[from] <= 3 || RANK_OF[to] <= 3) : (RANK_OF[from] >= 7 || RANK_OF[to] >= 7));
 }
 
 private immutable dir_t[][] DIRECTIONS = [

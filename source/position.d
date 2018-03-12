@@ -13,16 +13,16 @@ import std.regex;
  * do_move
  */
 Position doMove(Position p, move_t m) {
-    if (Move.isDrop(m)) {
-        p.squares[Move.to(m)] = ((p.sideToMove == Side.BLACK ? 0 : Square.W) | Move.from(m));
-        p.piecesInHand[p.sideToMove][Move.from(m)]--;
+    if (m.isDrop()) {
+        p.squares[m.to()] = ((p.sideToMove == Side.BLACK ? 0 : Square.W) | m.from());
+        p.piecesInHand[p.sideToMove][m.from()]--;
     } else {
         // capture
-        if (p.squares[Move.to(m)] != Square.EMPTY) {
-            p.piecesInHand[p.sideToMove][Square.typeOf(Square.unpromote(p.squares[Move.to(m)]))]++;
+        if (p.squares[m.to()] != Square.EMPTY) {
+            p.piecesInHand[p.sideToMove][p.squares[m.to()].unpromote().type()]++;
         }
-        p.squares[Move.to(m)] = Move.isPromote(m) ? Square.promote(p.squares[Move.from(m)]) : p.squares[Move.from(m)];
-        p.squares[Move.from(m)] = Square.EMPTY;
+        p.squares[m.to()] = m.isPromote() ? p.squares[m.from()].promote() : p.squares[m.from()];
+        p.squares[m.from()] = Square.EMPTY;
     }
     p.sideToMove = (p.sideToMove == Side.BLACK) ? Side.WHITE : Side.BLACK;
     return p;

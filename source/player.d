@@ -36,12 +36,12 @@ private StopWatch SW;
 move_t ponder(const ref Position p)
 {
     move_t m = 0;
-    //search(p, 5, m, m);
+    search(p, 5, m, m);
 
-    SW = StopWatch(AutoStart.yes);
-    for (int depth = 1; SW.peek().total!"seconds" < 10; depth++) {
-        search(p, depth, m, m);
-    }
+    // SW = StopWatch(AutoStart.yes);
+    // for (int depth = 1; SW.peek().total!"seconds" < 10; depth++) {
+    //     search(p, depth, m, m);
+    // }
     return m;
 }
 
@@ -57,7 +57,7 @@ private int search(Position p, int depth, move_t prev, ref move_t out_move)
     if (length == 0) {
         return 0;
     }
-    moves[0..length].randomShuffle();
+    //moves[0..length].randomShuffle();
     if (prev != 0) {
         swap(moves[0], moves[0..length].find(prev)[0]);
     }

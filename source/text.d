@@ -18,9 +18,9 @@ string toString(move_t m, const ref Position p)
     immutable string[] CSA = [
         "FU", "KY", "KE", "GI", "KA", "HI", "KI", "OU", "TO", "NY", "NK", "NG", "UM", "RY",
     ];
-    int from = Move.isDrop(m) ? 0 : Move.from(m);
-    int to = Move.to(m);
-    type_t t = Move.isDrop(m) ? Move.from(m) : Move.isPromote(m) ? Square.typeOf(Square.promote(p.squares[Move.from(m)])) : Square.typeOf(p.squares[Move.from(m)]);
+    int from = m.isDrop() ? 0 : m.from();
+    int to = m.to();
+    type_t t = m.isDrop() ? m.from() : m.isPromote() ? p.squares[m.from()].promote().type() : p.squares[m.from()].type();
     return format("%s%02d%02d%s", (p.sideToMove == Side.BLACK ? "+" : "-"), from, to, CSA[t]);
 }
 
@@ -220,10 +220,10 @@ move_t parseMove(string s, const ref Position p)
     type_t t = DIC[m.front[4]];
 
     if (from == 0) {
-        return Move.createDrop(t, to); // fromが0なら駒打ち
-    } else if (t != Square.typeOf(p.squares[from])) {
-        return Move.createPromote(from, to); // 成る
+        return createDrop(t, to); // fromが0なら駒打ち
+    } else if (t != p.squares[from].type()) {
+        return createPromote(from, to); // 成る
     } else {
-        return Move.create(from, to);
+        return createMove(from, to);
     }
 }

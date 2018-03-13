@@ -5,97 +5,110 @@ alias dir_t = byte;
 alias square_t = ubyte;
 alias move_t = ushort;
 
-struct Side {
-    enum BLACK             = 0;  // 先手
-    enum WHITE             = 1;  // 後手
-};
+enum Side : side_t
+{
+    BLACK             = 0,  // 先手
+    WHITE             = 1,  // 後手
+}
 
-struct Type {
-    enum PAWN              = 0;  // 歩
-    enum LANCE             = 1;  // 香
-    enum KNIGHT            = 2;  // 桂
-    enum SILVER            = 3;  // 銀
-    enum BISHOP            = 4;  // 角
-    enum ROOK              = 5;  // 飛
-    enum GOLD              = 6;  // 金
-    enum KING              = 7;  // 王
-    enum PROMOTED_PAWN     = 8;  // と
-    enum PROMOTED_LANCE    = 9;  // 成香
-    enum PROMOTED_KNIGHT   = 10; // 成桂
-    enum PROMOTED_SILVER   = 11; // 成銀
-    enum PROMOTED_BISHOP   = 12; // 馬
-    enum PROMOTED_ROOK     = 13; // 龍
-    enum EMPTY             = 14; // 空
-    enum WALL              = 15; // 壁
-};
+enum Type : type_t
+{
+    PAWN              = 0,  // 歩
+    LANCE             = 1,  // 香
+    KNIGHT            = 2,  // 桂
+    SILVER            = 3,  // 銀
+    BISHOP            = 4,  // 角
+    ROOK              = 5,  // 飛
+    GOLD              = 6,  // 金
+    KING              = 7,  // 王
+    PROMOTED_PAWN     = 8,  // と
+    PROMOTED_LANCE    = 9,  // 成香
+    PROMOTED_KNIGHT   = 10, // 成桂
+    PROMOTED_SILVER   = 11, // 成銀
+    PROMOTED_BISHOP   = 12, // 馬
+    PROMOTED_ROOK     = 13, // 龍
+    EMPTY             = 14, // 空
+    WALL              = 15, // 壁
+}
 
 /**
  * 升
  * xxx1xxxx side
  * xxxx1111 type
  */
-struct Square {
-    enum W                 = 0b00010000;
-    enum B_PAWN            = 0;
-    enum B_LANCE           = 1;
-    enum B_KNIGHT          = 2;
-    enum B_SILVER          = 3;
-    enum B_BISHOP          = 4;
-    enum B_ROOK            = 5;
-    enum B_GOLD            = 6;
-    enum B_KING            = 7;
-    enum B_PROMOTED_PAWN   = 8;
-    enum B_PROMOTED_LANCE  = 9;
-    enum B_PROMOTED_KNIGHT = 10;
-    enum B_PROMOTED_SILVER = 11;
-    enum B_PROMOTED_BISHOP = 12;
-    enum B_PROMOTED_ROOK   = 13;
-    enum EMPTY             = 14;
-    enum WALL              = 15;
-    enum W_PAWN            = 16;
-    enum W_LANCE           = 17;
-    enum W_KNIGHT          = 18;
-    enum W_SILVER          = 19;
-    enum W_BISHOP          = 20;
-    enum W_ROOK            = 21;
-    enum W_GOLD            = 22;
-    enum W_KING            = 23;
-    enum W_PROMOTED_PAWN   = 24;
-    enum W_PROMOTED_LANCE  = 25;
-    enum W_PROMOTED_KNIGHT = 26;
-    enum W_PROMOTED_SILVER = 27;
-    enum W_PROMOTED_BISHOP = 28;
-    enum W_PROMOTED_ROOK   = 29;
-
-};
+enum Square : square_t
+{
+    W                 = 0b00010000,
+    B_PAWN            = 0,
+    B_LANCE           = 1,
+    B_KNIGHT          = 2,
+    B_SILVER          = 3,
+    B_BISHOP          = 4,
+    B_ROOK            = 5,
+    B_GOLD            = 6,
+    B_KING            = 7,
+    B_PROMOTED_PAWN   = 8,
+    B_PROMOTED_LANCE  = 9,
+    B_PROMOTED_KNIGHT = 10,
+    B_PROMOTED_SILVER = 11,
+    B_PROMOTED_BISHOP = 12,
+    B_PROMOTED_ROOK   = 13,
+    EMPTY             = 14,
+    WALL              = 15,
+    W_PAWN            = 16,
+    W_LANCE           = 17,
+    W_KNIGHT          = 18,
+    W_SILVER          = 19,
+    W_BISHOP          = 20,
+    W_ROOK            = 21,
+    W_GOLD            = 22,
+    W_KING            = 23,
+    W_PROMOTED_PAWN   = 24,
+    W_PROMOTED_LANCE  = 25,
+    W_PROMOTED_KNIGHT = 26,
+    W_PROMOTED_SILVER = 27,
+    W_PROMOTED_BISHOP = 28,
+    W_PROMOTED_ROOK   = 29,
+}
 
 /**
  * Direction
  * 1111111x value
  * xxxxxxx1 fly
  */
-struct Dir
+enum Dir : dir_t
 {
-    enum N =  -1 * 2; //  -1 << 1
-    enum E = -10 * 2; // -10 << 1
-    enum W = +10 * 2; // +10 << 1
-    enum S =  +1 * 2; //  +1 << 1
-    enum NE = N + E;
-    enum NW = N + W;
-    enum SE = S + E;
-    enum SW = S + W;
-    enum NNE = N + N + E;
-    enum NNW = N + N + W;
-    enum FN = N | 1;
-    enum FE = E | 1;
-    enum FW = W | 1;
-    enum FS = S | 1;
-    enum FNE = NE | 1;
-    enum FNW = NW | 1;
-    enum FSE = SE | 1;
-    enum FSW = SW | 1;
+    N =  -1 * 2, //  -1 << 1
+    E = -10 * 2, // -10 << 1
+    W = +10 * 2, // +10 << 1
+    S =  +1 * 2, //  +1 << 1
+    NE = N + E,
+    NW = N + W,
+    SE = S + E,
+    SW = S + W,
+    NNE = N + N + E,
+    NNW = N + N + W,
+    FN = N | 1,
+    FE = E | 1,
+    FW = W | 1,
+    FS = S | 1,
+    FNE = NE | 1,
+    FNW = NW | 1,
+    FSE = SE | 1,
+    FSW = SW | 1,
+}
 
-};
+/**
+ * 手
+ * 1xxxxxxx xxxxxxxx promote
+ * x1xxxxxx xxxxxxxx drop
+ * xx111111 1xxxxxxx from
+ * xxxxxxxx x1111111 to
+ */
+enum Move : move_t
+{
+    TORYO = 0,
+}
 
 /**
  * 局面
@@ -106,15 +119,6 @@ struct Position
     ubyte[8][2] piecesInHand;
     bool sideToMove;
 };
-
-
-/**
- * 手
- * 1xxxxxxx xxxxxxxx promote
- * x1xxxxxx xxxxxxxx drop
- * xx111111 1xxxxxxx from
- * xxxxxxxx x1111111 to
- */
 
 // square_tを引数にとる関数
 bool isBlack(square_t sq) { return sq <= Square.B_PROMOTED_ROOK; }

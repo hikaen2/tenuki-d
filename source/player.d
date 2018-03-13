@@ -2,6 +2,7 @@ import types;
 import text;
 import position;
 import movegen;
+import eval;
 import std.format;
 import std.random;
 import std.stdio;
@@ -32,23 +33,24 @@ import std.algorithm.comparison;
 
 
 private StopWatch SW;
+immutable SECOND = 15;
 
 move_t ponder(const ref Position p)
 {
     move_t m = 0;
-    search(p, 5, m, m);
+    //    search(p, 5, m, m);
 
-    // SW = StopWatch(AutoStart.yes);
-    // for (int depth = 1; SW.peek().total!"seconds" < 10; depth++) {
-    //     search(p, depth, m, m);
-    // }
+    SW = StopWatch(AutoStart.yes);
+    for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
+        search(p, depth, m, m);
+    }
     return m;
 }
 
 
 private int search(Position p, int depth, move_t prev, ref move_t out_move)
 {
-    if (SW.peek().total!"seconds" >= 10) {
+    if (SW.peek().total!"seconds" >= SECOND) {
         return 0;
     }
 
@@ -57,7 +59,7 @@ private int search(Position p, int depth, move_t prev, ref move_t out_move)
     if (length == 0) {
         return 0;
     }
-    //moves[0..length].randomShuffle();
+    moves[0..length].randomShuffle();
     if (prev != 0) {
         swap(moves[0], moves[0..length].find(prev)[0]);
     }
@@ -69,7 +71,7 @@ private int search(Position p, int depth, move_t prev, ref move_t out_move)
         // maxノード
         for (int i = 0; i < length; i++) {
             int score = alphabeta(p.doMove(moves[i]), depth - 1, a, b);
-            if (score > a && SW.peek().total!"seconds" < 10) {
+            if (score > a && SW.peek().total!"seconds" < SECOND) {
                 a = score;
                 out_move = moves[i];
                 stderr.write(format("%s(%d) ", moves[i].toString(p), score));
@@ -79,7 +81,7 @@ private int search(Position p, int depth, move_t prev, ref move_t out_move)
         // minノード
         for (int i = 0; i < length; i++) {
             int score = alphabeta(p.doMove(moves[i]), depth - 1, a, b);
-            if (score < b && SW.peek().total!"seconds" < 10) {
+            if (score < b && SW.peek().total!"seconds" < SECOND) {
                 b = score;
                 out_move = moves[i];
                 stderr.write(format("%s(%d) ", moves[i].toString(p), score));
@@ -99,13 +101,13 @@ private int search(Position p, int depth, move_t prev, ref move_t out_move)
  */
 private int alphabeta(Position p, int depth, int a, int b)
 {
-    if (SW.peek().total!"seconds" >= 10) {
+    if (SW.peek().total!"seconds" >= SECOND) {
         return 0;
     }
 
     if (depth <= 0) {
         return quies(p, 4, a, b);
-        //return p.static_value();
+        //return p.staticValue();
     }
 
     move_t[593] moves;

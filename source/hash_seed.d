@@ -1,4 +1,6 @@
 
+immutable ulong HASH_SEED_SIDE = 0x8f1acc7c207f8b3d;
+
 // HASH_SHEED_HAND[side_t][type_t][n]
 immutable ulong[19][8][2] HASH_SEED_HAND = [
     [

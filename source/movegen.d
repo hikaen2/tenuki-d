@@ -1,5 +1,40 @@
 import types;
 
+
+bool isValid(move_t m, const ref Position p)
+{
+    if (m.isDrop) {
+        return (!m.isPromote && m.from < Type.KING && 11 <= m.to && m.to <= 99 && p.piecesInHand[p.sideToMove][m.from] > 0 && p.squares[m.to] == Square.EMPTY);
+    }
+
+    if (m.from < 11 || 99 < m.from || m.to < 11 || 99 < m.to) {
+        return false;
+    }
+    square_t sq_from = p.squares[m.from];
+    square_t sq_to = p.squares[m.to];
+    if (!sq_from.isFriend(p.sideToMove)) {
+        return false;
+    }
+    if (sq_to != Square.EMPTY && !sq_to.isEnemy(p.sideToMove)) {
+        return false;
+    }
+    if (m.isPromote && !canPromote(sq_from, m.from, m.to)) {
+        return false;
+    }
+    foreach (dir_t d ; DIRECTIONS[sq_from]) {
+        for (int to = m.from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += d.value) {
+            if (to == m.to) {
+                return true;
+            }
+            if (!d.isFly() || p.squares[to].isEnemy(p.sideToMove)) {
+                break;
+            }
+        }
+    }
+    return false;
+}
+
+
 /**
  * 駒を取る手を返す
  */

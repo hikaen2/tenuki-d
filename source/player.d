@@ -31,20 +31,26 @@ import std.algorithm.comparison;
     //     return std::get<0>(moves[0]);
     // }
 
+private immutable MASK = 0xffffff;  // 1024 * 1024 * 16 - 1
+private move_t[MASK + 1] TT = 0;
 
 private StopWatch SW;
-immutable SECOND = 15;
+immutable SECOND = 10;
 
 int ponder(const ref Position p, out move_t result)
 {
     move_t m = 0;
-    // int score = 0;
-    // search(p, 5, m, m, score);
+    int score = 0;
+
+    // for (int depth = 1; depth <= 6; depth++) {
+    //     search(p, depth, m, m, score);
+    // }
 
     SW = StopWatch(AutoStart.yes);
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
         search(p, depth, m, m, score);
     }
+
     result = m;
     return score;
 }
@@ -122,17 +128,48 @@ private int alphabeta(Position p, int depth, int a, int b)
 
     if (p.sideToMove == Side.BLACK) {
         // maxノード
+
+        move_t m = TT[p.hash & MASK];
+        if (m.isValid(p)) {
+            int score = alphabeta(p.doMove(m), depth - 1, a, b);
+            if (score > a) {
+                a = score;
+            }
+            if (a >= b) {
+                return b; // bカット
+            }
+        }
+
         for (int i = 0; i < length; i++) {
-            a = max(a, alphabeta(p.doMove(moves[i]), depth - 1, a, b));
+            int score = alphabeta(p.doMove(moves[i]), depth - 1, a, b);
+            if (score > a) {
+                a = score;
+                TT[p.hash & MASK] = moves[i];
+            }
             if (a >= b) {
                 return b; // bカット
             }
         }
         return a;
     } else {
+        move_t m = TT[p.hash & MASK];
+        if (m.isValid(p)) {
+            int score = alphabeta(p.doMove(m), depth - 1, a, b);
+            if (score < b) {
+                b = score;
+            }
+            if (a >= b) {
+                return a; // aカット
+            }
+        }
+
         // minノード
         for (int i = 0; i < length; i++) {
-            b = min(b, alphabeta(p.doMove(moves[i]), depth - 1, a, b));
+            int score = alphabeta(p.doMove(moves[i]), depth - 1, a, b);
+            if (score < b) {
+                b = score;
+                TT[p.hash & MASK] = moves[i];
+            }
             if (a >= b) {
                 return a; // aカット
             }
@@ -156,14 +193,27 @@ private int quies(Position p, int depth, int a, int b)
         if (a < standpat) {
             a = standpat;
         }
+
+        move_t m = TT[p.hash & MASK];
+        if (m.isValid(p)) {
+            int score = quies(p.doMove(m), depth - 1, a, b);
+            if (score > a) {
+                a = score;
+            }
+            if (a >= b) {
+                return b; // bカット
+            }
+        }
+
         int length = p.capturelMoves(moves);
         for (int i = 0; i < length; i++) {
-            int value = quies(p.doMove(moves[i]), depth - 1, a, b);
-            if (b <= value) {
-                return b;
+            int score = quies(p.doMove(moves[i]), depth - 1, a, b);
+            if (a < score) {
+                a = score;
+                TT[p.hash & MASK] = moves[i];
             }
-            if (a < value) {
-                a = value;
+            if (b <= score) {
+                return b;
             }
         }
         return a;
@@ -174,14 +224,27 @@ private int quies(Position p, int depth, int a, int b)
         if (b > standpat) {
             b = standpat;
         }
+
+        move_t m = TT[p.hash & MASK];
+        if (m.isValid(p)) {
+            int score = quies(p.doMove(m), depth - 1, a, b);
+            if (score < b) {
+                b = score;
+            }
+            if (a >= b) {
+                return a; // aカット
+            }
+        }
+
         int length = capturelMoves(p, moves);
         for (int i = 0; i < length; i++) {
-            int value = quies(p.doMove(moves[i]), depth - 1, a, b);
-            if (a >= value) {
-                return a;
+            int score = quies(p.doMove(moves[i]), depth - 1, a, b);
+            if (b > score) {
+                b = score;
+                TT[p.hash & MASK] = moves[i];
             }
-            if (b > value) {
-                b = value;
+            if (a >= score) {
+                return a;
             }
         }
         return b;

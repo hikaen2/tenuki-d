@@ -1,6 +1,7 @@
 import types;
 import text;
 import hash_seed;
+import movegen;
 import std.string;
 import std.stdio;
 import std.format;
@@ -13,7 +14,8 @@ import std.regex;
 /**
  * do_move
  */
-Position doMove(Position p, move_t m) {
+Position doMove(Position p, move_t m)
+{
     if (m.isDrop) {
         type_t t = m.from;
         p.squares[m.to] = ((p.sideToMove == Side.BLACK ? 0 : Square.W) | t);
@@ -34,5 +36,6 @@ Position doMove(Position p, move_t m) {
         p.squares[m.from] = Square.EMPTY;
     }
     p.sideToMove = (p.sideToMove == Side.BLACK) ? Side.WHITE : Side.BLACK;
+    p.hash ^= HASH_SEED_SIDE;
     return p;
 }

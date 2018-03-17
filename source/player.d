@@ -35,20 +35,22 @@ import std.algorithm.comparison;
 private StopWatch SW;
 immutable SECOND = 15;
 
-move_t ponder(const ref Position p)
+int ponder(const ref Position p, out move_t result)
 {
     move_t m = 0;
-    //    search(p, 5, m, m);
+    // int score = 0;
+    // search(p, 5, m, m, score);
 
     SW = StopWatch(AutoStart.yes);
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
-        search(p, depth, m, m);
+        search(p, depth, m, m, score);
     }
-    return m;
+    result = m;
+    return score;
 }
 
 
-private int search(Position p, int depth, move_t prev, ref move_t out_move)
+private int search(Position p, int depth, move_t prev, ref move_t out_move, ref int out_score)
 {
     if (SW.peek().total!"seconds" >= SECOND) {
         return 0;
@@ -74,6 +76,7 @@ private int search(Position p, int depth, move_t prev, ref move_t out_move)
             if (score > a && SW.peek().total!"seconds" < SECOND) {
                 a = score;
                 out_move = moves[i];
+                out_score = score;
                 stderr.write(format("%s(%d) ", moves[i].toString(p), score));
             }
         }
@@ -84,6 +87,7 @@ private int search(Position p, int depth, move_t prev, ref move_t out_move)
             if (score < b && SW.peek().total!"seconds" < SECOND) {
                 b = score;
                 out_move = moves[i];
+                out_score = score;
                 stderr.write(format("%s(%d) ", moves[i].toString(p), score));
             }
         }

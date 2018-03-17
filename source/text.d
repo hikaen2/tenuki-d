@@ -1,6 +1,7 @@
 import types;
 import position;
 import eval;
+import hash_seed;
 import std.string;
 import std.stdio;
 import std.format;
@@ -9,6 +10,10 @@ import std.array;
 import std.container;
 import std.conv;
 import std.regex;
+import std.ascii;
+import std.array;
+import std.regex;
+import std.conv;
 
 /**
  * 手をCSA形式の文字列にする
@@ -28,7 +33,7 @@ string toString(move_t m, const ref Position p)
 
 string toString(const ref Position p)
 {
-    return format("staticValue: %d\n%s\n", p.staticValue(), p.toKi2());
+    return format("hash: 0x%016x\nstaticValue: %d\n%s\n", p.hash, p.staticValue(), p.toKi2());
 }
 
 /**
@@ -152,10 +157,6 @@ Position createPosition(string sfen)
         "g":  Type.GOLD,
     ];
 
-    import std.ascii;
-    import std.array;
-    import std.regex;
-    import std.conv;
     Position p;
     p.squares = Square.WALL;
 
@@ -191,6 +192,17 @@ Position createPosition(string sfen)
             int num = (c[1] == "") ? 1 : to!int(c[1]);
             string piece = c[2];
             p.piecesInHand[piece[0].isUpper() ? Side.BLACK : Side.WHITE][TO_TYPE[piece]] += num;
+        }
+    }
+
+    // ハッシュ値
+    p.hash = 0;
+    for (int i = 11; i <= 99; i++) {
+        p.hash ^= HASH_SEED_BOARD[ p.squares[i] ][i];
+    }
+    for (side_t s = Side.BLACK; s <= Side.WHITE; s++) {
+        for (type_t t = Type.PAWN; t <= Type.KING; t++) {
+            p.hash ^= HASH_SEED_HAND[s][t][ p.piecesInHand[s][t] ];
         }
     }
     return p;

@@ -20,8 +20,15 @@ void main_()
     // }
 
     Position p = createPosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
+    writeln(p.sizeof);
     stdout.writeln(p.toString());
-    ponder(p);
+    move_t m;
+    ponder(p, m);
+
+    // Position p = createPosition("9/9/9/9/9/9/9/9/P8 b - 1");
+    // stdout.writeln(p.toString());
+    // p = p.doMove(parseMove("+9998FU", p));
+    // stdout.writeln(p.toString());
 
 }
 
@@ -52,7 +59,9 @@ int main(string[] args)
 
     for (;;) {
         if (p.sideToMove == mySide) {
-            writeLine(s, ponder(p).toString(p));
+            move_t m;
+            int score = ponder(p, m);
+            writeLine(s, format("%s,'* %d", m.toString(p), score));
         }
 
         move_t m;

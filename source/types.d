@@ -5,6 +5,17 @@ alias dir_t = byte;
 alias square_t = ubyte;
 alias move_t = ushort;
 
+/**
+ * 局面
+ */
+struct Position
+{
+    square_t[111] squares;
+    ubyte[8][2] piecesInHand;
+    bool sideToMove;
+    ulong hash;
+}
+
 enum Side : side_t
 {
     BLACK             = 0,  // 先手
@@ -109,16 +120,6 @@ enum Move : move_t
 {
     TORYO = 0,
 }
-
-/**
- * 局面
- */
-struct Position
-{
-    square_t[111] squares;
-    ubyte[8][2] piecesInHand;
-    bool sideToMove;
-};
 
 // square_tを引数にとる関数
 bool isBlack(square_t sq) { return sq <= Square.B_PROMOTED_ROOK; }

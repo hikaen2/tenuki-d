@@ -99,6 +99,8 @@ enum Dir : dir_t
     SW = S + W,
     NNE = N + N + E,
     NNW = N + N + W,
+    SSE = S + S + E,
+    SSW = S + S + W,
     FN = N | 1,
     FE = E | 1,
     FW = W | 1,

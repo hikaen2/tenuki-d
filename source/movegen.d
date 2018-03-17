@@ -15,9 +15,8 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
         if (!p.squares[from].isFriend(p.sideToMove)) {
             continue;
         }
-        foreach (dir_t d ; DIRECTIONS[p.squares[from].type()]) {
-            int v = (p.sideToMove == Side.BLACK ? d.value() : -d.value());
-            for (int to = from + v; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += v) {
+        foreach (dir_t d ; DIRECTIONS[p.squares[from]]) {
+            for (int to = from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += d.value) {
                 if (p.squares[to].isEnemy(p.sideToMove)) {
                     if (canPromote(p.squares[from], from, to)) {
                         out_moves[length++] = createPromote(from, to);
@@ -59,9 +58,8 @@ int legalMoves(const ref Position p, move_t[] out_moves)
             continue;
         }
         pawned[FILE_OF[from]] |= (p.squares[from].type() == Type.PAWN);
-        foreach (dir_t d ; DIRECTIONS[p.squares[from].type()]) {
-            int v = (p.sideToMove == Side.BLACK ? d.value() : -d.value());
-            for (int to = from + v; p.squares[to] == Square.EMPTY; to += v) {
+        foreach (dir_t d ; DIRECTIONS[p.squares[from]]) {
+            for (int to = from + d.value; p.squares[to] == Square.EMPTY; to += d.value) {
                 if (canPromote(p.squares[from], from, to)) {
                     out_moves[length++] = createPromote(from, to);
                     if (p.squares[from].type() == Type.SILVER
@@ -101,20 +99,36 @@ private bool canPromote(square_t sq, int from, int to)
 }
 
 private immutable dir_t[][] DIRECTIONS = [
-    [ Dir.N ],                                                              //  0:PAWN
-    [ Dir.FN ],                                                             //  1:LANCE
-    [ Dir.NNE, Dir.NNW ],                                                   //  2:KNIGHT
-    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.SE,  Dir.SW ],                         //  3:SILVER
-    [ Dir.FNE, Dir.FNW, Dir.FSE, Dir.FSW ],                                 //  4:BISHOP
-    [ Dir.FN,  Dir.FE,  Dir.FW,  Dir.FS ],                                  //  5:ROOK
-    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  6:GOLD
-    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S,  Dir.SE, Dir.SW ], //  7:KING
-    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  8:PROMOTED_PAWN
-    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  9:PROMOTED_LANCE
-    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  // 10:PROMOTED_KNIGHT
-    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  // 11:PROMOTED_SILVER
-    [ Dir.FNE, Dir.FNW, Dir.FSE, Dir.FSW, Dir.N,  Dir.E,  Dir.W,  Dir.S ],  // 12:PROMOTED_BISHOP
-    [ Dir.FN,  Dir.FE,  Dir.FW,  Dir.FS,  Dir.NE, Dir.NW, Dir.SE, Dir.SW ], // 13:PROMOTED_ROOK
+    [ Dir.N  ],                                                             //  0:B_PAWN
+    [ Dir.FN ],                                                             //  1:B_LANCE
+    [ Dir.NNE, Dir.NNW ],                                                   //  2:B_KNIGHT
+    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.SE,  Dir.SW ],                         //  3:B_SILVER
+    [ Dir.FNE, Dir.FNW, Dir.FSE, Dir.FSW ],                                 //  4:B_BISHOP
+    [ Dir.FN,  Dir.FE,  Dir.FW,  Dir.FS  ],                                 //  5:B_ROOK
+    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  6:B_GOLD
+    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S,  Dir.SE, Dir.SW ], //  7:B_KING
+    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  8:B_PROMOTED_PAWN
+    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  9:B_PROMOTED_LANCE
+    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  // 10:B_PROMOTED_KNIGHT
+    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  // 11:B_PROMOTED_SILVER
+    [ Dir.FNE, Dir.FNW, Dir.FSE, Dir.FSW, Dir.N,  Dir.E,  Dir.W,  Dir.S  ], // 12:B_PROMOTED_BISHOP
+    [ Dir.FN,  Dir.FE,  Dir.FW,  Dir.FS,  Dir.NE, Dir.NW, Dir.SE, Dir.SW ], // 13:B_PROMOTED_ROOK
+    [],                                                                     // 14:EMPTY
+    [],                                                                     // 15:WALL
+    [ Dir.S  ],                                                             // 16:W_PAWN
+    [ Dir.FS ],                                                             // 17:W_LANCE
+    [ Dir.SSW, Dir.SSE ],                                                   // 18:W_KNIGHT
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.NW,  Dir.NE ],                         // 19:W_SILVER
+    [ Dir.FSW, Dir.FSE, Dir.FNW, Dir.FNE ],                                 // 20:W_BISHOP
+    [ Dir.FS,  Dir.FW,  Dir.FE,  Dir.FN  ],                                 // 21:W_ROOK
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 22:W_GOLD
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N,  Dir.NW, Dir.NE ], // 23:W_KING
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 24:W_PROMOTED_PAWN
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 25:W_PROMOTED_LANCE
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 26:W_PROMOTED_KNIGHT
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 27:W_PROMOTED_SILVER
+    [ Dir.FSW, Dir.FSE, Dir.FNW, Dir.FNE, Dir.S,  Dir.W,  Dir.E,  Dir.N  ], // 28:W_PROMOTED_BISHOP
+    [ Dir.FS,  Dir.FW,  Dir.FE,  Dir.FN,  Dir.SW, Dir.SE, Dir.NW, Dir.NE ], // 29:W_PROMOTED_ROOK
 ];
 
 // ▲歩,香,桂,銀,角,飛,金,王,と,成香,成桂,成銀,馬,龍,-,-,△歩,香,桂,銀,角,飛,金,王,と,成香,成桂,成銀,馬,龍

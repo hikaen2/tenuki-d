@@ -33,7 +33,7 @@ string toString(move_t m, const ref Position p)
 
 string toString(const ref Position p)
 {
-    return format("hash: 0x%016x\nstaticValue: %d\n%s\n", p.hash, p.staticValue(), p.toKi2());
+    return format("hash: 0x%016x\nstaticValue: %d\n%s\n", p.hash, (p.sideToMove == Side.BLACK ? p.staticValue() : -p.staticValue()), p.toKi2());
 }
 
 /**

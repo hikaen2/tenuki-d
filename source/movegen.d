@@ -1,6 +1,20 @@
 import types;
 
 
+bool inCheck(ref Position p)
+{
+    move_t[128] moves;
+    p.sideToMove ^= 1;
+    int length = capturelMoves(p, moves);
+    p.sideToMove ^= 1;
+    for (int i = 0; i < length; i++) {
+        if (p.squares[moves[i].to].type == Type.KING) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool isValid(move_t m, const ref Position p)
 {
     if (m.isDrop) {

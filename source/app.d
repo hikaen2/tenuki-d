@@ -61,7 +61,7 @@ int main(string[] args)
         if (p.sideToMove == mySide) {
             move_t m;
             int score = ponder(p, m);
-            writeLine(s, format("%s,'* %d", m.toString(p), score));
+            writeLine(s, format("%s,'* %d", m.toString(p), (p.sideToMove == Side.BLACK ? score : -score)));
         }
 
         move_t m;

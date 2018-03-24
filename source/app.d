@@ -3,6 +3,7 @@ import text;
 import player;
 import position;
 import movegen;
+import parser;
 import std.conv;
 import std.format;
 import std.regex;
@@ -12,20 +13,20 @@ import undead.socketstream;
 
 void main_()
 {
-    // Position p = createPosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
+    // Position p = parsePosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
     // stdout.writeln(p.toString());
     // move_t[600] moves;
     // for (int i = 0; i < 1000000; i++) {
     //     p.legalMoves(moves);
     // }
 
-    Position p = createPosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
+    Position p = parsePosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
     writeln(p.sizeof);
     stdout.writeln(p.toString());
     move_t m;
     ponder(p, m);
 
-    // Position p = createPosition("9/9/9/9/9/9/9/9/P8 b - 1");
+    // Position p = parsePosition("9/9/9/9/9/9/9/9/P8 b - 1");
     // stdout.writeln(p.toString());
     // p = p.doMove(parseMove("+9998FU", p));
     // stdout.writeln(p.toString());
@@ -54,7 +55,7 @@ int main(string[] args)
     writeLine(s, "AGREE");
     readLineUntil(s, regex("START"));
 
-    Position p = createPosition("lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
+    Position p = parsePosition("lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
     stdout.writeln(p.toString());
 
     for (;;) {

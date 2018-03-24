@@ -1,6 +1,8 @@
 import types;
 
-
+/**
+ * 局面pにおいて手番のある側が王手をかけられているかどうかを返す
+ */
 bool inCheck(ref Position p)
 {
     move_t[128] moves;
@@ -15,6 +17,9 @@ bool inCheck(ref Position p)
     return false;
 }
 
+/**
+ * 局面pにおいて指し手mが有効（不正でない）かどうかを返す
+ */
 bool isValid(move_t m, const ref Position p)
 {
     if (m.isDrop) {
@@ -40,7 +45,7 @@ bool isValid(move_t m, const ref Position p)
             if (to == m.to) {
                 return true;
             }
-            if (!d.isFly() || p.squares[to].isEnemy(p.sideToMove)) {
+            if (!d.isFly || p.squares[to].isEnemy(p.sideToMove)) {
                 break;
             }
         }
@@ -48,9 +53,9 @@ bool isValid(move_t m, const ref Position p)
     return false;
 }
 
-
 /**
- * 駒を取る手を返す
+ * 駒を取る手を生成する
+ * @return 生成した数
  */
 int capturelMoves(const ref Position p, move_t[] out_moves)
 {
@@ -69,8 +74,8 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
                 if (p.squares[to].isEnemy(p.sideToMove)) {
                     if (canPromote(p.squares[from], from, to)) {
                         out_moves[length++] = createPromote(from, to);
-                        if (p.squares[from].type() == Type.SILVER
-                            || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type() == Type.LANCE || p.squares[from].type() == Type.KNIGHT))) {
+                        if (p.squares[from].type == Type.SILVER
+                            || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type == Type.LANCE || p.squares[from].type == Type.KNIGHT))) {
                             out_moves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
                         }
                     } else if (RANK_MIN[p.squares[from]] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from]]) {
@@ -78,7 +83,7 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
                     }
                     break;
                 }
-                if (!d.isFly()) {
+                if (!d.isFly) {
                     break;
                 }
             }
@@ -88,7 +93,8 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
 }
 
 /**
- * 合法手を返す
+ * 合法手を生成する
+ * @return 生成した数
  */
 int legalMoves(const ref Position p, move_t[] out_moves)
 {
@@ -106,19 +112,19 @@ int legalMoves(const ref Position p, move_t[] out_moves)
         if (!p.squares[from].isFriend(p.sideToMove)) {
             continue;
         }
-        pawned[FILE_OF[from]] |= (p.squares[from].type() == Type.PAWN);
+        pawned[FILE_OF[from]] |= (p.squares[from].type == Type.PAWN);
         foreach (dir_t d ; DIRECTIONS[p.squares[from]]) {
             for (int to = from + d.value; p.squares[to] == Square.EMPTY; to += d.value) {
                 if (canPromote(p.squares[from], from, to)) {
                     out_moves[length++] = createPromote(from, to);
-                    if (p.squares[from].type() == Type.SILVER
-                        || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type() == Type.LANCE || p.squares[from].type() == Type.KNIGHT))) {
+                    if (p.squares[from].type == Type.SILVER
+                        || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type == Type.LANCE || p.squares[from].type == Type.KNIGHT))) {
                         out_moves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
                     }
                 } else if (RANK_MIN[p.squares[from]] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from]]) {
                     out_moves[length++] = createMove(from, to);
                 }
-                if (!d.isFly()) {
+                if (!d.isFly) {
                     break; // 飛び駒でなければここでbreak
                 }
             }
@@ -141,10 +147,10 @@ int legalMoves(const ref Position p, move_t[] out_moves)
 
 private bool canPromote(square_t sq, int from, int to)
 {
-    if (sq.type() > Type.ROOK) {
+    if (sq.type > Type.ROOK) {
         return false;
     }
-    return (sq.isBlack() ? (RANK_OF[from] <= 3 || RANK_OF[to] <= 3) : (RANK_OF[from] >= 7 || RANK_OF[to] >= 7));
+    return (sq.isBlack ? (RANK_OF[from] <= 3 || RANK_OF[to] <= 3) : (RANK_OF[from] >= 7 || RANK_OF[to] >= 7));
 }
 
 private immutable dir_t[][] DIRECTIONS = [

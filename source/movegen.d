@@ -40,7 +40,7 @@ bool isValid(move_t m, const ref Position p)
     if (m.isPromote && !canPromote(sq_from, m.from, m.to)) {
         return false;
     }
-    foreach (dir_t d ; DIRECTIONS[sq_from]) {
+    foreach (dir_t d; DIRECTIONS[sq_from]) {
         for (int to = m.from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += d.value) {
             if (to == m.to) {
                 return true;
@@ -69,7 +69,7 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
         if (!p.squares[from].isFriend(p.sideToMove)) {
             continue;
         }
-        foreach (dir_t d ; DIRECTIONS[p.squares[from]]) {
+        foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
             for (int to = from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += d.value) {
                 if (p.squares[to].isEnemy(p.sideToMove)) {
                     if (canPromote(p.squares[from], from, to)) {
@@ -113,7 +113,7 @@ int legalMoves(const ref Position p, move_t[] out_moves)
             continue;
         }
         pawned[FILE_OF[from]] |= (p.squares[from].type == Type.PAWN);
-        foreach (dir_t d ; DIRECTIONS[p.squares[from]]) {
+        foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
             for (int to = from + d.value; p.squares[to] == Square.EMPTY; to += d.value) {
                 if (canPromote(p.squares[from], from, to)) {
                     out_moves[length++] = createPromote(from, to);

@@ -19,7 +19,7 @@ private immutable MASK = 0xffffff;  // 1024 * 1024 * 16 - 1
 private move_t[MASK + 1] TT = 0;
 
 private StopWatch SW;
-immutable SECOND = 2;
+immutable SECOND = 10;
 
 int ponder(const ref Position p, out move_t result)
 {
@@ -30,10 +30,21 @@ int ponder(const ref Position p, out move_t result)
     //     search0(p, depth, m, score);
     // }
 
+    // if (p.moveCount == 1) {
+    //     int s = uniform(0, 4); // [0..3]
+    //     result = (s == 0 ? createMove(77, 76) : s == 1 ? createMove(27, 26) : s == 2 ? createMove(28, 68) : createMove(28, 78));
+    //     return 0;
+    // }
+    // if (p.moveCount == 2) {
+    //     result = (uniform(0, 2) == 0 ? createMove(33, 34) : createMove(83, 84));
+    //     return 0;
+    // }
+
     SW = StopWatch(AutoStart.yes);
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
         search0(p, depth, m, score);
     }
+
     writeln(COUNT);
     result = m;
     return score;
@@ -61,13 +72,13 @@ private int search0(Position p, int depth, ref move_t in_out_move, ref int out_s
     int a = short.min;
     const int b = short.max;
     stderr.write(format("%d: ", depth));
-    for (int i = 0; i < length; i++) {
-        int value = -search(p.doMove(moves[i]), depth - 1, -b, -a, true);
+    foreach (move_t move; moves[0..length]) {
+        int value = -search(p.doMove(move), depth - 1, -b, -a);
         if (a < value && SW.peek().total!"seconds" < SECOND) {
             a = value;
-            in_out_move = moves[i];
+            in_out_move = move;
             out_score = value;
-            stderr.write(format("%s(%d) ", moves[i].toString(p), value));
+            stderr.write(format("%s(%d) ", move.toString(p), value));
         }
     }
     stderr.write("\n");
@@ -82,7 +93,7 @@ private int search0(Position p, int depth, ref move_t in_out_move, ref int out_s
  * @param b 探索済みmaxノードの最小値
  * @return 評価値
  */
-private int search(Position p, int depth, int a, const int b, bool doNullMove)
+private int search(Position p, int depth, int a, const int b, bool doNullMove = true)
 {
     if (SW.peek().total!"seconds" >= SECOND) {
         return 0;
@@ -94,19 +105,19 @@ private int search(Position p, int depth, int a, const int b, bool doNullMove)
     COUNT++;
 
     if (!p.inCheck && doNullMove) {
-        p.sideToMove ^= 1;
-        int value = -search(p, depth - 2 - 1, -b, -b + 1, false);
-        p.sideToMove ^= 1;
+        int value = -search(p.doMove(Move.NULL_MOVE), depth - 2 - 1, -b, -b + 1, false);
         if (b <= value) {
             return value;
         }
     }
 
-    move_t m = TT[p.hash & MASK];
-    if (m.isValid(p)) {
-        a = max(a, -search(p.doMove(m), depth - 1, -b, -a, true));
-        if (b <= a) {
-            return b; // bカット
+    {
+        move_t move = TT[p.hash & MASK];
+        if (move.isValid(p)) {
+            a = max(a, -search(p.doMove(move), depth - 1, -b, -a));
+            if (b <= a) {
+                return b;
+            }
         }
     }
 
@@ -115,14 +126,14 @@ private int search(Position p, int depth, int a, const int b, bool doNullMove)
     if (length == 0) {
         return p.staticValue;
     }
-    for (int i = 0; i < length; i++) {
-        int value = -search(p.doMove(moves[i]), depth - 1, -b, -a, true);
+    foreach (move_t move; moves[0..length]) {
+        int value = -search(p.doMove(move), depth - 1, -b, -a);
         if (a < value) {
             a = value;
-            TT[p.hash & MASK] = moves[i];
+            TT[p.hash & MASK] = move;
         }
         if (b <= a) {
-            return b; // bカット
+            return b;
         }
     }
     return a;
@@ -138,28 +149,30 @@ private int quies(Position p, int depth, int a, const int b)
 
     int standpat = p.staticValue;
     if (b <= standpat) {
-        return b; // bカット
+        return b;
     }
     a = max(a, standpat);
 
-    move_t m = TT[p.hash & MASK];
-    if (m.isValid(p)) {
-        a = max(a, -quies(p.doMove(m), depth - 1, -b, -a));
-        if (b <= a) {
-            return b; // bカット
+    {
+        move_t move = TT[p.hash & MASK];
+        if (move.isValid(p)) {
+            a = max(a, -quies(p.doMove(move), depth - 1, -b, -a));
+            if (b <= a) {
+                return b;
+            }
         }
     }
 
     move_t[128] moves;
     int length = p.capturelMoves(moves);
-    for (int i = 0; i < length; i++) {
-        int value = -quies(p.doMove(moves[i]), depth - 1, -b, -a);
+    foreach (move_t move; moves[0..length]) {
+        int value = -quies(p.doMove(move), depth - 1, -b, -a);
         if (a < value) {
             a = value;
-            TT[p.hash & MASK] = moves[i];
+            TT[p.hash & MASK] = move;
         }
         if (b <= value) {
-            return b; // bカット
+            return b;
         }
     }
     return a;

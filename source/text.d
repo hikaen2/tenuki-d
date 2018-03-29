@@ -18,6 +18,10 @@ import std.regex;
  */
 string toString(move_t m, const ref Position p)
 {
+    if (m == Move.TORYO) {
+        return "%TORYO";
+    }
+
     //    歩,   香,   桂,   銀,  角,    飛,   金,   玉,   と, 成香, 成桂, 成銀,   馬,   龍,
     immutable string[] CSA = [
         "FU", "KY", "KE", "GI", "KA", "HI", "KI", "OU", "TO", "NY", "NK", "NG", "UM", "RY",

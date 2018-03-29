@@ -23,8 +23,8 @@ void main_()
     Position p = parsePosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
     writeln(p.sizeof);
     stdout.writeln(p.toString());
-    move_t m;
-    ponder(p, m);
+    move_t[64] pv;
+    p.ponder(pv);
 
     // Position p = parsePosition("9/9/9/9/9/9/9/9/P8 b - 1");
     // stdout.writeln(p.toString());
@@ -60,9 +60,17 @@ int main(string[] args)
 
     for (;;) {
         if (p.sideToMove == mySide) {
-            move_t m;
-            int score = ponder(p, m);
-            writeLine(s, format("%s,'* %d", m.toString(p), (p.sideToMove == Side.BLACK ? score : -score)));
+            move_t[64] pv;
+            int score = p.ponder(pv);
+            string wk;
+            {
+                Position q = p.doMove(pv[0]);
+                for (int i = 1; pv[i] != 0; i++) {
+                    wk ~= format("%s ", pv[i].toString(q));
+                    q = q.doMove(pv[i]);
+                }
+            }
+            writeLine(s, format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Side.BLACK ? score : -score), wk));
         }
 
         move_t m;

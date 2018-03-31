@@ -28,7 +28,7 @@ int ponder(const ref Position p, move_t[] out_pv)
 
     // for (int depth = 1; depth <= 6; depth++) {
     //     Position q = p;
-    //     score = p.search0(depth, out_pv);
+    //     p.search0(depth, out_pv, score);
     //     for (int i = 0; out_pv[i] != 0; i++) {
     //         stderr.writef("%s ", out_pv[i].toString(q));
     //         q = q.doMove(out_pv[i]);
@@ -83,18 +83,18 @@ private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
 
     int a = short.min;
     const int b = short.max;
-    stderr.write(format("%d: ", depth));
+    stderr.writef("%d: ", depth);
     foreach (move_t move; moves[0..length]) {
         int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
         if (a < value && SW.peek().total!"seconds" < SECOND) {
             a = value;
             out_pv[0] = move;
             for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
-            stderr.write(format("%s(%d) ", move.toString(p), value));
+            stderr.writef("%s(%d) ", move.toString(p), value);
             out_score = value;
         }
     }
-    stderr.write("\n");
+    stderr.write(" : ");
     return a;
 }
 

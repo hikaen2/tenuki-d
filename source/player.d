@@ -1,4 +1,5 @@
 import types;
+import book;
 import text;
 import position;
 import movegen;
@@ -33,6 +34,13 @@ int ponder(const ref Position p, move_t[] out_pv)
     //     stderr.write("\n");
     // }
 
+    if (p.toSfen in BOOK) {
+        out_pv[0] = BOOK[p.toSfen][ uniform(0, BOOK[p.toSfen].length) ];
+        out_pv[1] = 0;
+        stderr.writeln(out_pv[0].toString(p));
+        return 0;
+    }
+
     SW = StopWatch(AutoStart.yes);
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
         Position q = p;
@@ -42,6 +50,10 @@ int ponder(const ref Position p, move_t[] out_pv)
             q = q.doMove(out_pv[i]);
         }
         stderr.write("\n");
+    }
+    if (score <= -15000) {
+        out_pv[0] = Move.TORYO;
+        out_pv[1] = 0;
     }
 
     writeln(COUNT);
@@ -102,14 +114,14 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
         return 0;
     }
 
+    if (p.inUchifuzume) {
+        return 15000; // 打ち歩詰めされていれば勝ち
+    }
+
     if (depth <= 0) {
         return doNullMove ? p.qsearch(4, a, b, out_pv) : p.staticValue;
     }
     COUNT++;
-
-    if (p.inUchifuzume) {
-        return 15000; // 打ち歩詰めされていれば勝ち
-    }
 
     move_t[64] pv;
 

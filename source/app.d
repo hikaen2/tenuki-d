@@ -72,7 +72,11 @@ int main(string[] args)
                     q = q.doMove(pv[i]);
                 }
             }
-            writeLine(s, format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Side.BLACK ? score : -score), wk));
+            if (pv[0] == Move.TORYO) {
+                writeLine(s, pv[0].toString(p));
+            } else {
+                writeLine(s, format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Side.BLACK ? score : -score), wk));
+            }
         }
 
         move_t m;

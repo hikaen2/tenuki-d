@@ -57,11 +57,32 @@ string toSfen(const ref Position p)
         }
         lines.insert(line);
     }
-    string s = lines[].join("/");
+    string board = lines[].join("/");
     for (int i = 9; i >= 2; i--) {
-        s = s.replace("1".replicate(i), to!string(i)); // '1'をまとめる
+        board = board.replace("1".replicate(i), to!string(i)); // '1'をまとめる
     }
-    return s;
+
+    string side = (p.sideToMove == Side.BLACK ? "b" : "w");
+
+    // 飛車, 角, 金, 銀, 桂, 香, 歩
+    string hand;
+    foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
+        int n = p.piecesInHand[Side.BLACK][t];
+        if (n > 0) {
+            hand ~= (n > 1 ? to!string(n) : "") ~ TO_SFEN[t];
+        }
+    }
+    foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
+        int n = p.piecesInHand[Side.WHITE][t];
+        if (n > 0) {
+            hand ~= (n > 1 ? to!string(n) : "") ~ TO_SFEN[t + 16];
+        }
+    }
+    if (hand == "") {
+        hand = "-";
+    }
+
+    return format("sfen %s %s %s %s", board, side, hand, p.moveCount);
 }
 
 /**

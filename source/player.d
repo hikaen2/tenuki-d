@@ -218,9 +218,6 @@ private bool inUchifuzume(Position p)
 
     move_t[593] moves;
     int length = p.legalMoves(moves);
-    if (length == 0) {
-        return true;
-    }
     foreach (move_t move; moves[0..length]) {
         if (!p.doMove(move).doMove(Move.NULL_MOVE).inCheck) {
             return false; // 王手を解除する手があれば打ち歩詰めでない

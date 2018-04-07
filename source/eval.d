@@ -64,12 +64,12 @@ short staticValue(const ref Position p)
     int bk = 0;
     int wk = 0;
     for (int i = 11; i <= 99; i++) {
-        material += SCORE[p.squares[i]];
+        material += P_VALUE[p.squares[i]];
         bk = (p.squares[i] == Square.B_KING ? ADDRESS_OF[i      ] : bk);
         wk = (p.squares[i] == Square.W_KING ? ADDRESS_OF[110 - i] : wk);
     }
     for (int t = Type.PAWN; t <= Type.GOLD; t++) {
-        material += (p.piecesInHand[Side.BLACK][t] - p.piecesInHand[Side.WHITE][t]) * SCORE[t];
+        material += (p.piecesInHand[Side.BLACK][t] - p.piecesInHand[Side.WHITE][t]) * P_VALUE[t];
     }
 
     // KPの計算
@@ -172,13 +172,13 @@ static this()
 }
 
 /*
- * value: 駒得のスコア
+ * value: 駒得の評価値
  * key: square_t
  */
-private immutable short[] SCORE = [
-  // 歩,   香,   桂,   銀,   角,   飛,   金,     王,   と, 成香, 成桂, 成銀,   馬,   龍, 空, 壁,
-     91,  243,  242,  376,  548,  658,  449,  15000,  545,  511,  523,  519,  840,  955,  0,  0,
-    -91, -243, -242, -376, -548, -658, -449, -15000, -545, -511, -523, -519, -840, -955,
+private immutable short[] P_VALUE = [
+   // 歩,   香,   桂,   銀,   角,   飛,   金,     王,   と, 成香, 成桂, 成銀,   馬,    龍, 空, 壁,
+     100,  260,  235,  392,  625,  844,  389,  15000,  458,  401,  423,  409,  800,  1164,  0,  0,
+    -100, -260, -235, -392, -625, -844, -389, -15000, -458, -401, -423, -409, -800, -1164,
 ];
 
 /*

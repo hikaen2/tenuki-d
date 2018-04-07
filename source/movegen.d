@@ -1,20 +1,73 @@
 import types;
 
 /**
+ * まだ指していない指し手mが局面pにおいて王手をかける手かどうかを返す
+ */
+bool isCheck(move_t m, const ref Position p)
+{
+    square_t sq = (p.sideToMove << 4) | (m.isDrop ? m.from : m.isPromote ? p.squares[m.from].promote : p.squares[m.from]);
+    foreach (dir_t d; DIRECTIONS[sq]) {
+        for (int to = m.to + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += d.value) {
+            if (p.squares[to].type == Type.KING) {
+                return true;
+            }
+            if (!d.isFly) {
+                break;
+            }
+        }
+    }
+    return false;
+}
+
+/**
  * 局面pにおいて手番のある側が王手をかけられているかどうかを返す
  */
-bool inCheck(ref Position p)
+bool inCheck(Position p)
 {
+    p.sideToMove ^= 1;
     move_t[128] moves;
-    p.sideToMove ^= 1;
     int length = capturelMoves(p, moves);
-    p.sideToMove ^= 1;
-    for (int i = 0; i < length; i++) {
-        if (p.squares[moves[i].to].type == Type.KING) {
+    foreach (move_t move; moves[0..length]) {
+        if (p.squares[move.to].type == Type.KING) {
             return true;
         }
     }
     return false;
+
+    // if (p.previousMove == 0) {
+    //     return false;
+    // }
+
+    // // 直前の指し手の効きに自玉がいれば王手をかけられている
+    // foreach (dir_t d; DIRECTIONS[p.squares[p.previousMove.to]]) {
+    //     for (int to = p.previousMove.to + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isFriend(p.sideToMove);  to += d.value) {
+    //         if (p.squares[to].type == Type.KING) {
+    //             return true;
+    //         }
+    //         if (!d.isFly) {
+    //             break;
+    //         }
+    //     }
+    // }
+
+    // // 相手の香車, 飛車, 角, 馬, 龍の効きに自玉がいれば空き王手をかけられている
+    // for (int from = 11; from <= 99; from++) {
+    //     if (!(p.squares[from].isEnemy(p.sideToMove) && (p.squares[from].type == Type.LANCE || p.squares[from].unpromote.type == Type.BISHOP || p.squares[from].unpromote.type == Type.ROOK))) {
+    //         continue;
+    //     }
+    //     foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
+    //         for (int to = from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isFriend(p.sideToMove);  to += d.value) {
+    //             if (p.squares[to].type == Type.KING) {
+    //                 return true;
+    //             }
+    //             if (!d.isFly) {
+    //                 break;
+    //             }
+    //         }
+    //     }
+    // }
+
+    // return false;
 }
 
 /**

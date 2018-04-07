@@ -40,5 +40,6 @@ Position doMove(Position p, move_t m)
     p.sideToMove ^= 1;
     p.hash ^= HASH_SEED_SIDE;
     p.moveCount++;
+    p.previousMove = m;
     return p;
 }

@@ -31,6 +31,7 @@ struct Position
     bool sideToMove;
     ulong hash;
     ushort moveCount = 1;
+    move_t previousMove; // 直前の指し手
 }
 
 enum Side : side_t

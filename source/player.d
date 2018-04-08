@@ -119,7 +119,7 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
     }
 
     if (depth <= 0) {
-        return doNullMove ? p.qsearch(4, a, b, out_pv) : p.staticValue;
+        return p.qsearch(depth + 4, a, b, out_pv);
     }
     COUNT++;
 

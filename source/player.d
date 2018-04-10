@@ -125,8 +125,9 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
 
     move_t[64] pv;
 
-    if (doNullMove && !p.inCheck) {
-        int value = -p.doMove(Move.NULL_MOVE).search(depth - 2 - 1, -b, -b + 1, pv, false);
+    if (doNullMove /* && !p.inCheck */ ) {
+        immutable R = 2;
+        int value = -p.doMove(Move.NULL_MOVE).search(depth - R - 1, -b, -b + 1, pv, false);
         if (b <= value) {
             return b;
         }
@@ -138,11 +139,11 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
             int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
             if (a < value) {
                 a = value;
-                out_pv[0] = move;
-                for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
                 if (b <= a) {
                     return b;
                 }
+                out_pv[0] = move;
+                for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
             }
         }
     }
@@ -156,12 +157,12 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
         int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
         if (a < value) {
             a = value;
-            out_pv[0] = move;
             TT[p.hash & MASK] = move;
-            for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
             if (b <= a) {
                 return b;
             }
+            out_pv[0] = move;
+            for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
         }
     }
     return a;
@@ -175,8 +176,8 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] out_pv)
     assert(a < b);
 
     COUNT++;
-    move_t[64] pv;
     out_pv[0] = 0;
+    move_t[64] pv;
 
     if (depth <= 0) {
         return p.staticValue;
@@ -189,15 +190,15 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] out_pv)
 
     {
         move_t move = TT[p.hash & MASK];
-        if (move.isValid(p)) {
+        if (move.isValid(p) && p.squares[move.to].isEnemy(p.sideToMove)) {
             int value = -p.doMove(move).qsearch(depth - 1, -b, -a, pv);
             if (a < value) {
                 a = value;
-                out_pv[0] = move;
-                for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
                 if (b <= a) {
                     return b;
                 }
+                out_pv[0] = move;
+                for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
             }
         }
     }
@@ -208,12 +209,12 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] out_pv)
         int value = -p.doMove(move).qsearch(depth - 1, -b, -a, pv);
         if (a < value) {
             a = value;
-            out_pv[0] = move;
             TT[p.hash & MASK] = move;
-            for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
             if (b <= a) {
                 return b;
             }
+            out_pv[0] = move;
+            for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
         }
     }
     return a;

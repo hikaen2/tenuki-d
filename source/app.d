@@ -12,7 +12,7 @@ import std.socket;
 import std.stdio;
 import undead.socketstream;
 
-void test()
+private void test()
 {
     // Position p = parsePosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
     // stdout.writeln(p.toString());
@@ -35,12 +35,6 @@ void test()
     // stdout.writeln(p.toString());
 }
 
-void printUsage() {
-    stderr.writeln("usage: tenuki [-e] [-p port] hostname username password");
-    stderr.writeln("  -e  send enhanced CSA protocol");
-    stderr.writeln("  -p  default: 4081");
-}
-
 int main(string[] args)
 {
     if (args.length >= 2 && args[1] == "test") {
@@ -52,19 +46,21 @@ int main(string[] args)
     ushort port = 4081;
     try {
         getopt(args, "e", &enhanced, "p", &port);
+        if (args.length < 4) {
+            throw new Exception("");
+        }
     } catch (Exception e) {
-        printUsage();
+        stderr.writeln("usage: tenuki [-e] [-p port] hostname username password");
+        stderr.writeln("  -e  send enhanced CSA protocol");
+        stderr.writeln("  -p  default: 4081");
         return 1;
     }
-    if (args.length < 4) {
-        printUsage();
-        return 1;
-    }
-    const string host = args[1];
+    const string hostname = args[1];
     const string username = args[2];
     const string password = args[3];
-    stdout.writefln("Connecting to %s port %s.", host, port);
-    Socket sock = new TcpSocket(new InternetAddress(host, port));
+
+    stdout.writefln("Connecting to %s port %s.", hostname, port);
+    Socket sock = new TcpSocket(new InternetAddress(hostname, port));
     scope(exit) sock.close();
 
     SocketStream s = new SocketStream(sock);

@@ -16,9 +16,9 @@ $ dub build -b release
 評価ベクターになのはminiのfv_mini.binを使っています。
 fv_mini.binを作業ディレクトリに置いて実行してください。
 ~~~
-$ ./tenuki host port username password
+$ ./tenuki hostname username password
 ~~~
 例：
 ~~~
-$ ./tenuki wdoor.c.u-tokyo.ac.jp 4081 tenuki floodgate-300-10F
+$ ./tenuki wdoor.c.u-tokyo.ac.jp tenuki floodgate-300-10F
 ~~~

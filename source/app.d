@@ -6,12 +6,13 @@ import movegen;
 import parser;
 import std.conv;
 import std.format;
+import std.getopt;
 import std.regex;
 import std.socket;
 import std.stdio;
 import undead.socketstream;
 
-void main_()
+void test()
 {
     // Position p = parsePosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
     // stdout.writeln(p.toString());
@@ -32,22 +33,38 @@ void main_()
     // stdout.writeln(p.toString());
     // p = p.doMove(parseMove("+9998FU", p));
     // stdout.writeln(p.toString());
-
 }
 
+void printUsage() {
+    stderr.writeln("usage: tenuki [-e] [-p port] hostname username password");
+    stderr.writeln("  -e  send enhanced CSA protocol");
+    stderr.writeln("  -p  default: 4081");
+}
 
 int main(string[] args)
 {
-    if (args.length < 5) {
-        stderr.writeln("Usage: tenuki host port username password");
+    if (args.length >= 2 && args[1] == "test") {
+        test();
+        return 0;
+    }
+
+    bool enhanced = false;
+    ushort port = 4081;
+    try {
+        getopt(args, "e", &enhanced, "p", &port);
+    } catch (Exception e) {
+        printUsage();
+        return 1;
+    }
+    if (args.length < 4) {
+        printUsage();
         return 1;
     }
     const string host = args[1];
-    const string port = args[2];
-    const string username = args[3];
-    const string password = args[4];
+    const string username = args[2];
+    const string password = args[3];
     stdout.writefln("Connecting to %s port %s.", host, port);
-    Socket sock = new TcpSocket(new InternetAddress(host, to!ushort(port)));
+    Socket sock = new TcpSocket(new InternetAddress(host, port));
     scope(exit) sock.close();
 
     SocketStream s = new SocketStream(sock);
@@ -74,8 +91,10 @@ int main(string[] args)
             }
             if (pv[0] == Move.TORYO) {
                 writeLine(s, pv[0].toString(p));
-            } else {
+            } else if (enhanced) {
                 writeLine(s, format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Side.BLACK ? score : -score), wk));
+            } else {
+                writeLine(s, format("%s", pv[0].toString(p)));
             }
         }
 

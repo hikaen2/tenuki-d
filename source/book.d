@@ -1,7 +1,6 @@
 import types;
 import std.stdio;
 import std.string;
-import std.container;
 import std.regex;
 
 move_t[][string] BOOK;;
@@ -15,10 +14,10 @@ static this()
     string key;
     while ((line = f.readln()) !is null) {
         line = line.strip;
-        if (line.match(regex("^#"))) {
+        if (line.matchFirst(r"^#")) {
             continue;
         }
-        if (line.match(regex("^sfen "))) {
+        if (line.matchFirst(r"^sfen ")) {
             key = line;
         } else {
             BOOK[key] ~= parseUsi(line);
@@ -56,14 +55,14 @@ private move_t parseUsi(string usi)
         "9a":91, "9b":92, "9c":93, "9d":94, "9e":95, "9f":96, "9g":97, "9h":98, "9i":99,
     ];
 
-    auto m = usi.match(regex("(\\D)\\*(\\d\\D)"));
+    auto m = usi.matchFirst(r"(\D)\*(\d\D)");
     if (!m.empty) {
-        return createDrop(TYPE[m.front[1]], ADDRESS[m.front[2]]);
+        return createDrop(TYPE[m[1]], ADDRESS[m[2]]);
     }
 
-    m = usi.match(regex("(\\d\\D)(\\d\\D)(\\+?)"));
-    int from = ADDRESS[m.front[1]];
-    int to = ADDRESS[m.front[2]];
-    bool promote = m.front[3] == "+";
+    m = usi.matchFirst(r"(\d\D)(\d\D)(\+?)");
+    int from = ADDRESS[m[1]];
+    int to = ADDRESS[m[2]];
+    bool promote = (m[3] == "+");
     return promote ? createPromote(from, to) : createMove(from, to);
 }

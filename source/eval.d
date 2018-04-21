@@ -77,7 +77,7 @@ short staticValue(const ref Position p)
     short[40] list = void;
     int nlist = 0;
     for (int i = 11; i <= 99; i++) {
-        if ((p.squares[i].isBlack() || p.squares[i].isWhite()) && p.squares[i].type() != Type.KING) {
+        if ((p.squares[i].isBlack || p.squares[i].isWhite) && p.squares[i].type != Type.KING) {
             sum += FV_KP[bk][ KP_OFFSET[p.squares[i]             ] + ADDRESS_OF[i      ] ];
             sum -= FV_KP[wk][ KP_OFFSET[p.squares[i] ^ 0b00010000] + ADDRESS_OF[110 - i] ];
             list[nlist++] = cast(short)(PP_OFFSET[p.squares[i]] + ADDRESS_OF[i]);
@@ -104,8 +104,8 @@ short staticValue(const ref Position p)
 }
 
 private enum FV_SCALE = 32;
-private const short[1386][1386] FV_PP;
-private const short[1476][81] FV_KP;
+private immutable short[1386][1386] FV_PP;
+private immutable short[1476][81] FV_KP;
 
 static this()
 {

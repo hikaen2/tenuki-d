@@ -16,7 +16,7 @@ import std.regex;
  */
 Position doMove(Position p, move_t m)
 {
-    if (m != Move.NULL_MOVE) {
+    if (m != Move.NULL_MOVE && m != Move.TORYO) {
         if (m.isDrop) {
             type_t t = m.from;
             p.squares[m.to] = ((p.sideToMove == Side.BLACK ? 0 : Square.W) | t);

@@ -24,50 +24,23 @@ bool isCheck(move_t m, const ref Position p)
  */
 bool inCheck(Position p)
 {
-    p.sideToMove ^= 1;
-    move_t[128] moves;
-    int length = capturelMoves(p, moves);
-    foreach (move_t move; moves[0..length]) {
-        if (p.squares[move.to].type == Type.KING) {
-            return true;
+    // 相手の駒を動かして自玉が取られるようなら王手をかけられている
+    for (int from = 11; from <= 99; from++) {
+        if (!p.squares[from].isEnemy(p.sideToMove)) {
+            continue;
+        }
+        foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
+            for (int to = from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isFriend(p.sideToMove); to += d.value) {
+                if (p.squares[to].type == Type.KING) {
+                    return true;
+                }
+                if (!d.isFly || p.squares[to].isFriend(p.sideToMove)) {
+                    break;
+                }
+            }
         }
     }
     return false;
-
-    // if (p.previousMove == 0) {
-    //     return false;
-    // }
-
-    // // 直前の指し手の効きに自玉がいれば王手をかけられている
-    // foreach (dir_t d; DIRECTIONS[p.squares[p.previousMove.to]]) {
-    //     for (int to = p.previousMove.to + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isFriend(p.sideToMove);  to += d.value) {
-    //         if (p.squares[to].type == Type.KING) {
-    //             return true;
-    //         }
-    //         if (!d.isFly) {
-    //             break;
-    //         }
-    //     }
-    // }
-
-    // // 相手の香車, 飛車, 角, 馬, 龍の効きに自玉がいれば空き王手をかけられている
-    // for (int from = 11; from <= 99; from++) {
-    //     if (!(p.squares[from].isEnemy(p.sideToMove) && (p.squares[from].type == Type.LANCE || p.squares[from].unpromote.type == Type.BISHOP || p.squares[from].unpromote.type == Type.ROOK))) {
-    //         continue;
-    //     }
-    //     foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
-    //         for (int to = from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isFriend(p.sideToMove);  to += d.value) {
-    //             if (p.squares[to].type == Type.KING) {
-    //                 return true;
-    //             }
-    //             if (!d.isFly) {
-    //                 break;
-    //             }
-    //         }
-    //     }
-    // }
-
-    // return false;
 }
 
 /**
@@ -94,7 +67,7 @@ bool isValid(move_t m, const ref Position p)
         return false;
     }
     foreach (dir_t d; DIRECTIONS[sq_from]) {
-        for (int to = m.from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += d.value) {
+        for (int to = m.from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove); to += d.value) {
             if (to == m.to) {
                 return true;
             }
@@ -108,7 +81,7 @@ bool isValid(move_t m, const ref Position p)
 
 /**
  * 駒を取る手を生成する
- * @return 生成した数
+ * returns: 生成した数
  */
 int capturelMoves(const ref Position p, move_t[] out_moves)
 {
@@ -123,7 +96,7 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
             continue;
         }
         foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
-            for (int to = from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += d.value) {
+            for (int to = from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove); to += d.value) {
                 if (p.squares[to].isEnemy(p.sideToMove)) {
                     if (canPromote(p.squares[from], from, to)) {
                         out_moves[length++] = createPromote(from, to);
@@ -147,7 +120,7 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
 
 /**
  * 合法手を生成する
- * @return 生成した数
+ * returns: 生成した数
  */
 int legalMoves(const ref Position p, move_t[] out_moves)
 {

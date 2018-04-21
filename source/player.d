@@ -17,7 +17,7 @@ private immutable MASK = 0xffffff;  // 1024 * 1024 * 16 - 1
 private move_t[MASK + 1] TT = 0;
 
 private StopWatch SW;
-immutable SECOND = 10;
+private immutable SECOND = 10;
 
 int ponder(const ref Position p, move_t[] out_pv)
 {
@@ -63,7 +63,7 @@ int ponder(const ref Position p, move_t[] out_pv)
 /**
  * ルート局面用のsearch
  * 候補をstderrに出力する
- * @return 評価値
+ * returns: 評価値
  */
 private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
 {

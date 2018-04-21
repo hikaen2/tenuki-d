@@ -25,10 +25,10 @@ move_t parseMove(string s, const ref Position p)
         "RY": Type.PROMOTED_ROOK,
     ];
 
-    auto m = s.match(regex("(-|\\+)(\\d{2})(\\d{2})(\\w{2})"));
-    int from = to!int(m.front[2]);
-    int to = to!int(m.front[3]);
-    type_t t = DIC[m.front[4]];
+    auto m = s.matchFirst(r"(-|\+)(\d{2})(\d{2})(\w{2})");
+    int from = to!int(m[2]);
+    int to = to!int(m[3]);
+    type_t t = DIC[m[4]];
 
     if (from == 0) {
         return createDrop(t, to); // fromが0なら駒打ち
@@ -93,7 +93,7 @@ Position parsePosition(string sfen)
     Position p;
     p.squares = Square.WALL;
 
-    string[] ss = sfen.strip().split(regex("\\s+"));
+    string[] ss = sfen.strip().split(regex(r"\s+"));
     string boardState = ss[0];
     string sideToMove = ss[1];
     string piecesInHand = ss[2];
@@ -110,7 +110,7 @@ Position parsePosition(string sfen)
         boardState = boardState.replace(to!string(i), "1".replicate(i)); // 2～9を1に開いておく
     }
     boardState = boardState.replace("/", "");
-    auto m = boardState.matchAll(regex("\\+?."));
+    auto m = boardState.matchAll(r"\+?.");
     for (int rank = 1; rank <= 9; rank++) {
         for (int file = 9; file >= 1; file--) {
             p.squares[file * 10 + rank] = TO_SQUARE[m.front.hit];
@@ -121,7 +121,7 @@ Position parsePosition(string sfen)
     // 持ち駒
     if (piecesInHand != "-") {
         // 例：S, 4P, b, 3n, p, 18P
-        foreach (c; piecesInHand.matchAll(regex("(\\d*)(\\D)"))) {
+        foreach (c; piecesInHand.matchAll(r"(\d*)(\D)")) {
             int num = (c[1] == "") ? 1 : to!int(c[1]);
             string piece = c[2];
             p.piecesInHand[piece[0].isUpper() ? Side.BLACK : Side.WHITE][TO_TYPE[piece]] += num;

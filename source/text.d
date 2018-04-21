@@ -1,20 +1,12 @@
 import types;
-import position;
 import eval;
-import hash_seed;
-import std.string;
-import std.stdio;
-import std.format;
+import std.array;
 import std.conv;
-import std.array;
-import std.container;
-import std.regex;
-import std.ascii;
-import std.array;
-import std.regex;
+import std.format;
+import std.stdio;
 
 /**
- * 手をCSA形式の文字列にする
+ * mのCSA形式の文字列を返す
  */
 string toString(move_t m, const ref Position p)
 {
@@ -26,20 +18,19 @@ string toString(move_t m, const ref Position p)
     immutable string[] CSA = [
         "FU", "KY", "KE", "GI", "KA", "HI", "KI", "OU", "TO", "NY", "NK", "NG", "UM", "RY",
     ];
-    int from = m.isDrop() ? 0 : m.from();
-    int to = m.to();
-    type_t t = m.isDrop() ? m.from() : m.isPromote() ? p.squares[m.from()].promote().type() : p.squares[m.from()].type();
+    int from = m.isDrop ? 0 : m.from;
+    int to = m.to;
+    type_t t = m.isDrop ? m.from : m.isPromote ? p.squares[m.from].promote.type : p.squares[m.from].type;
     return format("%s%02d%02d%s", (p.sideToMove == Side.BLACK ? "+" : "-"), from, to, CSA[t]);
 }
 
-
 string toString(const ref Position p)
 {
-    return format("hash: 0x%016x\nstaticValue: %d\n%s\n", p.hash, (p.sideToMove == Side.BLACK ? p.staticValue() : -p.staticValue()), p.toKi2());
+    return format("%s\nhash: 0x%016x\nstaticValue: %d\n%s\n", p.toSfen, p.hash, (p.sideToMove == Side.BLACK ? p.staticValue : -p.staticValue), p.toKi2());
 }
 
 /**
- * 局面をSFEN形式の文字列にする
+ * pのSFEN形式の文字列を返す
  */
 string toSfen(const ref Position p)
 {
@@ -49,15 +40,15 @@ string toSfen(const ref Position p)
         "p", "l", "n", "s", "b", "r", "g", "k", "+p", "+l", "+n", "+s", "+b", "+r",
     ];
 
-    Array!string lines;
+    string[] lines;
     for (int rank = 1; rank <= 9; rank++) {
         string line;
         for (int file = 9; file >= 1; file--) {
             line ~= TO_SFEN[p.squares[file * 10 + rank]];
         }
-        lines.insert(line);
+        lines ~= line;
     }
-    string board = lines[].join("/");
+    string board = lines.join("/");
     for (int i = 9; i >= 2; i--) {
         board = board.replace("1".replicate(i), to!string(i)); // '1'をまとめる
     }
@@ -66,16 +57,12 @@ string toSfen(const ref Position p)
 
     // 飛車, 角, 金, 銀, 桂, 香, 歩
     string hand;
-    foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
-        int n = p.piecesInHand[Side.BLACK][t];
-        if (n > 0) {
-            hand ~= (n > 1 ? to!string(n) : "") ~ TO_SFEN[t];
-        }
-    }
-    foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
-        int n = p.piecesInHand[Side.WHITE][t];
-        if (n > 0) {
-            hand ~= (n > 1 ? to!string(n) : "") ~ TO_SFEN[t + 16];
+    foreach (side_t s; [Side.BLACK, Side.WHITE]) {
+        foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
+            int n = p.piecesInHand[s][t];
+            if (n > 0) {
+                hand ~= (n > 1 ? to!string(n) : "") ~ TO_SFEN[t | s << 4];
+            }
         }
     }
     if (hand == "") {
@@ -86,7 +73,7 @@ string toSfen(const ref Position p)
 }
 
 /**
- * 局面をKI2形式の文字列にする
+ * pのKI2形式の文字列を返す
  */
 string toKi2(const ref Position p)
 {
@@ -104,8 +91,8 @@ string toKi2(const ref Position p)
     ];
 
     string[2] hand;
-    for (side_t s = Side.BLACK; s <= Side.WHITE; s++) {
-        for (type_t t = Type.PAWN; t <= Type.GOLD; t++) {
+    foreach (side_t s; [Side.BLACK, Side.WHITE]) {
+        foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
             int n = p.piecesInHand[s][t];
             if (n > 0) {
                 hand[s] ~= format("%s%s　", HAND[t], (n > 1 ? NUM[n] : ""));

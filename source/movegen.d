@@ -49,7 +49,13 @@ bool inCheck(Position p)
 bool isValid(move_t m, const ref Position p)
 {
     if (m.isDrop) {
-        return (!m.isPromote && m.from < Type.KING && 11 <= m.to && m.to <= 99 && p.piecesInHand[p.sideToMove][m.from] > 0 && p.squares[m.to] == Square.EMPTY);
+        return !m.isPromote
+            && m.from < Type.KING
+            && 11 <= m.to && m.to <= 99
+            && p.piecesInHand[p.sideToMove][m.from] > 0
+            && p.squares[m.to] == Square.EMPTY
+            && RANK_MIN[p.sideToMove << 4 | m.from] <= RANK_OF[m.to]
+            && RANK_MAX[p.sideToMove << 4 | m.from] >= RANK_OF[m.to];
     }
 
     if (m.from < 11 || 99 < m.from || m.to < 11 || 99 < m.to) {
@@ -68,7 +74,7 @@ bool isValid(move_t m, const ref Position p)
     }
     foreach (dir_t d; DIRECTIONS[sq_from]) {
         for (int to = m.from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove); to += d.value) {
-            if (to == m.to) {
+            if (to == m.to && RANK_MIN[sq_from] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[sq_from]) {
                 return true;
             }
             if (!d.isFly || p.squares[to].isEnemy(p.sideToMove)) {

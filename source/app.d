@@ -1,3 +1,4 @@
+import book;
 import types;
 import text;
 import player;
@@ -14,22 +15,22 @@ import undead.socketstream;
 
 private void test()
 {
-    // Position p = parsePosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
+    // Position p = parsePosition("sfen l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
     // stdout.writeln(p.toString());
     // move_t[600] moves;
     // for (int i = 0; i < 1000000; i++) {
     //     p.legalMoves(moves);
     // }
 
-    Position p = parsePosition("l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1"); // 指し手生成祭り
-    //Position p = parsePosition("kn6l/3g2r2/sGp2s3/lp1pp4/2N2ppl1/2P1P4/2NS1PP1+p/3GKS3/+b3G2+rL b Pbn6p 1"); // 打ち歩詰め局面
-    //Position p = parsePosition("lnsgkgsnl/1r5b1/p1ppppppp/9/1p7/9/PPPPPPPPP/1B4KR1/LNSG1GSNL b - 0"); // test+default-1500-0+tenuki+neakih+20180403232658
+    Position p = parsePosition("sfen l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1"); // 指し手生成祭り
+    //Position p = parsePosition("sfen kn6l/3g2r2/sGp2s3/lp1pp4/2N2ppl1/2P1P4/2NS1PP1+p/3GKS3/+b3G2+rL b Pbn6p 1"); // 打ち歩詰め局面
+    //Position p = parsePosition("sfen lnsgkgsnl/1r5b1/p1ppppppp/9/1p7/9/PPPPPPPPP/1B4KR1/LNSG1GSNL b - 0"); // test+default-1500-0+tenuki+neakih+20180403232658
     writeln(p.sizeof);
     stdout.writeln(p.toString());
     move_t[64] pv;
     p.ponder(pv);
 
-    // Position p = parsePosition("9/9/9/9/9/9/9/9/P8 b - 1");
+    // Position p = parsePosition("sfen 9/9/9/9/9/9/9/9/P8 b - 1");
     // stdout.writeln(p.toString());
     // p = p.doMove(parseMove("+9998FU", p));
     // stdout.writeln(p.toString());
@@ -39,6 +40,10 @@ int main(string[] args)
 {
     if (args.length >= 2 && args[1] == "test") {
         test();
+        return 0;
+    }
+    if (args.length >= 2 && args[1] == "validate") {
+        validateBook();
         return 0;
     }
 
@@ -70,7 +75,7 @@ int main(string[] args)
     writeLine(s, "AGREE");
     readLineUntil(s, regex("START"));
 
-    Position p = parsePosition("lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
+    Position p = parsePosition("sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
     stdout.writeln(p.toString());
 
     for (;;) {

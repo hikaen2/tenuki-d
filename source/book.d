@@ -1,4 +1,7 @@
 import types;
+import parser;
+import text;
+import movegen;
 import std.stdio;
 import std.string;
 import std.regex;
@@ -30,6 +33,20 @@ static this()
     //         writeln(move);
     //     }
     // }
+}
+
+void validateBook()
+{
+    foreach (sfen, moves; BOOK) {
+        Position p = parsePosition(sfen);
+        assert(sfen == p.toSfen);
+        foreach (move_t move; moves) {
+            if (!move.isValid(p)) {
+                stderr.writeln(p.toString);
+                stderr.writefln("%02d%02d", (move >> 7) & 0b1111111, move & 0b1111111);
+            }
+        }
+    }
 }
 
 /*

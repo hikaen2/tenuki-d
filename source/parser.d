@@ -94,10 +94,15 @@ Position parsePosition(string sfen)
     p.squares = Square.WALL;
 
     string[] ss = sfen.strip().split(regex(r"\s+"));
-    string boardState = ss[0];
-    string sideToMove = ss[1];
-    string piecesInHand = ss[2];
-    string moveCount = ss[3];
+    if (ss[0] != "sfen") {
+        throw new StringException(sfen);
+    }
+    string boardState = ss[1];
+    string sideToMove = ss[2];
+    string piecesInHand = ss[3];
+    string moveCount = ss[4];
+
+    p.moveCount = to!short(moveCount);
 
     // 手番
     if (sideToMove != "b" && sideToMove != "w") {

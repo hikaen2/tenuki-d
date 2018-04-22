@@ -126,6 +126,8 @@ private string readLine(ref SocketStream s)
 {
     string str = to!string(s.readLine());
     stderr.writeln(str);
+    RecvLog.writeln(str);
+    RecvLog.flush();
     if (str == "") {
         throw new Exception("connection lost");
     }
@@ -137,4 +139,14 @@ private RegexMatch!string readLineUntil(ref SocketStream s, Regex!char re)
     RegexMatch!string m;
     for (string str = readLine(s); (m = str.match(re)).empty; str = readLine(s)) {}
     return m;
+}
+
+private File RecvLog;
+
+static this() {
+    RecvLog = File("recv.log", "w");
+}
+
+static ~this() {
+    RecvLog.close();
 }

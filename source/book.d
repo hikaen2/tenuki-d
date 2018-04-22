@@ -72,12 +72,12 @@ private move_t parseUsi(string usi)
         "9a":91, "9b":92, "9c":93, "9d":94, "9e":95, "9f":96, "9g":97, "9h":98, "9i":99,
     ];
 
-    auto m = usi.matchFirst(r"(\D)\*(\d\D)");
+    auto m = usi.matchFirst(r"^(\D)\*(\d\D)");
     if (!m.empty) {
         return createDrop(TYPE[m[1]], ADDRESS[m[2]]);
     }
 
-    m = usi.matchFirst(r"(\d\D)(\d\D)(\+?)");
+    m = usi.matchFirst(r"^(\d\D)(\d\D)(\+?)");
     int from = ADDRESS[m[1]];
     int to = ADDRESS[m[2]];
     bool promote = (m[3] == "+");

@@ -19,6 +19,8 @@ private move_t[MASK + 1] TT = 0;
 private StopWatch SW;
 private immutable SECOND = 10;
 
+int remainSecounds = 300;
+
 int ponder(const ref Position p, move_t[] out_pv)
 {
     move_t m = 0;
@@ -37,19 +39,12 @@ int ponder(const ref Position p, move_t[] out_pv)
     if (p.toSfen in BOOK) {
         out_pv[0] = BOOK[p.toSfen][ uniform(0, BOOK[p.toSfen].length) ];
         out_pv[1] = 0;
-        stderr.writeln(out_pv[0].toString(p));
         return 0;
     }
 
     SW = StopWatch(AutoStart.yes);
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
-        Position q = p;
         p.search0(depth, out_pv, score);
-        for (int i = 0; out_pv[i] != 0; i++) {
-            stderr.writef("%s ", out_pv[i].toString(q));
-            q = q.doMove(out_pv[i]);
-        }
-        stderr.write("\n");
     }
     if (score <= -15000) {
         out_pv[0] = Move.TORYO;
@@ -62,8 +57,13 @@ int ponder(const ref Position p, move_t[] out_pv)
 
 /**
  * ルート局面用のsearch
- * 候補をstderrに出力する
- * returns: 評価値
+ * 読み筋をstderrに出力する
+ * Params:
+ *      p         = 局面
+ *      depth     = 探索深さ(>=1)
+ *      out_pv    = 読み筋を出力する
+ *      out_score = 評価値を出力する
+ * Returns: 評価値
  */
 private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
 {
@@ -85,8 +85,14 @@ private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
     stderr.writef("%d: ", depth);
     foreach (move_t move; moves[0..length]) {
         int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
-        if (a < value && SW.peek().total!"seconds" < SECOND) {
+        if (SW.peek().total!"seconds" >= SECOND) {
+            break;
+        }
+        if (a < value) {
             a = value;
+            if (out_pv[0] != move) {
+                SW.reset();
+            }
             out_pv[0] = move;
             for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
             stderr.writef("%s(%d) ", move.toString(p), value);
@@ -94,6 +100,11 @@ private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
         }
     }
     stderr.write(" : ");
+    Position q = p;
+    for (int i = 0; out_pv[i] != 0; q = q.doMove(out_pv[i]), i++) {
+        stderr.writef("%s ", out_pv[i].toString(q));
+    }
+    stderr.write("\n");
     return a;
 }
 

@@ -6,7 +6,7 @@ import std.stdio;
 import std.string;
 import std.regex;
 
-move_t[][string] BOOK;;
+immutable move_t[][string] BOOK;
 
 static this()
 {

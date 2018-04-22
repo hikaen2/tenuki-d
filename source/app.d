@@ -82,17 +82,15 @@ int main(string[] args)
         if (p.sideToMove == mySide) {
             move_t[64] pv;
             int score = p.ponder(pv);
-            string wk;
-            {
+            if (pv[0] == Move.TORYO) {
+                writeLine(s, pv[0].toString(p));
+            } else if (enhanced) {
+                string wk;
                 Position q = p.doMove(pv[0]);
                 for (int i = 1; pv[i] != 0; i++) {
                     wk ~= format("%s ", pv[i].toString(q));
                     q = q.doMove(pv[i]);
                 }
-            }
-            if (pv[0] == Move.TORYO) {
-                writeLine(s, pv[0].toString(p));
-            } else if (enhanced) {
                 writeLine(s, format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Side.BLACK ? score : -score), wk));
             } else {
                 writeLine(s, format("%s", pv[0].toString(p)));
@@ -115,7 +113,6 @@ int main(string[] args)
         stderr.writeln(toString(m, p));
         p = p.doMove(m);
         stderr.writeln(toString(p));
-
     }
 }
 

@@ -98,6 +98,7 @@ int main(string[] args)
         }
 
         move_t m;
+        int second;
         for (bool retry = true; retry; ) {
             try {
                 string line = readLine(s);
@@ -105,14 +106,19 @@ int main(string[] args)
                     return 0;
                 }
                 m = parseMove(line, p);
+                second = to!int(line.matchFirst(r",T(\d+)")[1]);
                 retry = false;
             } catch (Exception e) {
                 retry = true;
             }
         }
+        if (p.sideToMove == mySide) {
+            player.remainSeconds -= second;
+        }
         stderr.writeln(toString(m, p));
         p = p.doMove(m);
         stderr.writeln(toString(p));
+        stderr.writeln(player.remainSeconds);
     }
 }
 

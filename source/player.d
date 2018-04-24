@@ -4,6 +4,7 @@ import text;
 import position;
 import movegen;
 import eval;
+import core.stdc.string;
 import std.random;
 import std.stdio;
 import std.algorithm.comparison;
@@ -17,23 +18,22 @@ private immutable MASK = 0xffffff;  // 1024 * 1024 * 16 - 1
 private move_t[MASK + 1] TT = 0;
 
 private StopWatch SW;
-private immutable SECOND = 10;
+private int SECOND = 20;
 
-int remainSecounds = 300;
+int remainSeconds = 300;
 
 int ponder(const ref Position p, move_t[] out_pv)
 {
+
+    SECOND = min(20, remainSeconds);
+    remainSeconds += 10;
+
     move_t m = 0;
     int score = 0;
 
     // for (int depth = 1; depth <= 6; depth++) {
     //     Position q = p;
     //     p.search0(depth, out_pv, score);
-    //     for (int i = 0; out_pv[i] != 0; i++) {
-    //         stderr.writef("%s ", out_pv[i].toString(q));
-    //         q = q.doMove(out_pv[i]);
-    //     }
-    //     stderr.write("\n");
     // }
 
     if (p.toSfen in BOOK) {
@@ -90,11 +90,11 @@ private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
         }
         if (a < value) {
             a = value;
-            if (out_pv[0] != move) {
-                SW.reset();
-            }
+            // if (out_pv[0] != move) {
+            //     SW.reset();
+            // }
             out_pv[0] = move;
-            for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
+            memcpy(&out_pv[1], &pv[0], 63);
             stderr.writef("%s(%d) ", move.toString(p), value);
             out_score = value;
         }
@@ -134,6 +134,10 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
     }
     COUNT++;
 
+    // if (!p.inCheck && depth + 1 <= 3 && b <= p.staticValue - 200) {
+    //     return b;
+    // }
+
     move_t[64] pv;
 
     if (doNullMove /* && !p.inCheck */ ) {
@@ -154,7 +158,7 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
                     return b;
                 }
                 out_pv[0] = move;
-                for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
+                memcpy(&out_pv[1], &pv[0], 63);
             }
         }
     }
@@ -173,7 +177,7 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
                 return b;
             }
             out_pv[0] = move;
-            for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
+            memcpy(&out_pv[1], &pv[0], 63);
         }
     }
     return a;
@@ -209,7 +213,7 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] out_pv)
                     return b;
                 }
                 out_pv[0] = move;
-                for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
+                memcpy(&out_pv[1], &pv[0], 63);
             }
         }
     }
@@ -225,7 +229,7 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] out_pv)
                 return b;
             }
             out_pv[0] = move;
-            for (int i = 0; (out_pv[i + 1] = pv[i]) != 0; i++) {}
+            memcpy(&out_pv[1], &pv[0], 63);
         }
     }
     return a;

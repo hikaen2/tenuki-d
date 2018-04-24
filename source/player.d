@@ -22,7 +22,7 @@ private int SECOND = 20;
 
 int remainSeconds = 300;
 
-int ponder(const ref Position p, move_t[] out_pv)
+int ponder(const ref Position p, move_t[] outPv)
 {
 
     SECOND = min(20, remainSeconds);
@@ -33,22 +33,22 @@ int ponder(const ref Position p, move_t[] out_pv)
 
     // for (int depth = 1; depth <= 6; depth++) {
     //     Position q = p;
-    //     p.search0(depth, out_pv, score);
+    //     p.search0(depth, outPv, score);
     // }
 
     if (p.toSfen in BOOK) {
-        out_pv[0] = BOOK[p.toSfen][ uniform(0, BOOK[p.toSfen].length) ];
-        out_pv[1] = 0;
+        outPv[0] = BOOK[p.toSfen][ uniform(0, BOOK[p.toSfen].length) ];
+        outPv[1] = 0;
         return 0;
     }
 
     SW = StopWatch(AutoStart.yes);
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
-        p.search0(depth, out_pv, score);
+        p.search0(depth, outPv, score);
     }
     if (score <= -15000) {
-        out_pv[0] = Move.TORYO;
-        out_pv[1] = 0;
+        outPv[0] = Move.TORYO;
+        outPv[1] = 0;
     }
 
     writeln(COUNT);
@@ -59,13 +59,13 @@ int ponder(const ref Position p, move_t[] out_pv)
  * ルート局面用のsearch
  * 読み筋をstderrに出力する
  * Params:
- *      p         = 局面
- *      depth     = 探索深さ(>=1)
- *      out_pv    = 読み筋を出力する
- *      out_score = 評価値を出力する
+ *      p        = 局面
+ *      depth    = 探索深さ(>=1)
+ *      outPv    = 読み筋を出力する
+ *      outScore = 評価値を出力する
  * Returns: 評価値
  */
-private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
+private int search0(Position p, int depth, move_t[] outPv, ref int outScore)
 {
     move_t[64] pv;
     COUNT++;
@@ -76,8 +76,8 @@ private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
         return 0;
     }
     randomShuffle(moves[0..length]);
-    if (out_pv[0] != 0) {
-        swap(moves[0], moves[0..length].find(out_pv[0])[0]);
+    if (outPv[0] != 0) {
+        swap(moves[0], moves[0..length].find(outPv[0])[0]);
     }
 
     int a = short.min;
@@ -90,19 +90,19 @@ private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
         }
         if (a < value) {
             a = value;
-            // if (out_pv[0] != move) {
+            // if (outPv[0] != move) {
             //     SW.reset();
             // }
-            out_pv[0] = move;
-            memcpy(&out_pv[1], &pv[0], 63);
+            outPv[0] = move;
+            memcpy(&outPv[1], &pv[0], 63);
             stderr.writef("%s(%d) ", move.toString(p), value);
-            out_score = value;
+            outScore = value;
         }
     }
     stderr.write(" : ");
     Position q = p;
-    for (int i = 0; out_pv[i] != 0; q = q.doMove(out_pv[i]), i++) {
-        stderr.writef("%s ", out_pv[i].toString(q));
+    for (int i = 0; outPv[i] != 0; q = q.doMove(outPv[i]), i++) {
+        stderr.writef("%s ", outPv[i].toString(q));
     }
     stderr.write("\n");
     return a;
@@ -116,11 +116,11 @@ private int search0(Position p, int depth, move_t[] out_pv, ref int out_score)
  * @param b 探索済みmaxノードの最小値
  * @return 評価値
  */
-private int search(Position p, int depth, int a, const int b, move_t[] out_pv, bool doNullMove = true)
+private int search(Position p, int depth, int a, const int b, move_t[] outPv, bool doNullMove = true)
 {
     assert(a < b);
 
-    out_pv[0] = 0;
+    outPv[0] = 0;
     if (SW.peek().total!"seconds" >= SECOND) {
         return 0;
     }
@@ -130,7 +130,7 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
     }
 
     if (depth <= 0) {
-        return p.qsearch(depth + 4, a, b, out_pv);
+        return p.qsearch(depth + 4, a, b, outPv);
     }
     COUNT++;
 
@@ -157,8 +157,8 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
                 if (b <= a) {
                     return b;
                 }
-                out_pv[0] = move;
-                memcpy(&out_pv[1], &pv[0], 63);
+                outPv[0] = move;
+                memcpy(&outPv[1], &pv[0], 63);
             }
         }
     }
@@ -176,8 +176,8 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
             if (b <= a) {
                 return b;
             }
-            out_pv[0] = move;
-            memcpy(&out_pv[1], &pv[0], 63);
+            outPv[0] = move;
+            memcpy(&outPv[1], &pv[0], 63);
         }
     }
     return a;
@@ -186,12 +186,12 @@ private int search(Position p, int depth, int a, const int b, move_t[] out_pv, b
 /**
  * 静止探索
  */
-private int qsearch(Position p, int depth, int a, const int b, move_t[] out_pv)
+private int qsearch(Position p, int depth, int a, const int b, move_t[] outPv)
 {
     assert(a < b);
 
     COUNT++;
-    out_pv[0] = 0;
+    outPv[0] = 0;
     move_t[64] pv;
 
     if (depth <= 0) {
@@ -212,8 +212,8 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] out_pv)
                 if (b <= a) {
                     return b;
                 }
-                out_pv[0] = move;
-                memcpy(&out_pv[1], &pv[0], 63);
+                outPv[0] = move;
+                memcpy(&outPv[1], &pv[0], 63);
             }
         }
     }
@@ -228,8 +228,8 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] out_pv)
             if (b <= a) {
                 return b;
             }
-            out_pv[0] = move;
-            memcpy(&out_pv[1], &pv[0], 63);
+            outPv[0] = move;
+            memcpy(&outPv[1], &pv[0], 63);
         }
     }
     return a;

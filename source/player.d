@@ -4,7 +4,6 @@ import text;
 import position;
 import movegen;
 import eval;
-import core.stdc.string;
 import std.random;
 import std.stdio;
 import std.algorithm.comparison;
@@ -94,7 +93,7 @@ private int search0(Position p, int depth, move_t[] outPv, ref int outScore)
             //     SW.reset();
             // }
             outPv[0] = move;
-            memcpy(&outPv[1], &pv[0], 63);
+            outPv[1..64] = pv[0..63];
             stderr.writef("%s(%d) ", move.toString(p), value);
             outScore = value;
         }
@@ -158,7 +157,7 @@ private int search(Position p, int depth, int a, const int b, move_t[] outPv, bo
                     return b;
                 }
                 outPv[0] = move;
-                memcpy(&outPv[1], &pv[0], 63);
+                outPv[1..64] = pv[0..63];
             }
         }
     }
@@ -177,7 +176,7 @@ private int search(Position p, int depth, int a, const int b, move_t[] outPv, bo
                 return b;
             }
             outPv[0] = move;
-            memcpy(&outPv[1], &pv[0], 63);
+            outPv[1..64] = pv[0..63];
         }
     }
     return a;
@@ -213,7 +212,7 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] outPv)
                     return b;
                 }
                 outPv[0] = move;
-                memcpy(&outPv[1], &pv[0], 63);
+                outPv[1..64] = pv[0..63];
             }
         }
     }
@@ -229,7 +228,7 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] outPv)
                 return b;
             }
             outPv[0] = move;
-            memcpy(&outPv[1], &pv[0], 63);
+            outPv[1..64] = pv[0..63];
         }
     }
     return a;

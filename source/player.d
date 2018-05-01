@@ -28,12 +28,13 @@ int ponder(const ref Position p, move_t[] outPv)
     remainSeconds += 10;
 
     move_t m = 0;
-    int score = 0;
+    int value = 0;
 
     // for (int depth = 1; depth <= 6; depth++) {
     //     Position q = p;
-    //     p.search0(depth, outPv, score);
+    //     p.search0(depth, outPv, value);
     // }
+    // writeln(COUNT);
 
     if (p.toSfen in BOOK) {
         outPv[0] = BOOK[p.toSfen][ uniform(0, BOOK[p.toSfen].length) ];
@@ -41,17 +42,28 @@ int ponder(const ref Position p, move_t[] outPv)
         return 0;
     }
 
+    move_t[64][] pvs;
+    move_t[64] pv;
     SW = StopWatch(AutoStart.yes);
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
-        p.search0(depth, outPv, score);
-    }
-    if (score <= -15000) {
-        outPv[0] = Move.TORYO;
-        outPv[1] = 0;
+        p.search0(depth, pv, value);
+        move_t[64] v = pv;
+        if (value <= -15000) {
+            v[0] = Move.TORYO;
+            v[1] = 0;
+        }
+        pvs ~= v;
     }
 
-    writeln(COUNT);
-    return score;
+    foreach_reverse (ref v; pvs[1..$]) {
+        if (v[0] != Move.TORYO) {
+            outPv[0..64] = v;
+            return value;
+        }
+    }
+    outPv[0] = Move.TORYO;
+    outPv[1] = 0;
+    return value;
 }
 
 /**
@@ -133,9 +145,9 @@ private int search(Position p, int depth, int a, const int b, move_t[] outPv, bo
     }
     COUNT++;
 
-    // if (!p.inCheck && depth + 1 <= 3 && b <= p.staticValue - 200) {
-    //     return b;
-    // }
+    if (!p.inCheck && depth + 1 <= 3 && b <= p.staticValue - 300) {
+        return b;
+    }
 
     move_t[64] pv;
 

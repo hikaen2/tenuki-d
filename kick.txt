@@ -16,6 +16,9 @@ sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL b - 3
 2g2f none 0 0 0
 6g6f none 0 0 0
 8h2b none 0 0 0
+sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/7P1/PPPPPPP1P/1B5R1/LNSGKGSNL b - 3
+7g7f none 0 0 0
+2f2e none 0 0 0
 sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P4P1/PP1PPPP1P/1B5R1/LNSGKGSNL w - 4
 4c4d none 0 0 0
 8c8d none 0 0 0

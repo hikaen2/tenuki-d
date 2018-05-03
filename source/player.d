@@ -19,7 +19,7 @@ private move_t[MASK + 1] TT = 0;
 private StopWatch SW;
 private int SECOND = 20;
 
-int remainSeconds = 300;
+int remainSeconds = 600;
 
 int ponder(const ref Position p, move_t[] outPv)
 {

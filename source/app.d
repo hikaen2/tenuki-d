@@ -36,6 +36,8 @@ private void test()
     // stdout.writeln(p.toString());
 }
 
+Socket sock;
+
 int main(string[] args)
 {
     if (args.length >= 2 && args[1] == "test") {
@@ -65,7 +67,7 @@ int main(string[] args)
     const string password = args[3];
 
     stdout.writefln("Connecting to %s port %s.", hostname, port);
-    Socket sock = new TcpSocket(new InternetAddress(hostname, port));
+    sock = new TcpSocket(new InternetAddress(hostname, port));
     scope(exit) sock.close();
 
     SocketStream s = new SocketStream(sock);
@@ -124,7 +126,8 @@ int main(string[] args)
 
 private void writeLine(ref SocketStream s, string str)
 {
-    s.writeLine(str);
+    sock.send(str ~ "\n");
+    //s.writeLine(str);
     stderr.writeln(format(">%s", str));
 }
 

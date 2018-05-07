@@ -25,12 +25,25 @@ move_t parseMove(string s, const ref Position p)
         "RY": Type.PROMOTED_ROOK,
     ];
 
+    immutable int[] ADDRESS = [
+         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+         -1,  0,  1,  2,  3,  4,  5,  6,  7,  8,
+         -1,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+         -1, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+         -1, 27, 28, 29, 30, 31, 32, 33, 34, 35,
+         -1, 36, 37, 38, 39, 40, 41, 42, 43, 44,
+         -1, 45, 46, 47, 48, 49, 50, 51, 52, 53,
+         -1, 54, 55, 56, 57, 58, 59, 60, 61, 62,
+         -1, 63, 64, 65, 66, 67, 68, 69, 70, 71,
+         -1, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+    ];
+
     auto m = s.matchFirst(r"(-|\+)(\d{2})(\d{2})(\w{2})");
-    int from = to!int(m[2]);
-    int to = to!int(m[3]);
+    int from = ADDRESS[to!int(m[2])];
+    int to = ADDRESS[to!int(m[3])];
     type_t t = DIC[m[4]];
 
-    if (from == 0) {
+    if (from == -1) {
         return createDrop(t, to); // fromが0なら駒打ち
     } else if (t != p.squares[from].type()) {
         return createPromote(from, to); // 成る
@@ -91,7 +104,7 @@ Position parsePosition(string sfen)
     ];
 
     Position p;
-    p.squares = Square.WALL;
+    p.squares = Square.EMPTY;
 
     string[] ss = sfen.strip().split(regex(r"\s+"));
     if (ss[0] != "sfen") {
@@ -116,9 +129,9 @@ Position parsePosition(string sfen)
     }
     boardState = boardState.replace("/", "");
     auto m = boardState.matchAll(r"\+?.");
-    for (int rank = 1; rank <= 9; rank++) {
-        for (int file = 9; file >= 1; file--) {
-            p.squares[file * 10 + rank] = TO_SQUARE[m.front.hit];
+    for (int rank = 0; rank <= 8; rank++) {
+        for (int file = 8; file >= 0; file--) {
+            p.squares[file * 9 + rank] = TO_SQUARE[m.front.hit];
             m.popFront();
         }
     }
@@ -135,7 +148,7 @@ Position parsePosition(string sfen)
 
     // ハッシュ値
     p.hash = 0;
-    for (int i = 11; i <= 99; i++) {
+    for (int i = SQ11; i <= SQ99; i++) {
         p.hash ^= HASH_SEED_BOARD[ p.squares[i] ][i];
     }
     for (side_t s = Side.BLACK; s <= Side.WHITE; s++) {

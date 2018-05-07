@@ -14,12 +14,24 @@ string toString(move_t m, const ref Position p)
         return "%TORYO";
     }
 
+    immutable ubyte[] NUM = [
+        11, 12, 13, 14, 15, 16, 17, 18, 19,
+        21, 22, 23, 24, 25, 26, 27, 28, 29,
+        31, 32, 33, 34, 35, 36, 37, 38, 39,
+        41, 42, 43, 44, 45, 46, 47, 48, 49,
+        51, 52, 53, 54, 55, 56, 57, 58, 59,
+        61, 62, 63, 64, 65, 66, 67, 68, 69,
+        71, 72, 73, 74, 75, 76, 77, 78, 79,
+        81, 82, 83, 84, 85, 86, 87, 88, 89,
+        91, 92, 93, 94, 95, 96, 97, 98, 99,
+    ];
+
     //    歩,   香,   桂,   銀,  角,    飛,   金,   玉,   と, 成香, 成桂, 成銀,   馬,   龍,
     immutable string[] CSA = [
         "FU", "KY", "KE", "GI", "KA", "HI", "KI", "OU", "TO", "NY", "NK", "NG", "UM", "RY",
     ];
-    int from = m.isDrop ? 0 : m.from;
-    int to = m.to;
+    int from = m.isDrop ? 0 : NUM[m.from];
+    int to = NUM[m.to];
     type_t t = m.isDrop ? m.from : m.isPromote ? p.squares[m.from].promote.type : p.squares[m.from].type;
     return format("%s%02d%02d%s", (p.sideToMove == Side.BLACK ? "+" : "-"), from, to, CSA[t]);
 }
@@ -41,10 +53,10 @@ string toSfen(const ref Position p)
     ];
 
     string[] lines;
-    for (int rank = 1; rank <= 9; rank++) {
+    for (int rank = 0; rank <= 8; rank++) {
         string line;
-        for (int file = 9; file >= 1; file--) {
-            line ~= TO_SFEN[p.squares[file * 10 + rank]];
+        for (int file = 8; file >= 0; file--) {
+            line ~= TO_SFEN[p.squares[file * 9 + rank]];
         }
         lines ~= line;
     }
@@ -104,12 +116,12 @@ string toKi2(const ref Position p)
     s ~= format("後手の持駒：%s\n", (hand[Side.WHITE] == "" ? "なし" : hand[Side.WHITE]));
     s ~= "  ９ ８ ７ ６ ５ ４ ３ ２ １\n";
     s ~= "+---------------------------+\n";
-    for (int rank = 1; rank <= 9; rank++) {
+    for (int rank = 0; rank <= 8; rank++) {
         s ~= "|";
-        for (int file = 9; file >= 1; file--) {
-            s ~= BOARD[p.squares[file * 10 + rank]];
+        for (int file = 8; file >= 0; file--) {
+            s ~= BOARD[p.squares[file * 9 + rank]];
         }
-        s ~= format("|%s\n", NUM[rank]);
+        s ~= format("|%s\n", NUM[rank + 1]);
     }
     s ~= "+---------------------------+\n";
     s ~= format("先手の持駒：%s\n", (hand[Side.BLACK] == "" ? "なし" : hand[Side.BLACK]));

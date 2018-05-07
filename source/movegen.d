@@ -7,7 +7,7 @@ bool isCheck(move_t m, const ref Position p)
 {
     square_t sq = (p.sideToMove << 4) | (m.isDrop ? m.from : m.isPromote ? p.squares[m.from].promote : p.squares[m.from]);
     foreach (dir_t d; DIRECTIONS[sq]) {
-        for (int to = m.to + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove);  to += d.value) {
+        for (int to = m.to + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove));  to += d.value) {
             if (p.squares[to].type == Type.KING) {
                 return true;
             }
@@ -25,12 +25,12 @@ bool isCheck(move_t m, const ref Position p)
 bool inCheck(Position p)
 {
     // 相手の駒を動かして自玉が取られるようなら王手をかけられている
-    for (int from = 11; from <= 99; from++) {
+    for (int from = SQ11; from <= SQ99; from++) {
         if (!p.squares[from].isEnemy(p.sideToMove)) {
             continue;
         }
         foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
-            for (int to = from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isFriend(p.sideToMove); to += d.value) {
+            for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isFriend(p.sideToMove)); to += d.value) {
                 if (p.squares[to].type == Type.KING) {
                     return true;
                 }
@@ -51,14 +51,14 @@ bool isValid(move_t m, const ref Position p)
     if (m.isDrop) {
         return !m.isPromote
             && m.from < Type.KING
-            && 11 <= m.to && m.to <= 99
+            && SQ11 <= m.to && m.to <= SQ99
             && p.piecesInHand[p.sideToMove][m.from] > 0
             && p.squares[m.to] == Square.EMPTY
             && RANK_MIN[p.sideToMove << 4 | m.from] <= RANK_OF[m.to]
             && RANK_MAX[p.sideToMove << 4 | m.from] >= RANK_OF[m.to];
     }
 
-    if (m.from < 11 || 99 < m.from || m.to < 11 || 99 < m.to) {
+    if (m.from < SQ11 || SQ99 < m.from || m.to < SQ11 || SQ99 < m.to) {
         return false;
     }
     square_t sq_from = p.squares[m.from];
@@ -73,7 +73,7 @@ bool isValid(move_t m, const ref Position p)
         return false;
     }
     foreach (dir_t d; DIRECTIONS[sq_from]) {
-        for (int to = m.from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove); to += d.value) {
+        for (int to = m.from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove)); to += d.value) {
             if (to == m.to && RANK_MIN[sq_from] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[sq_from]) {
                 return true;
             }
@@ -97,12 +97,12 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
 
     // 盤上の駒を動かす
     int length = 0;
-    for (int from = 11; from <= 99; from++) {
+    for (int from = SQ11; from <= SQ99; from++) {
         if (!p.squares[from].isFriend(p.sideToMove)) {
             continue;
         }
         foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
-            for (int to = from + d.value; p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove); to += d.value) {
+            for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove)); to += d.value) {
                 if (p.squares[to].isEnemy(p.sideToMove)) {
                     if (canPromote(p.squares[from], from, to)) {
                         out_moves[length++] = createPromote(from, to);
@@ -140,13 +140,13 @@ int legalMoves(const ref Position p, move_t[] out_moves)
     int length = p.capturelMoves(out_moves);
 
     // 盤上の駒を動かす
-    for (int from = 11; from <= 99; from++) {
+    for (int from = SQ11; from <= SQ99; from++) {
         if (!p.squares[from].isFriend(p.sideToMove)) {
             continue;
         }
         pawned[FILE_OF[from]] |= (p.squares[from].type == Type.PAWN);
         foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
-            for (int to = from + d.value; p.squares[to] == Square.EMPTY; to += d.value) {
+            for (int to = from + d.value; !isOverBound(to - d.value, to) && p.squares[to] == Square.EMPTY; to += d.value) {
                 if (canPromote(p.squares[from], from, to)) {
                     out_moves[length++] = createPromote(from, to);
                     if (p.squares[from].type == Type.SILVER
@@ -164,7 +164,7 @@ int legalMoves(const ref Position p, move_t[] out_moves)
     }
 
     // 持ち駒を打つ
-    for (int to = 11; to <= 99; to++) {
+    for (int to = SQ11; to <= SQ99; to++) {
         if (p.squares[to] != Square.EMPTY) {
             continue;
         }
@@ -201,7 +201,7 @@ private immutable dir_t[][] DIRECTIONS = [
     [ Dir.FNE, Dir.FNW, Dir.FSE, Dir.FSW, Dir.N,  Dir.E,  Dir.W,  Dir.S  ], // 12:B_PROMOTED_BISHOP
     [ Dir.FN,  Dir.FE,  Dir.FW,  Dir.FS,  Dir.NE, Dir.NW, Dir.SE, Dir.SW ], // 13:B_PROMOTED_ROOK
     [],                                                                     // 14:EMPTY
-    [],                                                                     // 15:WALL
+    [],                                                                     // 15:
     [ Dir.S  ],                                                             // 16:W_PAWN
     [ Dir.FS ],                                                             // 17:W_LANCE
     [ Dir.SSW, Dir.SSE ],                                                   // 18:W_KNIGHT
@@ -229,27 +229,30 @@ private immutable ubyte[] RANK_MAX = [
 ];
 
 private immutable ubyte[] FILE_OF = [
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-    3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-    5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-    6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-    7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-    8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-    9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+    1, 1, 1, 1, 1, 1, 1, 1, 1,
+    2, 2, 2, 2, 2, 2, 2, 2, 2,
+    3, 3, 3, 3, 3, 3, 3, 3, 3,
+    4, 4, 4, 4, 4, 4, 4, 4, 4,
+    5, 5, 5, 5, 5, 5, 5, 5, 5,
+    6, 6, 6, 6, 6, 6, 6, 6, 6,
+    7, 7, 7, 7, 7, 7, 7, 7, 7,
+    8, 8, 8, 8, 8, 8, 8, 8, 8,
+    9, 9, 9, 9, 9, 9, 9, 9, 9,
 ];
 
 private immutable ubyte[] RANK_OF = [
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
+    1, 2, 3, 4, 5, 6, 7, 8, 9,
 ];
+
+private bool isOverBound(int from, int to)
+{
+    return to < SQ11 || SQ99 < to || (RANK_OF[from] == 1 && RANK_OF[to] == 9) || (RANK_OF[from] == 9 && RANK_OF[to] == 1);
+}

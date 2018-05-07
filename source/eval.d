@@ -63,10 +63,10 @@ short staticValue(const ref Position p)
     int material = 0;
     int bk = 0;
     int wk = 0;
-    for (int i = 11; i <= 99; i++) {
+    for (int i = SQ11; i <= SQ99; i++) {
         material += P_VALUE[p.squares[i]];
-        bk = (p.squares[i] == Square.B_KING ? ADDRESS_OF[i      ] : bk);
-        wk = (p.squares[i] == Square.W_KING ? ADDRESS_OF[110 - i] : wk);
+        bk = (p.squares[i] == Square.B_KING ? ADDRESS_OF[i       ] : bk);
+        wk = (p.squares[i] == Square.W_KING ? ADDRESS_OF[SQ99 - i] : wk);
     }
     for (int t = Type.PAWN; t <= Type.GOLD; t++) {
         material += (p.piecesInHand[Side.BLACK][t] - p.piecesInHand[Side.WHITE][t]) * P_VALUE[t];
@@ -76,10 +76,10 @@ short staticValue(const ref Position p)
     int sum = 0;
     short[40] list = void;
     int nlist = 0;
-    for (int i = 11; i <= 99; i++) {
+    for (int i = SQ11; i <= SQ99; i++) {
         if ((p.squares[i].isBlack || p.squares[i].isWhite) && p.squares[i].type != Type.KING) {
-            sum += FV_KP[bk][ KP_OFFSET[p.squares[i]             ] + ADDRESS_OF[i      ] ];
-            sum -= FV_KP[wk][ KP_OFFSET[p.squares[i] ^ 0b00010000] + ADDRESS_OF[110 - i] ];
+            sum += FV_KP[bk][ KP_OFFSET[p.squares[i]             ] + ADDRESS_OF[i       ] ];
+            sum -= FV_KP[wk][ KP_OFFSET[p.squares[i] ^ 0b00010000] + ADDRESS_OF[SQ99 - i] ];
             list[nlist++] = cast(short)(PP_OFFSET[p.squares[i]] + ADDRESS_OF[i]);
         }
     }
@@ -216,14 +216,13 @@ private immutable short[] KP_OFFSET = [
  * key: Position.squaresのインデックス
  */
 private immutable ubyte[] ADDRESS_OF = [
-     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-     0,  0,  9, 18, 27, 36, 45, 54, 63, 72,
-     0,  1, 10, 19, 28, 37, 46, 55, 64, 73,
-     0,  2, 11, 20, 29, 38, 47, 56, 65, 74,
-     0,  3, 12, 21, 30, 39, 48, 57, 66, 75,
-     0,  4, 13, 22, 31, 40, 49, 58, 67, 76,
-     0,  5, 14, 23, 32, 41, 50, 59, 68, 77,
-     0,  6, 15, 24, 33, 42, 51, 60, 69, 78,
-     0,  7, 16, 25, 34, 43, 52, 61, 70, 79,
-     0,  8, 17, 26, 35, 44, 53, 62, 71, 80,
+     0,  9, 18, 27, 36, 45, 54, 63, 72,
+     1, 10, 19, 28, 37, 46, 55, 64, 73,
+     2, 11, 20, 29, 38, 47, 56, 65, 74,
+     3, 12, 21, 30, 39, 48, 57, 66, 75,
+     4, 13, 22, 31, 40, 49, 58, 67, 76,
+     5, 14, 23, 32, 41, 50, 59, 68, 77,
+     6, 15, 24, 33, 42, 51, 60, 69, 78,
+     7, 16, 25, 34, 43, 52, 61, 70, 79,
+     8, 17, 26, 35, 44, 53, 62, 71, 80,
 ];

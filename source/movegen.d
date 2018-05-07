@@ -3,21 +3,21 @@ import types;
 /**
  * まだ指していない指し手mが局面pにおいて王手をかける手かどうかを返す
  */
-bool isCheck(Move m, const ref Position p)
-{
-    square_t sq = (p.sideToMove << 4) | (m.isDrop ? m.from : m.isPromote ? p.squares[m.from].promote : p.squares[m.from]);
-    foreach (Dir d; DIRECTIONS[sq]) {
-        for (int to = m.to + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove));  to += d.value) {
-            if (p.squares[to].type == Type.KING) {
-                return true;
-            }
-            if (!d.isFly) {
-                break;
-            }
-        }
-    }
-    return false;
-}
+// bool isCheck(Move m, const ref Position p)
+// {
+//     Square sq = (p.sideToMove << 4) | (m.isDrop ? m.from : m.isPromote ? p.squares[m.from].promote : p.squares[m.from]);
+//     foreach (Dir d; DIRECTIONS[sq]) {
+//         for (int to = m.to + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove));  to += d.value) {
+//             if (p.squares[to].type == Type.KING) {
+//                 return true;
+//             }
+//             if (!d.isFly) {
+//                 break;
+//             }
+//         }
+//     }
+//     return false;
+// }
 
 /**
  * 局面pにおいて手番のある側が王手をかけられているかどうかを返す
@@ -29,7 +29,7 @@ bool inCheck(Position p)
         if (!p.squares[from].isEnemy(p.sideToMove)) {
             continue;
         }
-        foreach (Dir d; DIRECTIONS[p.squares[from]]) {
+        foreach (Dir d; DIRECTIONS[p.squares[from].i]) {
             for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isFriend(p.sideToMove)); to += d.value) {
                 if (p.squares[to].type == Type.KING) {
                     return true;
@@ -61,8 +61,8 @@ bool isValid(Move m, const ref Position p)
     if (m.from < SQ11 || SQ99 < m.from || m.to < SQ11 || SQ99 < m.to) {
         return false;
     }
-    square_t sq_from = p.squares[m.from];
-    square_t sq_to = p.squares[m.to];
+    Square sq_from = p.squares[m.from];
+    Square sq_to = p.squares[m.to];
     if (!sq_from.isFriend(p.sideToMove)) {
         return false;
     }
@@ -72,9 +72,9 @@ bool isValid(Move m, const ref Position p)
     if (m.isPromote && !canPromote(sq_from, m.from, m.to)) {
         return false;
     }
-    foreach (Dir d; DIRECTIONS[sq_from]) {
+    foreach (Dir d; DIRECTIONS[sq_from.i]) {
         for (int to = m.from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove)); to += d.value) {
-            if (to == m.to && RANK_MIN[sq_from] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[sq_from]) {
+            if (to == m.to && RANK_MIN[sq_from.i] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[sq_from.i]) {
                 return true;
             }
             if (!d.isFly || p.squares[to].isEnemy(p.sideToMove)) {
@@ -101,7 +101,7 @@ int capturelMoves(const ref Position p, Move[] outMoves)
         if (!p.squares[from].isFriend(p.sideToMove)) {
             continue;
         }
-        foreach (Dir d; DIRECTIONS[p.squares[from]]) {
+        foreach (Dir d; DIRECTIONS[p.squares[from].i]) {
             for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove)); to += d.value) {
                 if (p.squares[to].isEnemy(p.sideToMove)) {
                     if (canPromote(p.squares[from], from, to)) {
@@ -110,7 +110,7 @@ int capturelMoves(const ref Position p, Move[] outMoves)
                             || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type == Type.LANCE || p.squares[from].type == Type.KNIGHT))) {
                             outMoves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
                         }
-                    } else if (RANK_MIN[p.squares[from]] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from]]) {
+                    } else if (RANK_MIN[p.squares[from].i] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from].i]) {
                         outMoves[length++] = createMove(from, to);
                     }
                     break;
@@ -145,7 +145,7 @@ int legalMoves(const ref Position p, Move[] outMoves)
             continue;
         }
         pawned[FILE_OF[from]] |= (p.squares[from].type == Type.PAWN);
-        foreach (Dir d; DIRECTIONS[p.squares[from]]) {
+        foreach (Dir d; DIRECTIONS[p.squares[from].i]) {
             for (int to = from + d.value; !isOverBound(to - d.value, to) && p.squares[to] == Square.EMPTY; to += d.value) {
                 if (canPromote(p.squares[from], from, to)) {
                     outMoves[length++] = createPromote(from, to);
@@ -153,7 +153,7 @@ int legalMoves(const ref Position p, Move[] outMoves)
                         || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type == Type.LANCE || p.squares[from].type == Type.KNIGHT))) {
                         outMoves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
                     }
-                } else if (RANK_MIN[p.squares[from]] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from]]) {
+                } else if (RANK_MIN[p.squares[from].i] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from].i]) {
                     outMoves[length++] = createMove(from, to);
                 }
                 if (!d.isFly) {
@@ -177,7 +177,7 @@ int legalMoves(const ref Position p, Move[] outMoves)
     return length;
 }
 
-private bool canPromote(square_t sq, int from, int to)
+private bool canPromote(Square sq, int from, int to)
 {
     if (sq.type > Type.ROOK) {
         return false;

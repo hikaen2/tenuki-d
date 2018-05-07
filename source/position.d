@@ -19,7 +19,7 @@ Position doMove(Position p, Move m)
     if (m != Move.NULL_MOVE && m != Move.TORYO) {
         if (m.isDrop) {
             type_t t = m.from;
-            p.squares[m.to] = ((p.sideToMove == Side.BLACK ? 0 : Square.W) | t);
+            p.squares[m.to] = Square((p.sideToMove == Side.BLACK ? 0 : 0b10000) | t);
             p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             p.piecesInHand[p.sideToMove][t]--;
             p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
@@ -32,8 +32,8 @@ Position doMove(Position p, Move m)
                 p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             }
             p.squares[m.to] = m.isPromote ? p.squares[m.from].promote : p.squares[m.from];
-            p.hash ^= HASH_SEED_BOARD[p.squares[m.to]][m.to];
-            p.hash ^= HASH_SEED_BOARD[p.squares[m.from]][m.from];
+            p.hash ^= HASH_SEED_BOARD[p.squares[m.to].i][m.to];
+            p.hash ^= HASH_SEED_BOARD[p.squares[m.from].i][m.from];
             p.squares[m.from] = Square.EMPTY;
         }
     }

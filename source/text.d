@@ -56,7 +56,7 @@ string toSfen(const ref Position p)
     for (int rank = 0; rank <= 8; rank++) {
         string line;
         for (int file = 8; file >= 0; file--) {
-            line ~= TO_SFEN[p.squares[file * 9 + rank]];
+            line ~= TO_SFEN[p.squares[file * 9 + rank].i];
         }
         lines ~= line;
     }
@@ -119,7 +119,7 @@ string toKi2(const ref Position p)
     for (int rank = 0; rank <= 8; rank++) {
         s ~= "|";
         for (int file = 8; file >= 0; file--) {
-            s ~= BOARD[p.squares[file * 9 + rank]];
+            s ~= BOARD[p.squares[file * 9 + rank].i];
         }
         s ~= format("|%s\n", NUM[rank + 1]);
     }

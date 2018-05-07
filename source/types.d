@@ -1,7 +1,6 @@
 
 alias side_t = ubyte;
 alias type_t = ubyte;
-alias square_t = ubyte;
 
 /**
  * 局面
@@ -22,7 +21,7 @@ alias square_t = ubyte;
  */
 struct Position
 {
-    square_t[81] squares;
+    Square[81] squares;
     ubyte[8][2] piecesInHand;
     bool sideToMove;
     ulong hash;
@@ -60,39 +59,47 @@ enum Type : type_t
  * xxx1xxxx side
  * xxxx1111 type
  */
-enum Square : square_t
+struct Square
 {
-    W                 = 0b00010000,
-    B_PAWN            = 0,
-    B_LANCE           = 1,
-    B_KNIGHT          = 2,
-    B_SILVER          = 3,
-    B_BISHOP          = 4,
-    B_ROOK            = 5,
-    B_GOLD            = 6,
-    B_KING            = 7,
-    B_PROMOTED_PAWN   = 8,
-    B_PROMOTED_LANCE  = 9,
-    B_PROMOTED_KNIGHT = 10,
-    B_PROMOTED_SILVER = 11,
-    B_PROMOTED_BISHOP = 12,
-    B_PROMOTED_ROOK   = 13,
-    EMPTY             = 14,
-    _                 = 15,
-    W_PAWN            = 16,
-    W_LANCE           = 17,
-    W_KNIGHT          = 18,
-    W_SILVER          = 19,
-    W_BISHOP          = 20,
-    W_ROOK            = 21,
-    W_GOLD            = 22,
-    W_KING            = 23,
-    W_PROMOTED_PAWN   = 24,
-    W_PROMOTED_LANCE  = 25,
-    W_PROMOTED_KNIGHT = 26,
-    W_PROMOTED_SILVER = 27,
-    W_PROMOTED_BISHOP = 28,
-    W_PROMOTED_ROOK   = 29,
+    enum Square B_PAWN            = {0};
+    enum Square B_LANCE           = {1};
+    enum Square B_KNIGHT          = {2};
+    enum Square B_SILVER          = {3};
+    enum Square B_BISHOP          = {4};
+    enum Square B_ROOK            = {5};
+    enum Square B_GOLD            = {6};
+    enum Square B_KING            = {7};
+    enum Square B_PROMOTED_PAWN   = {8};
+    enum Square B_PROMOTED_LANCE  = {9};
+    enum Square B_PROMOTED_KNIGHT = {10};
+    enum Square B_PROMOTED_SILVER = {11};
+    enum Square B_PROMOTED_BISHOP = {12};
+    enum Square B_PROMOTED_ROOK   = {13};
+    enum Square EMPTY             = {14};
+    enum Square _                 = {15};
+    enum Square W_PAWN            = {16};
+    enum Square W_LANCE           = {17};
+    enum Square W_KNIGHT          = {18};
+    enum Square W_SILVER          = {19};
+    enum Square W_BISHOP          = {20};
+    enum Square W_ROOK            = {21};
+    enum Square W_GOLD            = {22};
+    enum Square W_KING            = {23};
+    enum Square W_PROMOTED_PAWN   = {24};
+    enum Square W_PROMOTED_LANCE  = {25};
+    enum Square W_PROMOTED_KNIGHT = {26};
+    enum Square W_PROMOTED_SILVER = {27};
+    enum Square W_PROMOTED_BISHOP = {28};
+    enum Square W_PROMOTED_ROOK   = {29};
+
+    ubyte i;
+    bool isBlack() const { return i <= Square.B_PROMOTED_ROOK.i; }
+    bool isWhite() const { return i >= Square.W_PAWN.i; }
+    bool isFriend(side_t s) const { return s == Side.BLACK ? isBlack : isWhite; }
+    bool isEnemy(side_t s) const { return s == Side.BLACK ? isWhite : isBlack; }
+    type_t type() const { return i & 0b00001111; }
+    Square promote() const { return Square(i | 0b00001000); }
+    Square unpromote() const { return Square(i & 0b11110111); }
 }
 
 /**
@@ -123,8 +130,8 @@ struct Dir {
     enum Dir FSW = {SW.i | 1};
 
     byte i;
-    bool isFly() { return (i & 1) != 0; }
-    int value() { return i >> 1; }
+    bool isFly() const { return (i & 1) != 0; }
+    int  value() const { return i >> 1; }
 }
 
 /**
@@ -141,20 +148,11 @@ struct Move
     enum Move TORYO     = {0b00111111_11111111};
 
     ushort i;
-    ubyte from() { return cast(ubyte)((i >> 7) & 0b01111111); }
-    ubyte to() { return cast(ubyte)(i & 0b01111111); }
-    bool isPromote() { return (i & 0b1000000000000000) != 0; }
-    bool isDrop() { return (i & 0b0100000000000000) != 0; }
+    ubyte from() const { return cast(ubyte)((i >> 7) & 0b01111111); }
+    ubyte to() const { return cast(ubyte)(i & 0b01111111); }
+    bool isPromote() const { return (i & 0b1000000000000000) != 0; }
+    bool isDrop() const { return (i & 0b0100000000000000) != 0; }
 }
-
-// square_tを引数にとる関数
-bool isBlack(square_t sq) { return sq <= Square.B_PROMOTED_ROOK; }
-bool isWhite(square_t sq) { return sq >= Square.W_PAWN; }
-bool isFriend(square_t sq, side_t s) { return s == Side.BLACK ? sq.isBlack() : sq.isWhite(); }
-bool isEnemy(square_t sq, side_t s) { return s == Side.BLACK ? sq.isWhite() : sq.isBlack(); }
-type_t type(square_t sq) { return sq & 0b00001111; }
-square_t promote(square_t sq) { return sq | 0b00001000; }
-square_t unpromote(square_t sq) { return sq & 0b11110111; }
 
 // move_tを返す関数
 Move createMove(int from, int to) { return Move(cast(ushort)(from << 7 | to)); }

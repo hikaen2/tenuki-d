@@ -64,7 +64,7 @@ short staticValue(const ref Position p)
     int bk = 0;
     int wk = 0;
     for (int i = SQ11; i <= SQ99; i++) {
-        material += P_VALUE[p.squares[i]];
+        material += P_VALUE[p.squares[i].i];
         bk = (p.squares[i] == Square.B_KING ? ADDRESS_OF[i       ] : bk);
         wk = (p.squares[i] == Square.W_KING ? ADDRESS_OF[SQ99 - i] : wk);
     }
@@ -78,9 +78,9 @@ short staticValue(const ref Position p)
     int nlist = 0;
     for (int i = SQ11; i <= SQ99; i++) {
         if ((p.squares[i].isBlack || p.squares[i].isWhite) && p.squares[i].type != Type.KING) {
-            sum += FV_KP[bk][ KP_OFFSET[p.squares[i]             ] + ADDRESS_OF[i       ] ];
-            sum -= FV_KP[wk][ KP_OFFSET[p.squares[i] ^ 0b00010000] + ADDRESS_OF[SQ99 - i] ];
-            list[nlist++] = cast(short)(PP_OFFSET[p.squares[i]] + ADDRESS_OF[i]);
+            sum += FV_KP[bk][ KP_OFFSET[p.squares[i].i             ] + ADDRESS_OF[i       ] ];
+            sum -= FV_KP[wk][ KP_OFFSET[p.squares[i].i ^ 0b00010000] + ADDRESS_OF[SQ99 - i] ];
+            list[nlist++] = cast(short)(PP_OFFSET[p.squares[i].i] + ADDRESS_OF[i]);
         }
     }
     for (type_t t = Type.PAWN; t <= Type.GOLD; t++) {
@@ -124,24 +124,24 @@ static this()
             int base, invBase, start, end;
         }
         immutable Hoge[18] tbl = [
-            {PP_OFFSET[Square.B_PAWN]            , PP_OFFSET[Square.W_PAWN],             9, 81},
-            {PP_OFFSET[Square.B_LANCE]           , PP_OFFSET[Square.W_LANCE] ,           9, 81},
-            {PP_OFFSET[Square.B_KNIGHT]          , PP_OFFSET[Square.W_KNIGHT],          18, 81},
-            {PP_OFFSET[Square.B_SILVER]          , PP_OFFSET[Square.W_SILVER],           0, 81},
-            {PP_OFFSET[Square.B_GOLD]            , PP_OFFSET[Square.W_GOLD]  ,           0, 81},
-            {PP_OFFSET[Square.B_BISHOP]          , PP_OFFSET[Square.W_BISHOP],           0, 81},
-            {PP_OFFSET[Square.B_PROMOTED_BISHOP] , PP_OFFSET[Square.W_PROMOTED_BISHOP],  0, 81},
-            {PP_OFFSET[Square.B_ROOK]            , PP_OFFSET[Square.W_ROOK]  ,           0, 81},
-            {PP_OFFSET[Square.B_PROMOTED_ROOK]   , PP_OFFSET[Square.W_PROMOTED_ROOK],    0, 81},
-            {PP_OFFSET[Square.W_PAWN]            , PP_OFFSET[Square.B_PAWN]  ,           0, 72},
-            {PP_OFFSET[Square.W_LANCE]           , PP_OFFSET[Square.B_LANCE] ,           0, 72},
-            {PP_OFFSET[Square.W_KNIGHT]          , PP_OFFSET[Square.B_KNIGHT],           0, 63},
-            {PP_OFFSET[Square.W_SILVER]          , PP_OFFSET[Square.B_SILVER],           0, 81},
-            {PP_OFFSET[Square.W_GOLD]            , PP_OFFSET[Square.B_GOLD]  ,           0, 81},
-            {PP_OFFSET[Square.W_BISHOP]          , PP_OFFSET[Square.B_BISHOP],           0, 81},
-            {PP_OFFSET[Square.W_PROMOTED_BISHOP] , PP_OFFSET[Square.B_PROMOTED_BISHOP] , 0, 81},
-            {PP_OFFSET[Square.W_ROOK]            , PP_OFFSET[Square.B_ROOK]  ,           0, 81},
-            {PP_OFFSET[Square.W_PROMOTED_ROOK]   , PP_OFFSET[Square.B_PROMOTED_ROOK],    0, 81},
+            {PP_OFFSET[Square.B_PAWN.i]            , PP_OFFSET[Square.W_PAWN.i],             9, 81},
+            {PP_OFFSET[Square.B_LANCE.i]           , PP_OFFSET[Square.W_LANCE.i] ,           9, 81},
+            {PP_OFFSET[Square.B_KNIGHT.i]          , PP_OFFSET[Square.W_KNIGHT.i],          18, 81},
+            {PP_OFFSET[Square.B_SILVER.i]          , PP_OFFSET[Square.W_SILVER.i],           0, 81},
+            {PP_OFFSET[Square.B_GOLD.i]            , PP_OFFSET[Square.W_GOLD.i]  ,           0, 81},
+            {PP_OFFSET[Square.B_BISHOP.i]          , PP_OFFSET[Square.W_BISHOP.i],           0, 81},
+            {PP_OFFSET[Square.B_PROMOTED_BISHOP.i] , PP_OFFSET[Square.W_PROMOTED_BISHOP.i],  0, 81},
+            {PP_OFFSET[Square.B_ROOK.i]            , PP_OFFSET[Square.W_ROOK.i]  ,           0, 81},
+            {PP_OFFSET[Square.B_PROMOTED_ROOK.i]   , PP_OFFSET[Square.W_PROMOTED_ROOK.i],    0, 81},
+            {PP_OFFSET[Square.W_PAWN.i]            , PP_OFFSET[Square.B_PAWN.i]  ,           0, 72},
+            {PP_OFFSET[Square.W_LANCE.i]           , PP_OFFSET[Square.B_LANCE.i] ,           0, 72},
+            {PP_OFFSET[Square.W_KNIGHT.i]          , PP_OFFSET[Square.B_KNIGHT.i],           0, 63},
+            {PP_OFFSET[Square.W_SILVER.i]          , PP_OFFSET[Square.B_SILVER.i],           0, 81},
+            {PP_OFFSET[Square.W_GOLD.i]            , PP_OFFSET[Square.B_GOLD.i]  ,           0, 81},
+            {PP_OFFSET[Square.W_BISHOP.i]          , PP_OFFSET[Square.B_BISHOP.i],           0, 81},
+            {PP_OFFSET[Square.W_PROMOTED_BISHOP.i] , PP_OFFSET[Square.B_PROMOTED_BISHOP.i] , 0, 81},
+            {PP_OFFSET[Square.W_ROOK.i]            , PP_OFFSET[Square.B_ROOK.i]  ,           0, 81},
+            {PP_OFFSET[Square.W_PROMOTED_ROOK.i]   , PP_OFFSET[Square.B_PROMOTED_ROOK.i],    0, 81},
         ];
         int inv(int sq) {
             return 81 - 1 - sq;
@@ -155,7 +155,7 @@ static this()
                         const int p2    = tbl[j].base    +     sq2;
                         const int p2inv = tbl[j].invBase + inv(sq2);
                         FV_PP[p1][p2] =  ppOri[p1][p2];
-                        FV_PP[p1inv][p2inv] = (p2inv < PP_OFFSET[Square.W_PAWN] ? ppOri[p2inv][p1inv] : -ppOri[p1][p2]);
+                        FV_PP[p1inv][p2inv] = (p2inv < PP_OFFSET[Square.W_PAWN.i] ? ppOri[p2inv][p1inv] : -ppOri[p1][p2]);
                     }
                 }
             }
@@ -173,7 +173,7 @@ static this()
 
 /*
  * value: 駒得の評価値
- * key: square_t
+ * key: Square
  */
 private immutable short[] P_VALUE = [
    // 歩,   香,   桂,   銀,   角,   飛,   金,     王,   と, 成香, 成桂, 成銀,   馬,    龍, 空, 壁,
@@ -183,7 +183,7 @@ private immutable short[] P_VALUE = [
 
 /*
  * PPのオフセット
- * key: square_t
+ * key: Square
  */
 private immutable short[] PP_OFFSET = [
   // 歩,  香,  桂,  銀,   角,   飛,  金, 王,  と, 成香, 成桂, 成銀,   馬,   龍, 空, 壁,
@@ -203,7 +203,7 @@ private immutable short[][] OFFSET_HAND = [
 
 /*
  * KPのオフセット
- * key: square_t
+ * key: Square
  */
 private immutable short[] KP_OFFSET = [
   // 歩,  香,  桂,  銀,  角,   飛,  金, 王,  と, 成香, 成桂, 成銀,   馬,   龍, 空, 壁,

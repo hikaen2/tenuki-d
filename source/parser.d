@@ -54,7 +54,7 @@ Move parseMove(string s, const ref Position p)
 
 Position parsePosition(string sfen)
 {
-    immutable square_t[string] TO_SQUARE = [
+    immutable Square[string] TO_SQUARE = [
         "1":  Square.EMPTY,
         "P":  Square.B_PAWN,
         "L":  Square.B_LANCE,
@@ -149,7 +149,7 @@ Position parsePosition(string sfen)
     // ハッシュ値
     p.hash = 0;
     for (int i = SQ11; i <= SQ99; i++) {
-        p.hash ^= HASH_SEED_BOARD[ p.squares[i] ][i];
+        p.hash ^= HASH_SEED_BOARD[ p.squares[i].i ][i];
     }
     for (side_t s = Side.BLACK; s <= Side.WHITE; s++) {
         for (type_t t = Type.PAWN; t <= Type.KING; t++) {

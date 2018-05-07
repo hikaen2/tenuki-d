@@ -6,7 +6,7 @@ import std.conv;
 import std.regex;
 import std.string;
 
-move_t parseMove(string s, const ref Position p)
+Move parseMove(string s, const ref Position p)
 {
     immutable type_t[string] DIC = [
         "FU": Type.PAWN,

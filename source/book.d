@@ -6,7 +6,7 @@ import std.stdio;
 import std.string;
 import std.regex;
 
-immutable move_t[][string] BOOK;
+immutable Move[][string] BOOK;
 
 static this()
 {
@@ -40,10 +40,10 @@ void validateBook()
     foreach (sfen, moves; BOOK) {
         Position p = parsePosition(sfen);
         assert(sfen == p.toSfen);
-        foreach (move_t move; moves) {
+        foreach (Move move; moves) {
             if (!move.isValid(p)) {
                 stderr.writeln(p.toString);
-                stderr.writefln("%02d%02d", (move >> 7) & 0b1111111, move & 0b1111111);
+                stderr.writefln("%02d%02d", (move.i >> 7) & 0b1111111, move.i & 0b1111111);
             }
         }
     }
@@ -54,7 +54,7 @@ void validateBook()
  * 8h2b+
  * G*5b
  */
-private move_t parseUsi(string usi)
+private Move parseUsi(string usi)
 {
     immutable type_t[string] TYPE = [
         "P":Type.PAWN, "L":Type.LANCE, "N":Type.KNIGHT, "S":Type.SILVER, "B":Type.BISHOP, "R":Type.ROOK, "G":Type.GOLD,

@@ -1,9 +1,7 @@
 
 alias side_t = ubyte;
 alias type_t = ubyte;
-alias dir_t = byte;
 alias square_t = ubyte;
-alias move_t = ushort;
 
 /**
  * 局面
@@ -29,7 +27,7 @@ struct Position
     bool sideToMove;
     ulong hash;
     ushort moveCount = 1;
-    move_t previousMove; // 直前の指し手
+    Move previousMove; // 直前の指し手
 }
 
 enum Side : side_t
@@ -102,28 +100,31 @@ enum Square : square_t
  * 1111111x value
  * xxxxxxx1 fly
  */
-enum Dir : dir_t
-{
-    N = -1 * 2, // -1 << 1
-    E = -9 * 2, // -9 << 1
-    W = +9 * 2, // +9 << 1
-    S = +1 * 2, // +1 << 1
-    NE = N + E,
-    NW = N + W,
-    SE = S + E,
-    SW = S + W,
-    NNE = N + N + E,
-    NNW = N + N + W,
-    SSE = S + S + E,
-    SSW = S + S + W,
-    FN = N | 1,
-    FE = E | 1,
-    FW = W | 1,
-    FS = S | 1,
-    FNE = NE | 1,
-    FNW = NW | 1,
-    FSE = SE | 1,
-    FSW = SW | 1,
+struct Dir {
+    enum Dir N   = {-1 * 2}; // -1 << 1
+    enum Dir E   = {-9 * 2}; // -9 << 1
+    enum Dir W   = {+9 * 2}; // +9 << 1
+    enum Dir S   = {+1 * 2}; // +1 << 1
+    enum Dir NE  = {N.i + E.i};
+    enum Dir NW  = {N.i + W.i};
+    enum Dir SE  = {S.i + E.i};
+    enum Dir SW  = {S.i + W.i};
+    enum Dir NNE = {N.i + N.i + E.i};
+    enum Dir NNW = {N.i + N.i + W.i};
+    enum Dir SSE = {S.i + S.i + E.i};
+    enum Dir SSW = {S.i + S.i + W.i};
+    enum Dir FN  = {N.i | 1};
+    enum Dir FE  = {E.i | 1};
+    enum Dir FW  = {W.i | 1};
+    enum Dir FS  = {S.i | 1};
+    enum Dir FNE = {NE.i | 1};
+    enum Dir FNW = {NW.i | 1};
+    enum Dir FSE = {SE.i | 1};
+    enum Dir FSW = {SW.i | 1};
+
+    byte i;
+    bool isFly() { return (i & 1) != 0; }
+    int value() { return i >> 1; }
 }
 
 /**
@@ -133,10 +134,17 @@ enum Dir : dir_t
  * xx111111 1xxxxxxx from
  * xxxxxxxx x1111111 to
  */
-enum Move : move_t
+struct Move
 {
-    NULL_MOVE = 0b00111111_11111110,
-    TORYO = 0b00111111_11111111,
+    enum Move NULL      = {0};
+    enum Move NULL_MOVE = {0b00111111_11111110};
+    enum Move TORYO     = {0b00111111_11111111};
+
+    ushort i;
+    ubyte from() { return cast(ubyte)((i >> 7) & 0b01111111); }
+    ubyte to() { return cast(ubyte)(i & 0b01111111); }
+    bool isPromote() { return (i & 0b1000000000000000) != 0; }
+    bool isDrop() { return (i & 0b0100000000000000) != 0; }
 }
 
 // square_tを引数にとる関数
@@ -149,19 +157,10 @@ square_t promote(square_t sq) { return sq | 0b00001000; }
 square_t unpromote(square_t sq) { return sq & 0b11110111; }
 
 // move_tを返す関数
-move_t createMove(int from, int to) { return cast(move_t)(from << 7 | to); }
-move_t createPromote(int from, int to) { return cast(move_t)(from << 7 | to | 0b1000000000000000); }
-move_t createDrop(type_t t, int to) { return cast(move_t)(t << 7 | to | 0b0100000000000000); }
+Move createMove(int from, int to) { return Move(cast(ushort)(from << 7 | to)); }
+Move createPromote(int from, int to) { return Move(cast(ushort)(from << 7 | to | 0b1000000000000000)); }
+Move createDrop(type_t t, int to) { return Move(cast(ushort)(t << 7 | to | 0b0100000000000000)); }
 
-// move_tを引数にとる関数
-ubyte from(move_t m) { return cast(ubyte)((m >> 7) & 0b01111111); }
-ubyte to(move_t m) { return cast(ubyte)(m & 0b01111111); }
-bool isPromote(move_t m) { return (m & 0b1000000000000000) != 0; }
-bool isDrop(move_t m) { return (m & 0b0100000000000000) != 0; }
-
-// dir_tを引数にとる関数
-bool isFly(dir_t d) { return (d & 1) != 0; }
-int value(dir_t d) { return d >> 1; }
 
 enum SQ11 = 0;
 enum SQ99 = 80;

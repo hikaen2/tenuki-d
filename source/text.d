@@ -8,7 +8,7 @@ import std.stdio;
 /**
  * mのCSA形式の文字列を返す
  */
-string toString(move_t m, const ref Position p)
+string toString(Move m, const ref Position p)
 {
     if (m == Move.TORYO) {
         return "%TORYO";

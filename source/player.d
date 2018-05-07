@@ -14,20 +14,20 @@ import std.datetime.stopwatch;
 private int COUNT = 0;
 
 private immutable MASK = 0xffffff;  // 1024 * 1024 * 16 - 1
-private move_t[MASK + 1] TT = 0;
+private Move[MASK + 1] TT;
 
 private StopWatch SW;
 private int SECOND = 20;
 
 int remainSeconds = 600;
 
-int ponder(const ref Position p, move_t[] outPv)
+int ponder(const ref Position p, Move[] outPv)
 {
 
     SECOND = min(20, remainSeconds);
     remainSeconds += 10;
 
-    move_t m = 0;
+    Move m = Move.NULL;
     int value = 0;
 
     // for (int depth = 1; depth <= 6; depth++) {
@@ -38,19 +38,19 @@ int ponder(const ref Position p, move_t[] outPv)
 
     if (p.toSfen in BOOK) {
         outPv[0] = BOOK[p.toSfen][ uniform(0, BOOK[p.toSfen].length) ];
-        outPv[1] = 0;
+        outPv[1] = Move.NULL;
         return 0;
     }
 
-    move_t[64][] pvs;
-    move_t[64] pv;
+    Move[64][] pvs;
+    Move[64] pv;
     SW = StopWatch(AutoStart.yes);
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
         p.search0(depth, pv, value);
-        move_t[64] v = pv;
+        Move[64] v = pv;
         if (value <= -15000) {
             v[0] = Move.TORYO;
-            v[1] = 0;
+            v[1] = Move.NULL;
         }
         pvs ~= v;
     }
@@ -62,7 +62,7 @@ int ponder(const ref Position p, move_t[] outPv)
         }
     }
     outPv[0] = Move.TORYO;
-    outPv[1] = 0;
+    outPv[1] = Move.NULL;
     return value;
 }
 
@@ -76,25 +76,25 @@ int ponder(const ref Position p, move_t[] outPv)
  *      outScore = 評価値を出力する
  * Returns: 評価値
  */
-private int search0(Position p, int depth, move_t[] outPv, ref int outScore)
+private int search0(Position p, int depth, Move[] outPv, ref int outScore)
 {
-    move_t[64] pv;
+    Move[64] pv;
     COUNT++;
 
-    move_t[593] moves;
+    Move[593] moves;
     int length = p.legalMoves(moves);
     if (length == 0) {
         return 0;
     }
     randomShuffle(moves[0..length]);
-    if (outPv[0] != 0) {
+    if (outPv[0] != Move.NULL) {
         swap(moves[0], moves[0..length].find(outPv[0])[0]);
     }
 
     int a = short.min;
     const int b = short.max;
     stderr.writef("%d: ", depth);
-    foreach (move_t move; moves[0..length]) {
+    foreach (Move move; moves[0..length]) {
         int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
         if (SW.peek().total!"seconds" >= SECOND) {
             break;
@@ -112,7 +112,7 @@ private int search0(Position p, int depth, move_t[] outPv, ref int outScore)
     }
     stderr.write(" : ");
     Position q = p;
-    for (int i = 0; outPv[i] != 0; q = q.doMove(outPv[i]), i++) {
+    for (int i = 0; outPv[i] != Move.NULL; q = q.doMove(outPv[i]), i++) {
         stderr.writef("%s ", outPv[i].toString(q));
     }
     stderr.write("\n");
@@ -127,11 +127,11 @@ private int search0(Position p, int depth, move_t[] outPv, ref int outScore)
  * @param b 探索済みmaxノードの最小値
  * @return 評価値
  */
-private int search(Position p, int depth, int a, const int b, move_t[] outPv, bool doNullMove = true)
+private int search(Position p, int depth, int a, const int b, Move[] outPv, bool doNullMove = true)
 {
     assert(a < b);
 
-    outPv[0] = 0;
+    outPv[0] = Move.NULL;
     if (SW.peek().total!"seconds" >= SECOND) {
         return 0;
     }
@@ -149,7 +149,7 @@ private int search(Position p, int depth, int a, const int b, move_t[] outPv, bo
         return b;
     }
 
-    move_t[64] pv;
+    Move[64] pv;
 
     if (doNullMove /* && !p.inCheck */ ) {
         immutable R = 2;
@@ -160,7 +160,7 @@ private int search(Position p, int depth, int a, const int b, move_t[] outPv, bo
     }
 
     {
-        move_t move = TT[p.hash & MASK];
+        Move move = TT[p.hash & MASK];
         if (move.isValid(p)) {
             int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
             if (a < value) {
@@ -174,12 +174,12 @@ private int search(Position p, int depth, int a, const int b, move_t[] outPv, bo
         }
     }
 
-    move_t[593] moves;
+    Move[593] moves;
     int length = p.legalMoves(moves);
     if (length == 0) {
         return p.staticValue;
     }
-    foreach (move_t move; moves[0..length]) {
+    foreach (Move move; moves[0..length]) {
         int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
         if (a < value) {
             a = value;
@@ -197,13 +197,13 @@ private int search(Position p, int depth, int a, const int b, move_t[] outPv, bo
 /**
  * 静止探索
  */
-private int qsearch(Position p, int depth, int a, const int b, move_t[] outPv)
+private int qsearch(Position p, int depth, int a, const int b, Move[] outPv)
 {
     assert(a < b);
 
     COUNT++;
-    outPv[0] = 0;
-    move_t[64] pv;
+    outPv[0] = Move.NULL;
+    Move[64] pv;
 
     if (depth <= 0) {
         return p.staticValue;
@@ -215,7 +215,7 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] outPv)
     }
 
     {
-        move_t move = TT[p.hash & MASK];
+        Move move = TT[p.hash & MASK];
         if (move.isValid(p) && p.squares[move.to].isEnemy(p.sideToMove)) {
             int value = -p.doMove(move).qsearch(depth - 1, -b, -a, pv);
             if (a < value) {
@@ -229,9 +229,9 @@ private int qsearch(Position p, int depth, int a, const int b, move_t[] outPv)
         }
     }
 
-    move_t[128] moves;
+    Move[128] moves;
     int length = p.capturelMoves(moves);
-    foreach (move_t move; moves[0..length]) {
+    foreach (Move move; moves[0..length]) {
         int value = -p.doMove(move).qsearch(depth - 1, -b, -a, pv);
         if (a < value) {
             a = value;
@@ -255,9 +255,9 @@ private bool inUchifuzume(Position p)
         return false; // 直前の指し手が打ち歩でない，または現局面が王手をかけられていない場合は，打ち歩詰めでない
     }
 
-    move_t[593] moves;
+    Move[593] moves;
     int length = p.legalMoves(moves);
-    foreach (move_t move; moves[0..length]) {
+    foreach (Move move; moves[0..length]) {
         if (!p.doMove(move).doMove(Move.NULL_MOVE).inCheck) {
             return false; // 王手を解除する手があれば打ち歩詰めでない
         }

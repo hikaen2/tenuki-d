@@ -14,7 +14,7 @@ import std.regex;
 /**
  * do_move
  */
-Position doMove(Position p, move_t m)
+Position doMove(Position p, Move m)
 {
     if (m != Move.NULL_MOVE && m != Move.TORYO) {
         if (m.isDrop) {

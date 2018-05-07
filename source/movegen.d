@@ -3,10 +3,10 @@ import types;
 /**
  * まだ指していない指し手mが局面pにおいて王手をかける手かどうかを返す
  */
-bool isCheck(move_t m, const ref Position p)
+bool isCheck(Move m, const ref Position p)
 {
     square_t sq = (p.sideToMove << 4) | (m.isDrop ? m.from : m.isPromote ? p.squares[m.from].promote : p.squares[m.from]);
-    foreach (dir_t d; DIRECTIONS[sq]) {
+    foreach (Dir d; DIRECTIONS[sq]) {
         for (int to = m.to + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove));  to += d.value) {
             if (p.squares[to].type == Type.KING) {
                 return true;
@@ -29,7 +29,7 @@ bool inCheck(Position p)
         if (!p.squares[from].isEnemy(p.sideToMove)) {
             continue;
         }
-        foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
+        foreach (Dir d; DIRECTIONS[p.squares[from]]) {
             for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isFriend(p.sideToMove)); to += d.value) {
                 if (p.squares[to].type == Type.KING) {
                     return true;
@@ -46,7 +46,7 @@ bool inCheck(Position p)
 /**
  * 局面pにおいて指し手mが有効（不正でない）かどうかを返す
  */
-bool isValid(move_t m, const ref Position p)
+bool isValid(Move m, const ref Position p)
 {
     if (m.isDrop) {
         return !m.isPromote
@@ -72,7 +72,7 @@ bool isValid(move_t m, const ref Position p)
     if (m.isPromote && !canPromote(sq_from, m.from, m.to)) {
         return false;
     }
-    foreach (dir_t d; DIRECTIONS[sq_from]) {
+    foreach (Dir d; DIRECTIONS[sq_from]) {
         for (int to = m.from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove)); to += d.value) {
             if (to == m.to && RANK_MIN[sq_from] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[sq_from]) {
                 return true;
@@ -89,7 +89,7 @@ bool isValid(move_t m, const ref Position p)
  * 駒を取る手を生成する
  * returns: 生成した数
  */
-int capturelMoves(const ref Position p, move_t[] out_moves)
+int capturelMoves(const ref Position p, Move[] out_moves)
 {
     if (p.piecesInHand[Side.BLACK][Type.KING] > 0 || p.piecesInHand[Side.WHITE][Type.KING] > 0) {
         return 0;
@@ -101,7 +101,7 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
         if (!p.squares[from].isFriend(p.sideToMove)) {
             continue;
         }
-        foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
+        foreach (Dir d; DIRECTIONS[p.squares[from]]) {
             for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove)); to += d.value) {
                 if (p.squares[to].isEnemy(p.sideToMove)) {
                     if (canPromote(p.squares[from], from, to)) {
@@ -128,7 +128,7 @@ int capturelMoves(const ref Position p, move_t[] out_moves)
  * 合法手を生成する
  * returns: 生成した数
  */
-int legalMoves(const ref Position p, move_t[] out_moves)
+int legalMoves(const ref Position p, Move[] out_moves)
 {
     if (p.piecesInHand[Side.BLACK][Type.KING] > 0 || p.piecesInHand[Side.WHITE][Type.KING] > 0) {
         return 0;
@@ -145,7 +145,7 @@ int legalMoves(const ref Position p, move_t[] out_moves)
             continue;
         }
         pawned[FILE_OF[from]] |= (p.squares[from].type == Type.PAWN);
-        foreach (dir_t d; DIRECTIONS[p.squares[from]]) {
+        foreach (Dir d; DIRECTIONS[p.squares[from]]) {
             for (int to = from + d.value; !isOverBound(to - d.value, to) && p.squares[to] == Square.EMPTY; to += d.value) {
                 if (canPromote(p.squares[from], from, to)) {
                     out_moves[length++] = createPromote(from, to);
@@ -185,7 +185,7 @@ private bool canPromote(square_t sq, int from, int to)
     return (sq.isBlack ? (RANK_OF[from] <= 3 || RANK_OF[to] <= 3) : (RANK_OF[from] >= 7 || RANK_OF[to] >= 7));
 }
 
-private immutable dir_t[][] DIRECTIONS = [
+private immutable Dir[][] DIRECTIONS = [
     [ Dir.N  ],                                                             //  0:B_PAWN
     [ Dir.FN ],                                                             //  1:B_LANCE
     [ Dir.NNE, Dir.NNW ],                                                   //  2:B_KNIGHT

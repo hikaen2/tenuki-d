@@ -17,7 +17,7 @@ private void test()
 {
     // Position p = parsePosition("sfen l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
     // stdout.writeln(p.toString());
-    // move_t[600] moves;
+    // Move[600] moves;
     // for (int i = 0; i < 1000000; i++) {
     //     p.legalMoves(moves);
     // }
@@ -27,7 +27,7 @@ private void test()
     //Position p = parsePosition("sfen lnsgkgsnl/1r5b1/p1ppppppp/9/1p7/9/PPPPPPPPP/1B4KR1/LNSG1GSNL b - 0"); // test+default-1500-0+tenuki+neakih+20180403232658
     writeln(p.sizeof);
     stdout.writeln(p.toString());
-    move_t[64] pv;
+    Move[64] pv;
     p.ponder(pv);
 
     // Position p = parsePosition("sfen 9/9/9/9/9/9/9/9/P8 b - 1");
@@ -82,14 +82,14 @@ int main(string[] args)
 
     for (;;) {
         if (p.sideToMove == mySide) {
-            move_t[64] pv;
+            Move[64] pv;
             int score = p.ponder(pv);
             if (pv[0] == Move.TORYO) {
                 writeLine(s, pv[0].toString(p));
             } else if (enhanced) {
                 string wk;
                 Position q = p.doMove(pv[0]);
-                for (int i = 1; pv[i] != 0; i++) {
+                for (int i = 1; pv[i] != Move.NULL; i++) {
                     wk ~= format("%s ", pv[i].toString(q));
                     q = q.doMove(pv[i]);
                 }
@@ -99,7 +99,7 @@ int main(string[] args)
             }
         }
 
-        move_t m;
+        Move m;
         int second;
         for (bool retry = true; retry; ) {
             try {

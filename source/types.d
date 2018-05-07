@@ -78,7 +78,7 @@ enum Square : square_t
     B_PROMOTED_BISHOP = 12,
     B_PROMOTED_ROOK   = 13,
     EMPTY             = 14,
-
+    _                 = 15,
     W_PAWN            = 16,
     W_LANCE           = 17,
     W_KNIGHT          = 18,

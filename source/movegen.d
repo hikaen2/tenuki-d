@@ -89,7 +89,7 @@ bool isValid(Move m, const ref Position p)
  * 駒を取る手を生成する
  * returns: 生成した数
  */
-int capturelMoves(const ref Position p, Move[] out_moves)
+int capturelMoves(const ref Position p, Move[] outMoves)
 {
     if (p.piecesInHand[Side.BLACK][Type.KING] > 0 || p.piecesInHand[Side.WHITE][Type.KING] > 0) {
         return 0;
@@ -105,13 +105,13 @@ int capturelMoves(const ref Position p, Move[] out_moves)
             for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.squares[to] == Square.EMPTY || p.squares[to].isEnemy(p.sideToMove)); to += d.value) {
                 if (p.squares[to].isEnemy(p.sideToMove)) {
                     if (canPromote(p.squares[from], from, to)) {
-                        out_moves[length++] = createPromote(from, to);
+                        outMoves[length++] = createPromote(from, to);
                         if (p.squares[from].type == Type.SILVER
                             || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type == Type.LANCE || p.squares[from].type == Type.KNIGHT))) {
-                            out_moves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
+                            outMoves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
                         }
                     } else if (RANK_MIN[p.squares[from]] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from]]) {
-                        out_moves[length++] = createMove(from, to);
+                        outMoves[length++] = createMove(from, to);
                     }
                     break;
                 }
@@ -128,7 +128,7 @@ int capturelMoves(const ref Position p, Move[] out_moves)
  * 合法手を生成する
  * returns: 生成した数
  */
-int legalMoves(const ref Position p, Move[] out_moves)
+int legalMoves(const ref Position p, Move[] outMoves)
 {
     if (p.piecesInHand[Side.BLACK][Type.KING] > 0 || p.piecesInHand[Side.WHITE][Type.KING] > 0) {
         return 0;
@@ -137,7 +137,7 @@ int legalMoves(const ref Position p, Move[] out_moves)
     bool[10] pawned = false; // 0～9筋に味方の歩があるか
 
     // 駒を取る手を生成する
-    int length = p.capturelMoves(out_moves);
+    int length = p.capturelMoves(outMoves);
 
     // 盤上の駒を動かす
     for (int from = SQ11; from <= SQ99; from++) {
@@ -148,13 +148,13 @@ int legalMoves(const ref Position p, Move[] out_moves)
         foreach (Dir d; DIRECTIONS[p.squares[from]]) {
             for (int to = from + d.value; !isOverBound(to - d.value, to) && p.squares[to] == Square.EMPTY; to += d.value) {
                 if (canPromote(p.squares[from], from, to)) {
-                    out_moves[length++] = createPromote(from, to);
+                    outMoves[length++] = createPromote(from, to);
                     if (p.squares[from].type == Type.SILVER
                         || ((RANK_OF[to] == 3 || RANK_OF[to] == 7) && (p.squares[from].type == Type.LANCE || p.squares[from].type == Type.KNIGHT))) {
-                        out_moves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
+                        outMoves[length++] = createMove(from, to); // 銀か, 3段目,7段目の香,桂なら不成も生成する
                     }
                 } else if (RANK_MIN[p.squares[from]] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[p.squares[from]]) {
-                    out_moves[length++] = createMove(from, to);
+                    outMoves[length++] = createMove(from, to);
                 }
                 if (!d.isFly) {
                     break; // 飛び駒でなければここでbreak
@@ -170,7 +170,7 @@ int legalMoves(const ref Position p, Move[] out_moves)
         }
         for (type_t t = (pawned[FILE_OF[to]] ? Type.LANCE : Type.PAWN); t <= Type.GOLD; t++) { // 歩,香,桂,銀,角,飛,金
             if (p.piecesInHand[p.sideToMove][t] > 0 && RANK_OF[to] >= RANK_MIN[p.sideToMove << 4 | t] && RANK_MAX[p.sideToMove << 4 | t] >= RANK_OF[to]) {
-                out_moves[length++] = createDrop(t, to);
+                outMoves[length++] = createDrop(t, to);
             }
         }
     }

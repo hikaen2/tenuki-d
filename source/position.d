@@ -20,6 +20,7 @@ Position doMove(Position p, Move m)
         if (m.isDrop) {
             type_t t = m.from;
             p.squares[m.to] = Square((p.sideToMove == Side.BLACK ? 0 : 0b10000) | t);
+            p.hash ^= HASH_SEED_BOARD[p.squares[m.to].i][m.to];
             p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             p.piecesInHand[p.sideToMove][t]--;
             p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
@@ -27,6 +28,7 @@ Position doMove(Position p, Move m)
             // capture
             if (p.squares[m.to] != Square.EMPTY) {
                 type_t t = p.squares[m.to].unpromote.type;
+                p.hash ^= HASH_SEED_BOARD[p.squares[m.to].i][m.to];
                 p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
                 p.piecesInHand[p.sideToMove][t]++;
                 p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];

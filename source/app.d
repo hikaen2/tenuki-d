@@ -11,7 +11,7 @@ import std.getopt;
 import std.regex;
 import std.socket;
 import std.stdio;
-import undead.socketstream;
+import std.string;
 
 private void test()
 {
@@ -35,8 +35,6 @@ private void test()
     // p = p.doMove(parseMove("+9998FU", p));
     // stdout.writeln(p.toString());
 }
-
-Socket sock;
 
 int main(string[] args)
 {
@@ -67,10 +65,9 @@ int main(string[] args)
     const string password = args[3];
 
     stdout.writefln("Connecting to %s port %s.", hostname, port);
-    sock = new TcpSocket(new InternetAddress(hostname, port));
-    scope(exit) sock.close();
+    Socket s = new TcpSocket(new InternetAddress(hostname, port));
+    scope(exit) s.close();
 
-    SocketStream s = new SocketStream(sock);
     writeLine(s, format("LOGIN %s %s", username, password));
     const side_t mySide = (readLineUntil(s, regex("Your_Turn:(\\+|-)")).front[1] == "+" ? Side.BLACK : Side.WHITE);
     readLineUntil(s, regex("END Game_Summary"));
@@ -124,26 +121,31 @@ int main(string[] args)
     }
 }
 
-private void writeLine(ref SocketStream s, string str)
+private void writeLine(ref Socket s, string str)
 {
-    sock.send(str ~ "\n");
-    //s.writeLine(str);
+    s.send(str ~ "\n");
     stderr.writeln(format(">%s", str));
 }
 
-private string readLine(ref SocketStream s)
+private string readLine(ref Socket s)
 {
-    string str = to!string(s.readLine());
-    stderr.writeln(str);
-    RecvLog.writeln(str);
+    char[] buf;
+    char[1] c;
+    do {
+        if (s.receive(c) == 0) {
+            throw new Exception("connection lost");
+        }
+        buf ~= c;
+    } while (c[0] != '\n');
+    string line = to!string(buf.chomp);
+
+    stderr.writeln(line);
+    RecvLog.writeln(line);
     RecvLog.flush();
-    if (str == "") {
-        throw new Exception("connection lost");
-    }
-    return str;
+    return line;
 }
 
-private RegexMatch!string readLineUntil(ref SocketStream s, Regex!char re)
+private RegexMatch!string readLineUntil(ref Socket s, Regex!char re)
 {
     RegexMatch!string m;
     for (string str = readLine(s); (m = str.match(re)).empty; str = readLine(s)) {}

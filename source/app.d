@@ -11,7 +11,6 @@ import std.getopt;
 import std.regex;
 import std.socket;
 import std.stdio;
-import std.string;
 
 private void test()
 {
@@ -69,8 +68,16 @@ int main(string[] args)
     scope(exit) s.close();
 
     writeLine(s, format("LOGIN %s %s", username, password));
-    const side_t mySide = (readLineUntil(s, regex("Your_Turn:(\\+|-)")).front[1] == "+" ? Side.BLACK : Side.WHITE);
-    readLineUntil(s, regex("END Game_Summary"));
+
+    string[string] gameSummary;
+    for (string line = readLine(s); line != "END Game_Summary"; line = readLine(s)) {
+        auto m = line.matchFirst(r"^([^:]+):(.+)$");
+        if (!m.empty) {
+            gameSummary[m[1]] = m[2];
+        }
+    }
+
+    const side_t mySide = (gameSummary["Your_Turn"] == "+" ? Side.BLACK : Side.WHITE);
     writeLine(s, "AGREE");
     readLineUntil(s, regex("START"));
 
@@ -131,14 +138,13 @@ private string readLine(ref Socket s)
 {
     char[] buf;
     char[1] c;
-    do {
-        if (s.receive(c) == 0) {
+    for (auto len = s.receive(c); c[0] != '\n'; len = s.receive(c)) {
+        if (len == 0) {
             throw new Exception("connection lost");
         }
         buf ~= c;
-    } while (c[0] != '\n');
-    string line = to!string(buf.chomp);
-
+    }
+    string line = to!string(buf);
     stderr.writeln(line);
     RecvLog.writeln(line);
     RecvLog.flush();

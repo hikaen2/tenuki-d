@@ -77,7 +77,7 @@ int main(string[] args)
         }
     }
 
-    const side_t mySide = (gameSummary["Your_Turn"] == "+" ? Side.BLACK : Side.WHITE);
+    const color_t myColor = (gameSummary["Your_Turn"] == "+" ? Color.BLACK : Color.WHITE);
     writeLine(s, "AGREE");
     readLineUntil(s, regex("START"));
 
@@ -85,7 +85,7 @@ int main(string[] args)
     stdout.writeln(p.toString());
 
     for (;;) {
-        if (p.sideToMove == mySide) {
+        if (p.sideToMove == myColor) {
             Move[64] pv;
             int score = p.ponder(pv);
             if (pv[0] == Move.TORYO) {
@@ -97,7 +97,7 @@ int main(string[] args)
                     wk ~= format("%s ", pv[i].toString(q));
                     q = q.doMove(pv[i]);
                 }
-                writeLine(s, format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Side.BLACK ? score : -score), wk));
+                writeLine(s, format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), wk));
             } else {
                 writeLine(s, format("%s", pv[0].toString(p)));
             }
@@ -118,7 +118,7 @@ int main(string[] args)
                 retry = true;
             }
         }
-        if (p.sideToMove == mySide) {
+        if (p.sideToMove == myColor) {
             player.remainSeconds -= second;
         }
         stderr.writeln(toString(m, p));

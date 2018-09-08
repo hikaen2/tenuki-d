@@ -1,5 +1,5 @@
 
-alias side_t = ubyte;
+alias color_t = ubyte;
 alias type_t = ubyte;
 
 /**
@@ -29,7 +29,7 @@ struct Position
     Move previousMove; // 直前の指し手
 }
 
-enum Side : side_t
+enum Color : color_t
 {
     BLACK             = 0,  // 先手
     WHITE             = 1,  // 後手
@@ -56,7 +56,7 @@ enum Type : type_t
 
 /**
  * 升
- * xxx1xxxx side
+ * xxx1xxxx color
  * xxxx1111 type
  */
 struct Square
@@ -95,8 +95,8 @@ struct Square
     ubyte i;
     bool isBlack() const { return i <= Square.B_PROMOTED_ROOK.i; }
     bool isWhite() const { return i >= Square.W_PAWN.i; }
-    bool isFriend(side_t s) const { return s == Side.BLACK ? isBlack : isWhite; }
-    bool isEnemy(side_t s) const { return s == Side.BLACK ? isWhite : isBlack; }
+    bool isFriend(color_t s) const { return s == Color.BLACK ? isBlack : isWhite; }
+    bool isEnemy(color_t s) const { return s == Color.BLACK ? isWhite : isBlack; }
     type_t type() const { return i & 0b00001111; }
     Square promote() const { return Square(i | 0b00001000); }
     Square unpromote() const { return Square(i & 0b11110111); }

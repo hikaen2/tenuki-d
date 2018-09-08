@@ -91,7 +91,7 @@ bool isValid(Move m, const ref Position p)
  */
 int capturelMoves(const ref Position p, Move[] outMoves)
 {
-    if (p.piecesInHand[Side.BLACK][Type.KING] > 0 || p.piecesInHand[Side.WHITE][Type.KING] > 0) {
+    if (p.piecesInHand[Color.BLACK][Type.KING] > 0 || p.piecesInHand[Color.WHITE][Type.KING] > 0) {
         return 0;
     }
 
@@ -130,7 +130,7 @@ int capturelMoves(const ref Position p, Move[] outMoves)
  */
 int legalMoves(const ref Position p, Move[] outMoves)
 {
-    if (p.piecesInHand[Side.BLACK][Type.KING] > 0 || p.piecesInHand[Side.WHITE][Type.KING] > 0) {
+    if (p.piecesInHand[Color.BLACK][Type.KING] > 0 || p.piecesInHand[Color.WHITE][Type.KING] > 0) {
         return 0;
     }
 

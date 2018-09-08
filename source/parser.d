@@ -121,7 +121,7 @@ Position parsePosition(string sfen)
     if (sideToMove != "b" && sideToMove != "w") {
         throw new StringException(sfen);
     }
-    p.sideToMove = sideToMove == "b" ? Side.BLACK : Side.WHITE;
+    p.sideToMove = sideToMove == "b" ? Color.BLACK : Color.WHITE;
 
     // 盤面
     for (int i = 9; i >= 2; i--) {
@@ -142,7 +142,7 @@ Position parsePosition(string sfen)
         foreach (c; piecesInHand.matchAll(r"(\d*)(\D)")) {
             int num = (c[1] == "") ? 1 : to!int(c[1]);
             string piece = c[2];
-            p.piecesInHand[piece[0].isUpper() ? Side.BLACK : Side.WHITE][TO_TYPE[piece]] += num;
+            p.piecesInHand[piece[0].isUpper() ? Color.BLACK : Color.WHITE][TO_TYPE[piece]] += num;
         }
     }
 
@@ -151,7 +151,7 @@ Position parsePosition(string sfen)
     for (int i = SQ11; i <= SQ99; i++) {
         p.hash ^= HASH_SEED_BOARD[ p.squares[i].i ][i];
     }
-    for (side_t s = Side.BLACK; s <= Side.WHITE; s++) {
+    for (color_t s = Color.BLACK; s <= Color.WHITE; s++) {
         for (type_t t = Type.PAWN; t <= Type.KING; t++) {
             p.hash ^= HASH_SEED_HAND[s][t][ p.piecesInHand[s][t] ];
         }

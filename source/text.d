@@ -33,12 +33,12 @@ string toString(Move m, const ref Position p)
     int from = m.isDrop ? 0 : NUM[m.from];
     int to = NUM[m.to];
     type_t t = m.isDrop ? m.from : m.isPromote ? p.squares[m.from].promote.type : p.squares[m.from].type;
-    return format("%s%02d%02d%s", (p.sideToMove == Side.BLACK ? "+" : "-"), from, to, CSA[t]);
+    return format("%s%02d%02d%s", (p.sideToMove == Color.BLACK ? "+" : "-"), from, to, CSA[t]);
 }
 
 string toString(const ref Position p)
 {
-    return format("%s\nhash: 0x%016x\nstaticValue: %d\n%s\n", p.toSfen, p.hash, (p.sideToMove == Side.BLACK ? p.staticValue : -p.staticValue), p.toKi2());
+    return format("%s\nhash: 0x%016x\nstaticValue: %d\n%s\n", p.toSfen, p.hash, (p.sideToMove == Color.BLACK ? p.staticValue : -p.staticValue), p.toKi2());
 }
 
 /**
@@ -65,11 +65,11 @@ string toSfen(const ref Position p)
         board = board.replace("1".replicate(i), to!string(i)); // '1'をまとめる
     }
 
-    string side = (p.sideToMove == Side.BLACK ? "b" : "w");
+    string side = (p.sideToMove == Color.BLACK ? "b" : "w");
 
     // 飛車, 角, 金, 銀, 桂, 香, 歩
     string hand;
-    foreach (side_t s; [Side.BLACK, Side.WHITE]) {
+    foreach (color_t s; [Color.BLACK, Color.WHITE]) {
         foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
             int n = p.piecesInHand[s][t];
             if (n > 0) {
@@ -103,7 +103,7 @@ string toKi2(const ref Position p)
     ];
 
     string[2] hand;
-    foreach (side_t s; [Side.BLACK, Side.WHITE]) {
+    foreach (color_t s; [Color.BLACK, Color.WHITE]) {
         foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
             int n = p.piecesInHand[s][t];
             if (n > 0) {
@@ -113,7 +113,7 @@ string toKi2(const ref Position p)
     }
 
     string s;
-    s ~= format("後手の持駒：%s\n", (hand[Side.WHITE] == "" ? "なし" : hand[Side.WHITE]));
+    s ~= format("後手の持駒：%s\n", (hand[Color.WHITE] == "" ? "なし" : hand[Color.WHITE]));
     s ~= "  ９ ８ ７ ６ ５ ４ ３ ２ １\n";
     s ~= "+---------------------------+\n";
     for (int rank = 0; rank <= 8; rank++) {
@@ -124,6 +124,6 @@ string toKi2(const ref Position p)
         s ~= format("|%s\n", NUM[rank + 1]);
     }
     s ~= "+---------------------------+\n";
-    s ~= format("先手の持駒：%s\n", (hand[Side.BLACK] == "" ? "なし" : hand[Side.BLACK]));
+    s ~= format("先手の持駒：%s\n", (hand[Color.BLACK] == "" ? "なし" : hand[Color.BLACK]));
     return s;
 }

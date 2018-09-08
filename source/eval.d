@@ -52,11 +52,11 @@ import std.stdio;
  */
 short staticValue(const ref Position p)
 {
-    if (p.piecesInHand[Side.BLACK][Type.KING] > 0) {
-        return p.sideToMove == Side.BLACK ? +15000 : -15000;
+    if (p.piecesInHand[Color.BLACK][Type.KING] > 0) {
+        return p.sideToMove == Color.BLACK ? +15000 : -15000;
     }
-    if (p.piecesInHand[Side.WHITE][Type.KING] > 0) {
-        return p.sideToMove == Side.BLACK ? -15000 : +15000;
+    if (p.piecesInHand[Color.WHITE][Type.KING] > 0) {
+        return p.sideToMove == Color.BLACK ? -15000 : +15000;
     }
 
     // 駒割りの計算
@@ -69,7 +69,7 @@ short staticValue(const ref Position p)
         wk = (p.squares[i] == Square.W_KING ? ADDRESS_OF[SQ99 - i] : wk);
     }
     for (int t = Type.PAWN; t <= Type.GOLD; t++) {
-        material += (p.piecesInHand[Side.BLACK][t] - p.piecesInHand[Side.WHITE][t]) * P_VALUE[t];
+        material += (p.piecesInHand[Color.BLACK][t] - p.piecesInHand[Color.WHITE][t]) * P_VALUE[t];
     }
 
     // KPの計算
@@ -84,10 +84,10 @@ short staticValue(const ref Position p)
         }
     }
     for (type_t t = Type.PAWN; t <= Type.GOLD; t++) {
-        sum += FV_KP[bk][ OFFSET_HAND[Side.BLACK][t] + p.piecesInHand[Side.BLACK][t] ];
-        sum += FV_KP[bk][ OFFSET_HAND[Side.WHITE][t] + p.piecesInHand[Side.WHITE][t] ];
-        sum -= FV_KP[wk][ OFFSET_HAND[Side.BLACK][t] + p.piecesInHand[Side.WHITE][t] ];
-        sum -= FV_KP[wk][ OFFSET_HAND[Side.WHITE][t] + p.piecesInHand[Side.BLACK][t] ];
+        sum += FV_KP[bk][ OFFSET_HAND[Color.BLACK][t] + p.piecesInHand[Color.BLACK][t] ];
+        sum += FV_KP[bk][ OFFSET_HAND[Color.WHITE][t] + p.piecesInHand[Color.WHITE][t] ];
+        sum -= FV_KP[wk][ OFFSET_HAND[Color.BLACK][t] + p.piecesInHand[Color.WHITE][t] ];
+        sum -= FV_KP[wk][ OFFSET_HAND[Color.WHITE][t] + p.piecesInHand[Color.BLACK][t] ];
     }
 
     // PPの計算
@@ -100,7 +100,7 @@ short staticValue(const ref Position p)
 
     sum /= FV_SCALE;
     int value = material + sum;
-    return cast(short)(p.sideToMove == Side.BLACK ? value : -value);
+    return cast(short)(p.sideToMove == Color.BLACK ? value : -value);
 }
 
 private enum FV_SCALE = 32;
@@ -193,7 +193,7 @@ private immutable short[] PP_OFFSET = [
 
 /*
  * FVのオフセット
- * key: [side_t][type_t]
+ * key: [color_t][type_t]
  */
 private immutable short[][] OFFSET_HAND = [
   // 歩, 香, 桂, 銀, 角, 飛, 金,

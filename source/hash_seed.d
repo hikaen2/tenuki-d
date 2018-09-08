@@ -1,7 +1,7 @@
 
 immutable ulong HASH_SEED_SIDE = 0x8f1acc7c207f8b3d;
 
-// HASH_SHEED_HAND[side_t][type_t][n]
+// HASH_SHEED_HAND[color_t][type_t][n]
 immutable ulong[19][8][2] HASH_SEED_HAND = [
     [
         [0xfc9e1e7d9621751a, 0x8032b494e4061a77, 0xc23d41d71413a0e7, 0x3cbc6c8824388cd6, 0x6093731ace5b7617, 0x9f5867850cad39e9, 0x2a74d48f7339252d, 0xec4c9c2ec16b7905, 0x568956030ab46f97, 0x573bdaa2946e55c8, 0xe2b504a45247ef46, 0x12ae97c4393ee9a8, 0xba5ae487370c475a, 0xbbe89cfcc25e320c, 0x4bc5ddcd8f9ed4ee, 0x72de0f5c68d0205a, 0xe5a2907e9c4f5180, 0x90eefdf5bebbac64, 0x84489292d871a571],

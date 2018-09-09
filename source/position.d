@@ -18,8 +18,8 @@ Position doMove(Position p, Move m)
 {
     if (m != Move.NULL_MOVE && m != Move.TORYO) {
         if (m.isDrop) {
-            type_t t = m.from;
-            p.squares[m.to] = Square((p.sideToMove == Color.BLACK ? 0 : 0b10000) | t);
+            type_t t = m.type;
+            p.squares[m.to] = Square(p.sideToMove, t);
             p.hash ^= HASH_SEED_BOARD[p.squares[m.to].i][m.to];
             p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             p.piecesInHand[p.sideToMove][t]--;
@@ -27,7 +27,7 @@ Position doMove(Position p, Move m)
         } else {
             // capture
             if (p.squares[m.to] != Square.EMPTY) {
-                type_t t = p.squares[m.to].unpromote.type;
+                type_t t = p.squares[m.to].baseType;
                 p.hash ^= HASH_SEED_BOARD[p.squares[m.to].i][m.to];
                 p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
                 p.piecesInHand[p.sideToMove][t]++;

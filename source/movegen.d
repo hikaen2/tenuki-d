@@ -50,12 +50,12 @@ bool isValid(Move m, const ref Position p)
 {
     if (m.isDrop) {
         return !m.isPromote
-            && m.from < Type.KING
+            && m.type < Type.KING
             && SQ11 <= m.to && m.to <= SQ99
-            && p.piecesInHand[p.sideToMove][m.from] > 0
+            && p.piecesInHand[p.sideToMove][m.type] > 0
             && p.squares[m.to] == Square.EMPTY
-            && RANK_MIN[p.sideToMove << 4 | m.from] <= RANK_OF[m.to]
-            && RANK_MAX[p.sideToMove << 4 | m.from] >= RANK_OF[m.to];
+            && RANK_MIN[Square(p.sideToMove, m.type).i] <= RANK_OF[m.to]
+            && RANK_MAX[Square(p.sideToMove, m.type).i] >= RANK_OF[m.to];
     }
 
     if (m.from < SQ11 || SQ99 < m.from || m.to < SQ11 || SQ99 < m.to) {
@@ -168,8 +168,8 @@ int legalMoves(const ref Position p, Move[] outMoves)
         if (p.squares[to] != Square.EMPTY) {
             continue;
         }
-        for (type_t t = (pawned[FILE_OF[to]] ? Type.LANCE : Type.PAWN); t <= Type.GOLD; t++) { // 歩,香,桂,銀,角,飛,金
-            if (p.piecesInHand[p.sideToMove][t] > 0 && RANK_OF[to] >= RANK_MIN[p.sideToMove << 4 | t] && RANK_MAX[p.sideToMove << 4 | t] >= RANK_OF[to]) {
+        for (type_t t = (pawned[FILE_OF[to]] ? Type.LANCE : Type.PAWN); t <= Type.ROOK; t++) { // 歩,香,桂,銀,金,角,飛
+            if (p.piecesInHand[p.sideToMove][t] > 0 && RANK_OF[to] >= RANK_MIN[Square(p.sideToMove, t).i] && RANK_MAX[Square(p.sideToMove, t).i] >= RANK_OF[to]) {
                 outMoves[length++] = createDrop(t, to);
             }
         }
@@ -179,10 +179,7 @@ int legalMoves(const ref Position p, Move[] outMoves)
 
 private bool canPromote(Square sq, int from, int to)
 {
-    if (sq.type > Type.ROOK) {
-        return false;
-    }
-    return (sq.isBlack ? (RANK_OF[from] <= 3 || RANK_OF[to] <= 3) : (RANK_OF[from] >= 7 || RANK_OF[to] >= 7));
+    return sq.isPromotable && (sq.isBlack ? (RANK_OF[from] <= 3 || RANK_OF[to] <= 3) : (RANK_OF[from] >= 7 || RANK_OF[to] >= 7));
 }
 
 private immutable Dir[][] DIRECTIONS = [
@@ -190,9 +187,9 @@ private immutable Dir[][] DIRECTIONS = [
     [ Dir.FN ],                                                             //  1:B_LANCE
     [ Dir.NNE, Dir.NNW ],                                                   //  2:B_KNIGHT
     [ Dir.N,   Dir.NE,  Dir.NW,  Dir.SE,  Dir.SW ],                         //  3:B_SILVER
-    [ Dir.FNE, Dir.FNW, Dir.FSE, Dir.FSW ],                                 //  4:B_BISHOP
-    [ Dir.FN,  Dir.FE,  Dir.FW,  Dir.FS  ],                                 //  5:B_ROOK
-    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  6:B_GOLD
+    [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  4:B_GOLD
+    [ Dir.FNE, Dir.FNW, Dir.FSE, Dir.FSW ],                                 //  5:B_BISHOP
+    [ Dir.FN,  Dir.FE,  Dir.FW,  Dir.FS  ],                                 //  6:B_ROOK
     [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S,  Dir.SE, Dir.SW ], //  7:B_KING
     [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  8:B_PROMOTED_PAWN
     [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  //  9:B_PROMOTED_LANCE
@@ -200,32 +197,32 @@ private immutable Dir[][] DIRECTIONS = [
     [ Dir.N,   Dir.NE,  Dir.NW,  Dir.E,   Dir.W,  Dir.S ],                  // 11:B_PROMOTED_SILVER
     [ Dir.FNE, Dir.FNW, Dir.FSE, Dir.FSW, Dir.N,  Dir.E,  Dir.W,  Dir.S  ], // 12:B_PROMOTED_BISHOP
     [ Dir.FN,  Dir.FE,  Dir.FW,  Dir.FS,  Dir.NE, Dir.NW, Dir.SE, Dir.SW ], // 13:B_PROMOTED_ROOK
-    [],                                                                     // 14:EMPTY
-    [],                                                                     // 15:
-    [ Dir.S  ],                                                             // 16:W_PAWN
-    [ Dir.FS ],                                                             // 17:W_LANCE
-    [ Dir.SSW, Dir.SSE ],                                                   // 18:W_KNIGHT
-    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.NW,  Dir.NE ],                         // 19:W_SILVER
-    [ Dir.FSW, Dir.FSE, Dir.FNW, Dir.FNE ],                                 // 20:W_BISHOP
-    [ Dir.FS,  Dir.FW,  Dir.FE,  Dir.FN  ],                                 // 21:W_ROOK
-    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 22:W_GOLD
-    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N,  Dir.NW, Dir.NE ], // 23:W_KING
-    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 24:W_PROMOTED_PAWN
-    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 25:W_PROMOTED_LANCE
-    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 26:W_PROMOTED_KNIGHT
-    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 27:W_PROMOTED_SILVER
-    [ Dir.FSW, Dir.FSE, Dir.FNW, Dir.FNE, Dir.S,  Dir.W,  Dir.E,  Dir.N  ], // 28:W_PROMOTED_BISHOP
-    [ Dir.FS,  Dir.FW,  Dir.FE,  Dir.FN,  Dir.SW, Dir.SE, Dir.NW, Dir.NE ], // 29:W_PROMOTED_ROOK
+    [ Dir.S  ],                                                             // 14:W_PAWN
+    [ Dir.FS ],                                                             // 15:W_LANCE
+    [ Dir.SSW, Dir.SSE ],                                                   // 16:W_KNIGHT
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.NW,  Dir.NE ],                         // 17:W_SILVER
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 18:W_GOLD
+    [ Dir.FSW, Dir.FSE, Dir.FNW, Dir.FNE ],                                 // 19:W_BISHOP
+    [ Dir.FS,  Dir.FW,  Dir.FE,  Dir.FN  ],                                 // 20:W_ROOK
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N,  Dir.NW, Dir.NE ], // 21:W_KING
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 22:W_PROMOTED_PAWN
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 23:W_PROMOTED_LANCE
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 24:W_PROMOTED_KNIGHT
+    [ Dir.S,   Dir.SW,  Dir.SE,  Dir.W,   Dir.E,  Dir.N ],                  // 25:W_PROMOTED_SILVER
+    [ Dir.FSW, Dir.FSE, Dir.FNW, Dir.FNE, Dir.S,  Dir.W,  Dir.E,  Dir.N  ], // 26:W_PROMOTED_BISHOP
+    [ Dir.FS,  Dir.FW,  Dir.FE,  Dir.FN,  Dir.SW, Dir.SE, Dir.NW, Dir.NE ], // 27:W_PROMOTED_ROOK
 ];
 
-// ▲歩,香,桂,銀,角,飛,金,王,と,成香,成桂,成銀,馬,龍,-,-,△歩,香,桂,銀,角,飛,金,王,と,成香,成桂,成銀,馬,龍
+// ▲歩,香,桂,銀,金,角,飛,王,と,成香,成桂,成銀,馬,龍,△歩,香,桂,銀,金,角,飛,王,と,成香,成桂,成銀,馬,龍
 private immutable ubyte[] RANK_MIN = [
-    2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    2, 2, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
 ];
 
-// ▲歩,香,桂,銀,角,飛,金,王,と,成香,成桂,成銀,馬,龍,-,-,△歩,香,桂,銀,角,飛,金,王,と,成香,成桂,成銀,馬,龍
+// ▲歩,香,桂,銀,金,角,飛,王,と,成香,成桂,成銀,馬,龍,△歩,香,桂,銀,金,角,飛,王,と,成香,成桂,成銀,馬,龍
 private immutable ubyte[] RANK_MAX = [
-    9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 8, 8, 7, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+    9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
+    8, 8, 7, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
 ];
 
 private immutable ubyte[] FILE_OF = [

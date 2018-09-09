@@ -68,7 +68,7 @@ short staticValue(const ref Position p)
         bk = (p.squares[i] == Square.B_KING ? ADDRESS_OF[i       ] : bk);
         wk = (p.squares[i] == Square.W_KING ? ADDRESS_OF[SQ99 - i] : wk);
     }
-    for (int t = Type.PAWN; t <= Type.GOLD; t++) {
+    for (int t = Type.PAWN; t <= Type.ROOK; t++) {
         material += (p.piecesInHand[Color.BLACK][t] - p.piecesInHand[Color.WHITE][t]) * P_VALUE[t];
     }
 
@@ -77,13 +77,13 @@ short staticValue(const ref Position p)
     short[40] list = void;
     int nlist = 0;
     for (int i = SQ11; i <= SQ99; i++) {
-        if ((p.squares[i].isBlack || p.squares[i].isWhite) && p.squares[i].type != Type.KING) {
-            sum += FV_KP[bk][ KP_OFFSET[p.squares[i].i             ] + ADDRESS_OF[i       ] ];
-            sum -= FV_KP[wk][ KP_OFFSET[p.squares[i].i ^ 0b00010000] + ADDRESS_OF[SQ99 - i] ];
+        if (p.squares[i] != Square.EMPTY && p.squares[i].type != Type.KING) {
+            sum += FV_KP[bk][ KP_OFFSET[p.squares[i].i    ] + ADDRESS_OF[i       ] ];
+            sum -= FV_KP[wk][ KP_OFFSET[p.squares[i].inv.i] + ADDRESS_OF[SQ99 - i] ];
             list[nlist++] = cast(short)(PP_OFFSET[p.squares[i].i] + ADDRESS_OF[i]);
         }
     }
-    for (type_t t = Type.PAWN; t <= Type.GOLD; t++) {
+    for (type_t t = Type.PAWN; t <= Type.ROOK; t++) {
         sum += FV_KP[bk][ OFFSET_HAND[Color.BLACK][t] + p.piecesInHand[Color.BLACK][t] ];
         sum += FV_KP[bk][ OFFSET_HAND[Color.WHITE][t] + p.piecesInHand[Color.WHITE][t] ];
         sum -= FV_KP[wk][ OFFSET_HAND[Color.BLACK][t] + p.piecesInHand[Color.WHITE][t] ];
@@ -176,9 +176,9 @@ static this()
  * key: Square
  */
 private immutable short[] P_VALUE = [
-   // 歩,   香,   桂,   銀,   角,   飛,   金,     王,   と, 成香, 成桂, 成銀,   馬,    龍, 空, 壁,
-     100,  260,  235,  392,  625,  844,  389,  15000,  458,  401,  423,  409,  800,  1164,  0,  0,
-    -100, -260, -235, -392, -625, -844, -389, -15000, -458, -401, -423, -409, -800, -1164,
+   // 歩,   香,   桂,   銀,   金,   角,   飛,     王,   と, 成香, 成桂, 成銀,   馬,    龍,
+     100,  260,  235,  392,  389,  625,  844,  15000,  458,  401,  423,  409,  800,  1164,
+    -100, -260, -235, -392, -389, -625, -844, -15000, -458, -401, -423, -409, -800, -1164, 0,
 ];
 
 /*
@@ -186,9 +186,9 @@ private immutable short[] P_VALUE = [
  * key: Square
  */
 private immutable short[] PP_OFFSET = [
-  // 歩,  香,  桂,  銀,   角,   飛,  金, 王,  と, 成香, 成桂, 成銀,   馬,   龍, 空, 壁,
-     -9,  63, 126, 207,  369,  531, 288,  0, 288,  288,  288,  288,  450,  612,  0,  0,
-    693, 765, 837, 900, 1062, 1224, 981,  0, 981,  981,  981,  981, 1143, 1305,
+  // 歩,  香,  桂,  銀,  金,   角,   飛, 王,  と, 成香, 成桂, 成銀,   馬,   龍,
+     -9,  63, 126, 207, 288,  369,  531,  0, 288,  288,  288,  288,  450,  612,
+    693, 765, 837, 900, 981, 1062, 1224,  0, 981,  981,  981,  981, 1143, 1305, 0,
 ];
 
 /*
@@ -196,9 +196,9 @@ private immutable short[] PP_OFFSET = [
  * key: [color_t][type_t]
  */
 private immutable short[][] OFFSET_HAND = [
-  // 歩, 香, 桂, 銀, 角, 飛, 金,
-    [ 0, 38, 48, 58, 78, 84, 68],
-    [19, 43, 53, 63, 81, 87, 73]
+  // 歩, 香, 桂, 銀, 金, 角, 飛,
+    [ 0, 38, 48, 58, 68, 78, 84, ],
+    [19, 43, 53, 63, 73, 81, 87, ]
 ];
 
 /*
@@ -206,9 +206,9 @@ private immutable short[][] OFFSET_HAND = [
  * key: Square
  */
 private immutable short[] KP_OFFSET = [
-  // 歩,  香,  桂,  銀,  角,   飛,  金, 王,  と, 成香, 成桂, 成銀,   馬,   龍, 空, 壁,
-     81, 225, 360, 504, 828, 1152, 666,  0, 666,  666,  666,  666,  990, 1314,  0,  0,
-    162, 306, 441, 585, 909, 1233, 747,  0, 747,  747,  747,  747, 1071, 1395,
+  // 歩,  香,  桂,  銀,  金,  角,   飛, 王,  と, 成香, 成桂, 成銀,   馬,   龍,
+     81, 225, 360, 504, 666, 828, 1152,  0, 666,  666,  666,  666,  990, 1314,
+    162, 306, 441, 585, 747, 909, 1233,  0, 747,  747,  747,  747, 1071, 1395,
 ];
 
 /*

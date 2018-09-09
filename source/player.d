@@ -45,6 +45,7 @@ int ponder(const ref Position p, Move[] outPv)
     Move[64][] pvs;
     Move[64] pv;
     SW = StopWatch(AutoStart.yes);
+    //for (int depth = 1; depth <= 6; depth++) {
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
         p.search0(depth, pv, value);
         Move[64] v = pv;
@@ -54,6 +55,7 @@ int ponder(const ref Position p, Move[] outPv)
         }
         pvs ~= v;
     }
+    //writeln(COUNT);
 
     foreach_reverse (ref v; pvs[1..$]) {
         if (v[0] != Move.TORYO) {

@@ -26,9 +26,9 @@ string toString(Move m, const ref Position p)
         91, 92, 93, 94, 95, 96, 97, 98, 99,
     ];
 
-    //    歩,   香,   桂,   銀,  角,    飛,   金,   玉,   と, 成香, 成桂, 成銀,   馬,   龍,
+    //    歩,   香,   桂,   銀,   金,   角,   飛,   玉,   と, 成香, 成桂, 成銀,   馬,   龍,
     immutable string[] CSA = [
-        "FU", "KY", "KE", "GI", "KA", "HI", "KI", "OU", "TO", "NY", "NK", "NG", "UM", "RY",
+        "FU", "KY", "KE", "GI", "KI", "KA", "HI", "OU", "TO", "NY", "NK", "NG", "UM", "RY",
     ];
     int from = m.isDrop ? 0 : NUM[m.from];
     int to = NUM[m.to];
@@ -46,10 +46,10 @@ string toString(const ref Position p)
  */
 string toSfen(const ref Position p)
 {
-    //   歩,  香,  桂,  銀,  角,  飛,  金,  王,   と, 成香, 成桂, 成銀,   馬,   龍,  空, 壁
+    //   歩,  香,  桂,  銀,  金,  角,  飛,  王,   と, 成香, 成桂, 成銀,   馬,   龍,
     immutable string[] TO_SFEN = [
-        "P", "L", "N", "S", "B", "R", "G", "K", "+P", "+L", "+N", "+S", "+B", "+R", "1", "",
-        "p", "l", "n", "s", "b", "r", "g", "k", "+p", "+l", "+n", "+s", "+b", "+r",
+        "P", "L", "N", "S", "G", "B", "R", "K", "+P", "+L", "+N", "+S", "+B", "+R",
+        "p", "l", "n", "s", "g", "b", "r", "k", "+p", "+l", "+n", "+s", "+b", "+r", "1",
     ];
 
     string[] lines;
@@ -69,11 +69,11 @@ string toSfen(const ref Position p)
 
     // 飛車, 角, 金, 銀, 桂, 香, 歩
     string hand;
-    foreach (color_t s; [Color.BLACK, Color.WHITE]) {
+    foreach (color_t c; [Color.BLACK, Color.WHITE]) {
         foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
-            int n = p.piecesInHand[s][t];
+            int n = p.piecesInHand[c][t];
             if (n > 0) {
-                hand ~= (n > 1 ? to!string(n) : "") ~ TO_SFEN[t | s << 4];
+                hand ~= (n > 1 ? to!string(n) : "") ~ TO_SFEN[Square(c, t).i];
             }
         }
     }
@@ -90,12 +90,12 @@ string toSfen(const ref Position p)
 string toKi2(const ref Position p)
 {
     immutable string[] BOARD = [
-        " 歩", " 香", " 桂", " 銀", " 角", " 飛", " 金", " 玉", " と", " 杏", " 圭", " 全", " 馬", " 龍", " ・", " 壁",
-        "v歩", "v香", "v桂", "v銀", "v角", "v飛", "v金", "v玉", "vと", "v杏", "v圭", "v全", "v馬", "v龍",
+        " 歩", " 香", " 桂", " 銀", " 金", " 角", " 飛", " 玉", " と", " 杏", " 圭", " 全", " 馬", " 龍",
+        "v歩", "v香", "v桂", "v銀", "v金", "v角", "v飛", "v玉", "vと", "v杏", "v圭", "v全", "v馬", "v龍", " ・",
     ];
 
     immutable string[] HAND = [
-        "歩", "香", "桂", "銀", "角", "飛", "金",
+        "歩", "香", "桂", "銀", "金", "角", "飛",
     ];
 
     immutable string[] NUM = [

@@ -41,9 +41,9 @@ enum Type : type_t
     LANCE             = 1,  // 香
     KNIGHT            = 2,  // 桂
     SILVER            = 3,  // 銀
-    BISHOP            = 4,  // 角
-    ROOK              = 5,  // 飛
-    GOLD              = 6,  // 金
+    GOLD              = 4,  // 金
+    BISHOP            = 5,  // 角
+    ROOK              = 6,  // 飛
     KING              = 7,  // 王
     PROMOTED_PAWN     = 8,  // と
     PROMOTED_LANCE    = 9,  // 成香
@@ -56,50 +56,51 @@ enum Type : type_t
 
 /**
  * 升
- * xxx1xxxx color
- * xxxx1111 type
  */
 struct Square
 {
-    enum Square B_PAWN            = {0};
-    enum Square B_LANCE           = {1};
-    enum Square B_KNIGHT          = {2};
-    enum Square B_SILVER          = {3};
-    enum Square B_BISHOP          = {4};
-    enum Square B_ROOK            = {5};
-    enum Square B_GOLD            = {6};
-    enum Square B_KING            = {7};
-    enum Square B_PROMOTED_PAWN   = {8};
-    enum Square B_PROMOTED_LANCE  = {9};
-    enum Square B_PROMOTED_KNIGHT = {10};
-    enum Square B_PROMOTED_SILVER = {11};
-    enum Square B_PROMOTED_BISHOP = {12};
-    enum Square B_PROMOTED_ROOK   = {13};
-    enum Square EMPTY             = {14};
-    enum Square _                 = {15};
-    enum Square W_PAWN            = {16};
-    enum Square W_LANCE           = {17};
-    enum Square W_KNIGHT          = {18};
-    enum Square W_SILVER          = {19};
-    enum Square W_BISHOP          = {20};
-    enum Square W_ROOK            = {21};
-    enum Square W_GOLD            = {22};
-    enum Square W_KING            = {23};
-    enum Square W_PROMOTED_PAWN   = {24};
-    enum Square W_PROMOTED_LANCE  = {25};
-    enum Square W_PROMOTED_KNIGHT = {26};
-    enum Square W_PROMOTED_SILVER = {27};
-    enum Square W_PROMOTED_BISHOP = {28};
-    enum Square W_PROMOTED_ROOK   = {29};
+    enum Square B_PAWN            = Square(0);
+    enum Square B_LANCE           = Square(1);
+    enum Square B_KNIGHT          = Square(2);
+    enum Square B_SILVER          = Square(3);
+    enum Square B_GOLD            = Square(4);
+    enum Square B_BISHOP          = Square(5);
+    enum Square B_ROOK            = Square(6);
+    enum Square B_KING            = Square(7);
+    enum Square B_PROMOTED_PAWN   = Square(8);
+    enum Square B_PROMOTED_LANCE  = Square(9);
+    enum Square B_PROMOTED_KNIGHT = Square(10);
+    enum Square B_PROMOTED_SILVER = Square(11);
+    enum Square B_PROMOTED_BISHOP = Square(12);
+    enum Square B_PROMOTED_ROOK   = Square(13);
+    enum Square W_PAWN            = Square(14);
+    enum Square W_LANCE           = Square(15);
+    enum Square W_KNIGHT          = Square(16);
+    enum Square W_SILVER          = Square(17);
+    enum Square W_GOLD            = Square(18);
+    enum Square W_BISHOP          = Square(19);
+    enum Square W_ROOK            = Square(20);
+    enum Square W_KING            = Square(21);
+    enum Square W_PROMOTED_PAWN   = Square(22);
+    enum Square W_PROMOTED_LANCE  = Square(23);
+    enum Square W_PROMOTED_KNIGHT = Square(24);
+    enum Square W_PROMOTED_SILVER = Square(25);
+    enum Square W_PROMOTED_BISHOP = Square(26);
+    enum Square W_PROMOTED_ROOK   = Square(27);
+    enum Square EMPTY             = Square(28);
 
     ubyte i;
-    bool isBlack() const { return i <= Square.B_PROMOTED_ROOK.i; }
-    bool isWhite() const { return i >= Square.W_PAWN.i; }
-    bool isFriend(color_t s) const { return s == Color.BLACK ? isBlack : isWhite; }
-    bool isEnemy(color_t s) const { return s == Color.BLACK ? isWhite : isBlack; }
-    type_t type() const { return i & 0b00001111; }
-    Square promote() const { return Square(i | 0b00001000); }
-    Square unpromote() const { return Square(i & 0b11110111); }
+    this(ubyte i) { this.i = i; }
+    this(color_t c, type_t t) { this.i = cast(ubyte)(c * Square.W_PAWN.i + t); }
+    bool isBlack() const { return COLOR[i] == Color.BLACK; }
+    bool isWhite() const { return COLOR[i] == Color.WHITE; }
+    bool isFriend(color_t c) const { return COLOR[i] == c; }
+    bool isEnemy(color_t c) const { return COLOR[i] == (c ^ 1); }
+    bool isPromotable() const { return PROMOTABLE[i]; }
+    type_t type() const { return TYPE[i]; }
+    type_t baseType() const { return BASETYPE[i]; }
+    Square promote() const { return PROMOTE[i]; }
+    Square inv() const { return INV[i]; }
 }
 
 /**
@@ -148,6 +149,7 @@ struct Move
     enum Move TORYO     = {0b00111111_11111111};
 
     ushort i;
+    ubyte type() const { return cast(ubyte)((i >> 7) & 0b01111111); }
     ubyte from() const { return cast(ubyte)((i >> 7) & 0b01111111); }
     ubyte to() const { return cast(ubyte)(i & 0b01111111); }
     bool isPromote() const { return (i & 0b1000000000000000) != 0; }
@@ -162,3 +164,50 @@ Move createDrop(type_t t, int to) { return Move(cast(ushort)(t << 7 | to | 0b010
 
 enum SQ11 = 0;
 enum SQ99 = 80;
+
+
+private immutable color_t[] COLOR = [
+    Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK,
+    Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK, Color.BLACK,
+    Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE,
+    Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE,
+    255,
+];
+
+private immutable type_t[] TYPE = [
+    Type.PAWN, Type.LANCE, Type.KNIGHT, Type.SILVER, Type.GOLD, Type.BISHOP, Type.ROOK, Type.KING,
+    Type.PROMOTED_PAWN, Type.PROMOTED_LANCE, Type.PROMOTED_KNIGHT, Type.PROMOTED_SILVER, Type.PROMOTED_BISHOP, Type.PROMOTED_ROOK,
+    Type.PAWN, Type.LANCE, Type.KNIGHT, Type.SILVER, Type.GOLD, Type.BISHOP, Type.ROOK, Type.KING,
+    Type.PROMOTED_PAWN, Type.PROMOTED_LANCE, Type.PROMOTED_KNIGHT, Type.PROMOTED_SILVER, Type.PROMOTED_BISHOP, Type.PROMOTED_ROOK,
+    Type.EMPTY
+];
+
+private immutable type_t[] BASETYPE = [
+    Type.PAWN, Type.LANCE, Type.KNIGHT, Type.SILVER, Type.GOLD, Type.BISHOP, Type.ROOK, Type.KING,
+    Type.PAWN, Type.LANCE, Type.KNIGHT, Type.SILVER, Type.BISHOP, Type.ROOK,
+    Type.PAWN, Type.LANCE, Type.KNIGHT, Type.SILVER, Type.GOLD, Type.BISHOP, Type.ROOK, Type.KING,
+    Type.PAWN, Type.LANCE, Type.KNIGHT, Type.SILVER, Type.BISHOP, Type.ROOK,
+    Type.EMPTY
+];
+
+private immutable Square[] PROMOTE = [
+    Square.B_PROMOTED_PAWN, Square.B_PROMOTED_LANCE, Square.B_PROMOTED_KNIGHT, Square.B_PROMOTED_SILVER, Square.B_GOLD, Square.B_PROMOTED_BISHOP, Square.B_PROMOTED_ROOK, Square.B_KING,
+    Square.B_PROMOTED_PAWN, Square.B_PROMOTED_LANCE, Square.B_PROMOTED_KNIGHT, Square.B_PROMOTED_SILVER, Square.B_PROMOTED_BISHOP, Square.B_PROMOTED_ROOK,
+    Square.W_PROMOTED_PAWN, Square.W_PROMOTED_LANCE, Square.W_PROMOTED_KNIGHT, Square.W_PROMOTED_SILVER, Square.W_GOLD, Square.W_PROMOTED_BISHOP, Square.W_PROMOTED_ROOK, Square.W_KING,
+    Square.W_PROMOTED_PAWN, Square.W_PROMOTED_LANCE, Square.W_PROMOTED_KNIGHT, Square.W_PROMOTED_SILVER, Square.W_PROMOTED_BISHOP, Square.W_PROMOTED_ROOK,
+    Square.EMPTY,
+];
+
+private immutable Square[] INV = [
+    Square.W_PAWN, Square.W_LANCE, Square.W_KNIGHT, Square.W_SILVER, Square.W_GOLD, Square.W_BISHOP, Square.W_ROOK, Square.W_KING,
+    Square.W_PROMOTED_PAWN, Square.W_PROMOTED_LANCE, Square.W_PROMOTED_KNIGHT, Square.W_PROMOTED_SILVER, Square.W_PROMOTED_BISHOP, Square.W_PROMOTED_ROOK,
+    Square.B_PAWN, Square.B_LANCE, Square.B_KNIGHT, Square.B_SILVER, Square.B_GOLD, Square.B_BISHOP, Square.B_ROOK, Square.B_KING,
+    Square.B_PROMOTED_PAWN, Square.B_PROMOTED_LANCE, Square.B_PROMOTED_KNIGHT, Square.B_PROMOTED_SILVER, Square.B_PROMOTED_BISHOP, Square.B_PROMOTED_ROOK,
+    Square.EMPTY,
+];
+
+private immutable bool[] PROMOTABLE = [
+    true, true, true, true, false, true, true, false, false, false, false, false, false, false,
+    true, true, true, true, false, true, true, false, false, false, false, false, false, false,
+    false,
+];

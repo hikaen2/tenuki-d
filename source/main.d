@@ -1,7 +1,7 @@
 import book;
 import types;
 import text;
-import player;
+import search;
 import position;
 import movegen;
 import parser;
@@ -119,12 +119,12 @@ int main(string[] args)
             }
         }
         if (p.sideToMove == myColor) {
-            player.remainSeconds -= second;
+            search.remainSeconds -= second;
         }
         stderr.writeln(toString(m, p));
         p = p.doMove(m);
         stderr.writeln(toString(p));
-        stderr.writeln(player.remainSeconds);
+        stderr.writeln(search.remainSeconds);
     }
 }
 

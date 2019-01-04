@@ -147,13 +147,13 @@ Position parsePosition(string sfen)
     }
 
     // ハッシュ値
-    p.hash = 0;
+    p.key = 0;
     for (int i = SQ11; i <= SQ99; i++) {
-        p.hash ^= zobrist.PSQ[ p.squares[i].i ][i];
+        p.key ^= zobrist.PSQ[ p.squares[i].i ][i];
     }
     for (color_t s = Color.BLACK; s <= Color.WHITE; s++) {
         for (type_t t = Type.PAWN; t <= Type.KING; t++) {
-            p.hash ^= zobrist.HAND[s][t][ p.piecesInHand[s][t] ];
+            p.key ^= zobrist.HAND[s][t][ p.piecesInHand[s][t] ];
         }
     }
     return p;

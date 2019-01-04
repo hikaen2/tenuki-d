@@ -24,7 +24,7 @@ struct Position
     Square[81] squares;
     ubyte[8][2] piecesInHand;
     bool sideToMove;
-    ulong hash;
+    ulong key;
     ushort moveCount = 1;
     Move previousMove; // 直前の指し手
 }

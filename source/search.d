@@ -162,7 +162,7 @@ private int search(Position p, int depth, int a, const int b, Move[] outPv, bool
     }
 
     {
-        Move move = TT[p.hash & MASK];
+        Move move = TT[p.key & MASK];
         if (move.isValid(p)) {
             int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
             if (a < value) {
@@ -185,7 +185,7 @@ private int search(Position p, int depth, int a, const int b, Move[] outPv, bool
         int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
         if (a < value) {
             a = value;
-            TT[p.hash & MASK] = move;
+            TT[p.key & MASK] = move;
             if (b <= a) {
                 return b;
             }
@@ -217,7 +217,7 @@ private int qsearch(Position p, int depth, int a, const int b, Move[] outPv)
     }
 
     {
-        Move move = TT[p.hash & MASK];
+        Move move = TT[p.key & MASK];
         if (move.isValid(p) && p.squares[move.to].isEnemy(p.sideToMove)) {
             int value = -p.doMove(move).qsearch(depth - 1, -b, -a, pv);
             if (a < value) {
@@ -237,7 +237,7 @@ private int qsearch(Position p, int depth, int a, const int b, Move[] outPv)
         int value = -p.doMove(move).qsearch(depth - 1, -b, -a, pv);
         if (a < value) {
             a = value;
-            TT[p.hash & MASK] = move;
+            TT[p.key & MASK] = move;
             if (b <= a) {
                 return b;
             }

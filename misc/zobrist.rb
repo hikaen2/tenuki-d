@@ -2,21 +2,22 @@ require 'erb'
 
 @prng = Random.new
 
-def rand64
-  sprintf('0x%016x', @prng.rand(2**64))
+def rand63
+  sprintf('0x%016x', @prng.rand(2**63) << 1)
 end
 
 ERB.new(DATA.read, nil, '-').run(binding)
 __END__
+module zobrist;
 
-immutable ulong SIDE = <%= rand64 %>;
+immutable ulong SIDE = 0x0000000000000001;
 
 // zobrist.HAND[color_t][type_t][n]
 immutable ulong[19][8][2] HAND = [
     <%- 2.times do -%>
     [
         <%- 8.times do -%>
-        [<% 19.times do %><%= rand64 %>, <% end %>],
+        [<% 19.times do %><%= rand63 %>, <% end %>],
         <%- end -%>
     ],
     <%- end -%>
@@ -28,11 +29,11 @@ immutable ulong[81][29] PSQ = [
     // <%= i %>
     [
         <%- 9.times do -%>
-        <% 9.times do %><%= rand64 %>, <% end %>
+        <% 9.times do %><%= rand63 %>, <% end %>
         <%- end -%>
     ],
     <%- end -%>
-    // 29
+    // 28
     [
         <%- 9.times do -%>
         <% 9.times do %>0x0000000000000000, <% end %>

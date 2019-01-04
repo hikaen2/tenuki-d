@@ -1,10 +1,10 @@
 import types;
-import hash_seed;
 import std.array;
 import std.ascii;
 import std.conv;
 import std.regex;
 import std.string;
+static import zobrist;
 
 Move parseMove(string s, const ref Position p)
 {
@@ -149,11 +149,11 @@ Position parsePosition(string sfen)
     // ハッシュ値
     p.hash = 0;
     for (int i = SQ11; i <= SQ99; i++) {
-        p.hash ^= HASH_SEED_BOARD[ p.squares[i].i ][i];
+        p.hash ^= zobrist.PSQ[ p.squares[i].i ][i];
     }
     for (color_t s = Color.BLACK; s <= Color.WHITE; s++) {
         for (type_t t = Type.PAWN; t <= Type.KING; t++) {
-            p.hash ^= HASH_SEED_HAND[s][t][ p.piecesInHand[s][t] ];
+            p.hash ^= zobrist.HAND[s][t][ p.piecesInHand[s][t] ];
         }
     }
     return p;

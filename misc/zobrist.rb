@@ -9,10 +9,10 @@ end
 ERB.new(DATA.read, nil, '-').run(binding)
 __END__
 
-immutable ulong HASH_SEED_SIDE = <%= rand64 %>;
+immutable ulong SIDE = <%= rand64 %>;
 
-// HASH_SHEED_HAND[color_t][type_t][n]
-immutable ulong[19][8][2] HASH_SEED_HAND = [
+// zobrist.HAND[color_t][type_t][n]
+immutable ulong[19][8][2] HAND = [
     <%- 2.times do -%>
     [
         <%- 8.times do -%>
@@ -22,8 +22,8 @@ immutable ulong[19][8][2] HASH_SEED_HAND = [
     <%- end -%>
 ];
 
-// HASH_SHEED_BOARD[square_t][index]
-immutable ulong[81][29] HASH_SEED_BOARD = [
+// zobrist.PSQ[square_t][index]
+immutable ulong[81][29] PSQ = [
     <%- 28.times do |i| -%>
     // <%= i %>
     [

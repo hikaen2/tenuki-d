@@ -1,6 +1,5 @@
 import types;
 import text;
-import hash_seed;
 import movegen;
 import std.string;
 import std.stdio;
@@ -10,6 +9,7 @@ import std.array;
 import std.container;
 import std.conv;
 import std.regex;
+static import zobrist;
 
 /**
  * do_move
@@ -20,27 +20,27 @@ Position doMove(Position p, Move m)
         if (m.isDrop) {
             type_t t = m.type;
             p.squares[m.to] = Square(p.sideToMove, t);
-            p.hash ^= HASH_SEED_BOARD[p.squares[m.to].i][m.to];
-            p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
+            p.hash ^= zobrist.PSQ[p.squares[m.to].i][m.to];
+            p.hash ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             p.piecesInHand[p.sideToMove][t]--;
-            p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
+            p.hash ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
         } else {
             // capture
             if (p.squares[m.to] != Square.EMPTY) {
                 type_t t = p.squares[m.to].baseType;
-                p.hash ^= HASH_SEED_BOARD[p.squares[m.to].i][m.to];
-                p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
+                p.hash ^= zobrist.PSQ[p.squares[m.to].i][m.to];
+                p.hash ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
                 p.piecesInHand[p.sideToMove][t]++;
-                p.hash ^= HASH_SEED_HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
+                p.hash ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             }
             p.squares[m.to] = m.isPromote ? p.squares[m.from].promote : p.squares[m.from];
-            p.hash ^= HASH_SEED_BOARD[p.squares[m.to].i][m.to];
-            p.hash ^= HASH_SEED_BOARD[p.squares[m.from].i][m.from];
+            p.hash ^= zobrist.PSQ[p.squares[m.to].i][m.to];
+            p.hash ^= zobrist.PSQ[p.squares[m.from].i][m.from];
             p.squares[m.from] = Square.EMPTY;
         }
     }
     p.sideToMove ^= 1;
-    p.hash ^= HASH_SEED_SIDE;
+    p.hash ^= zobrist.SIDE;
     p.moveCount++;
     p.previousMove = m;
     return p;

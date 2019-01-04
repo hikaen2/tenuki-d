@@ -1,8 +1,9 @@
+module zobrist;
 
-immutable ulong HASH_SEED_SIDE = 0x8f1acc7c207f8b3d;
+immutable ulong SIDE = 0x8f1acc7c207f8b3d;
 
-// HASH_SHEED_HAND[color_t][type_t][n]
-immutable ulong[19][8][2] HASH_SEED_HAND = [
+// zobrist.HAND[color_t][type_t][n]
+immutable ulong[19][8][2] HAND = [
     [
         [0xfc9e1e7d9621751a, 0x8032b494e4061a77, 0xc23d41d71413a0e7, 0x3cbc6c8824388cd6, 0x6093731ace5b7617, 0x9f5867850cad39e9, 0x2a74d48f7339252d, 0xec4c9c2ec16b7905, 0x568956030ab46f97, 0x573bdaa2946e55c8, 0xe2b504a45247ef46, 0x12ae97c4393ee9a8, 0xba5ae487370c475a, 0xbbe89cfcc25e320c, 0x4bc5ddcd8f9ed4ee, 0x72de0f5c68d0205a, 0xe5a2907e9c4f5180, 0x90eefdf5bebbac64, 0x84489292d871a571],
         [0xf5190fd916500b5b, 0xb8064b791e44fdbe, 0x6d48d614c838bff7, 0xbb5ac377dc942e6e, 0xe6cab11de06269f7, 0xd67f62a541392f8d, 0xcfce3a49a21146d5, 0xcbf295e4f5309332, 0xf1ad331097ba8dba, 0x5a757a377bb67956, 0x23e6b2840741094f, 0x24a22a68715a9d6f, 0x48fe326caae67e53, 0x79ba33d793ceccba, 0xb09b272443a46253, 0x0b21e103b1896911, 0x12688d6566fc63a7, 0x997e00166d776d15, 0x22eaaeaa85065a3b],
@@ -25,8 +26,8 @@ immutable ulong[19][8][2] HASH_SEED_HAND = [
     ],
 ];
 
-// HASH_SHEED_BOARD[square_t][index]
-immutable ulong[81][29] HASH_SEED_BOARD = [
+// zobrist.PSQ[square_t][index]
+immutable ulong[81][29] PSQ = [
     // 0
     [
         0x74e65fd99b713328, 0xba94c35c32ae10db, 0x977b00de4a80b006, 0xcff2256714392fa4, 0x968cec3cf64809e3, 0x54a51d52edafb77c, 0xa3bdab6837d06662, 0xdea56557837daae1, 0x351d82b698a440ef,

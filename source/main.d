@@ -128,29 +128,37 @@ int main(string[] args)
     }
 }
 
+/**
+ * ソケットに文字列を書き込む
+ */
 private void writeLine(ref Socket s, string str)
 {
     s.send(str ~ "\n");
     stderr.writeln(format(">%s", str));
 }
 
+/**
+ * ソケットから１行読み込む
+ */
 private string readLine(ref Socket s)
 {
-    char[] buf;
+    string line;
     char[1] c;
     for (auto len = s.receive(c); c[0] != '\n'; len = s.receive(c)) {
         if (len == 0) {
             throw new Exception("connection lost");
         }
-        buf ~= c;
+        line ~= c;
     }
-    string line = to!string(buf);
     stderr.writeln(line);
     RecvLog.writeln(line);
     RecvLog.flush();
     return line;
 }
 
+/**
+ * ソケットからパターンに一致するまで行を読む
+ */
 private RegexMatch!string readLineUntil(ref Socket s, Regex!char re)
 {
     RegexMatch!string m;

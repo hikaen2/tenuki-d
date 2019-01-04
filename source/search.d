@@ -14,7 +14,7 @@ import std.datetime.stopwatch;
 private int COUNT = 0;
 
 private immutable MASK = 0xffffff;  // 1024 * 1024 * 16 - 1
-private Move[MASK + 1] TT;
+private shared Move[MASK + 1] TT;
 
 private StopWatch SW;
 private int SECOND = 20;

@@ -32,7 +32,7 @@ string toString(Move m, const ref Position p)
     ];
     int from = m.isDrop ? 0 : NUM[m.from];
     int to = NUM[m.to];
-    type_t t = m.isDrop ? m.from : m.isPromote ? p.squares[m.from].promote.type : p.squares[m.from].type;
+    type_t t = m.isDrop ? m.from : m.isPromote ? p.board[m.from].promote.type : p.board[m.from].type;
     return format("%s%02d%02d%s", (p.sideToMove == Color.BLACK ? "+" : "-"), from, to, CSA[t]);
 }
 
@@ -56,7 +56,7 @@ string toSfen(const ref Position p)
     for (int rank = 0; rank <= 8; rank++) {
         string line;
         for (int file = 8; file >= 0; file--) {
-            line ~= TO_SFEN[p.squares[file * 9 + rank].i];
+            line ~= TO_SFEN[p.board[file * 9 + rank].i];
         }
         lines ~= line;
     }
@@ -119,7 +119,7 @@ string toKi2(const ref Position p)
     for (int rank = 0; rank <= 8; rank++) {
         s ~= "|";
         for (int file = 8; file >= 0; file--) {
-            s ~= BOARD[p.squares[file * 9 + rank].i];
+            s ~= BOARD[p.board[file * 9 + rank].i];
         }
         s ~= format("|%s\n", NUM[rank + 1]);
     }

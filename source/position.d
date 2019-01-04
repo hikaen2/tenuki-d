@@ -19,24 +19,24 @@ Position doMove(Position p, Move m)
     if (m != Move.NULL_MOVE && m != Move.TORYO) {
         if (m.isDrop) {
             type_t t = m.type;
-            p.squares[m.to] = Square(p.sideToMove, t);
-            p.key ^= zobrist.PSQ[p.squares[m.to].i][m.to];
+            p.board[m.to] = Square(p.sideToMove, t);
+            p.key ^= zobrist.PSQ[p.board[m.to].i][m.to];
             p.key ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             p.piecesInHand[p.sideToMove][t]--;
             p.key ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
         } else {
             // capture
-            if (p.squares[m.to] != Square.EMPTY) {
-                type_t t = p.squares[m.to].baseType;
-                p.key ^= zobrist.PSQ[p.squares[m.to].i][m.to];
+            if (p.board[m.to] != Square.EMPTY) {
+                type_t t = p.board[m.to].baseType;
+                p.key ^= zobrist.PSQ[p.board[m.to].i][m.to];
                 p.key ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
                 p.piecesInHand[p.sideToMove][t]++;
                 p.key ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             }
-            p.squares[m.to] = m.isPromote ? p.squares[m.from].promote : p.squares[m.from];
-            p.key ^= zobrist.PSQ[p.squares[m.to].i][m.to];
-            p.key ^= zobrist.PSQ[p.squares[m.from].i][m.from];
-            p.squares[m.from] = Square.EMPTY;
+            p.board[m.to] = m.isPromote ? p.board[m.from].promote : p.board[m.from];
+            p.key ^= zobrist.PSQ[p.board[m.to].i][m.to];
+            p.key ^= zobrist.PSQ[p.board[m.from].i][m.from];
+            p.board[m.from] = Square.EMPTY;
         }
     }
     p.sideToMove ^= 1;

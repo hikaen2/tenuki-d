@@ -64,9 +64,9 @@ short staticValue(const ref Position p)
     int bk = 0;
     int wk = 0;
     for (int i = SQ11; i <= SQ99; i++) {
-        material += P_VALUE[p.squares[i].i];
-        bk = (p.squares[i] == Square.B_KING ? ADDRESS_OF[i       ] : bk);
-        wk = (p.squares[i] == Square.W_KING ? ADDRESS_OF[SQ99 - i] : wk);
+        material += P_VALUE[p.board[i].i];
+        bk = (p.board[i] == Square.B_KING ? ADDRESS_OF[i       ] : bk);
+        wk = (p.board[i] == Square.W_KING ? ADDRESS_OF[SQ99 - i] : wk);
     }
     for (int t = Type.PAWN; t <= Type.ROOK; t++) {
         material += (p.piecesInHand[Color.BLACK][t] - p.piecesInHand[Color.WHITE][t]) * P_VALUE[t];
@@ -77,10 +77,10 @@ short staticValue(const ref Position p)
     short[40] list = void;
     int nlist = 0;
     for (int i = SQ11; i <= SQ99; i++) {
-        if (p.squares[i] != Square.EMPTY && p.squares[i].type != Type.KING) {
-            sum += FV_KP[bk][ KP_OFFSET[p.squares[i].i    ] + ADDRESS_OF[i       ] ];
-            sum -= FV_KP[wk][ KP_OFFSET[p.squares[i].inv.i] + ADDRESS_OF[SQ99 - i] ];
-            list[nlist++] = cast(short)(PP_OFFSET[p.squares[i].i] + ADDRESS_OF[i]);
+        if (p.board[i] != Square.EMPTY && p.board[i].type != Type.KING) {
+            sum += FV_KP[bk][ KP_OFFSET[p.board[i].i    ] + ADDRESS_OF[i       ] ];
+            sum -= FV_KP[wk][ KP_OFFSET[p.board[i].inv.i] + ADDRESS_OF[SQ99 - i] ];
+            list[nlist++] = cast(short)(PP_OFFSET[p.board[i].i] + ADDRESS_OF[i]);
         }
     }
     for (type_t t = Type.PAWN; t <= Type.ROOK; t++) {
@@ -213,7 +213,7 @@ private immutable short[] KP_OFFSET = [
 
 /*
  * FVのインデックス
- * key: Position.squaresのインデックス
+ * key: Position.boardのインデックス
  */
 private immutable ubyte[] ADDRESS_OF = [
      0,  9, 18, 27, 36, 45, 54, 63, 72,

@@ -5,7 +5,7 @@ alias type_t = ubyte;
 /**
  * 局面
  *
- * squares[81]:
+ * board[81]:
  *  9  8  7  6  5  4  3  2  1
  * --------------------------+
  * 72 63 54 45 36 27 18  9  0|一
@@ -21,7 +21,7 @@ alias type_t = ubyte;
  */
 struct Position
 {
-    Square[81] squares;
+    Square[81] board;
     ubyte[8][2] piecesInHand;
     bool sideToMove;
     ulong key;

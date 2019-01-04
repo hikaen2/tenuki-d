@@ -45,7 +45,7 @@ Move parseMove(string s, const ref Position p)
 
     if (from == -1) {
         return createDrop(t, to); // fromが0なら駒打ち
-    } else if (t != p.squares[from].type()) {
+    } else if (t != p.board[from].type()) {
         return createPromote(from, to); // 成る
     } else {
         return createMove(from, to);
@@ -104,7 +104,7 @@ Position parsePosition(string sfen)
     ];
 
     Position p;
-    p.squares = Square.EMPTY;
+    p.board = Square.EMPTY;
 
     string[] ss = sfen.strip().split(regex(r"\s+"));
     if (ss[0] != "sfen") {
@@ -131,7 +131,7 @@ Position parsePosition(string sfen)
     auto m = boardState.matchAll(r"\+?.");
     for (int rank = 0; rank <= 8; rank++) {
         for (int file = 8; file >= 0; file--) {
-            p.squares[file * 9 + rank] = TO_SQUARE[m.front.hit];
+            p.board[file * 9 + rank] = TO_SQUARE[m.front.hit];
             m.popFront();
         }
     }
@@ -149,7 +149,7 @@ Position parsePosition(string sfen)
     // ハッシュ値
     p.key = 0;
     for (int i = SQ11; i <= SQ99; i++) {
-        p.key ^= zobrist.PSQ[ p.squares[i].i ][i];
+        p.key ^= zobrist.PSQ[ p.board[i].i ][i];
     }
     for (color_t s = Color.BLACK; s <= Color.WHITE; s++) {
         for (type_t t = Type.PAWN; t <= Type.KING; t++) {

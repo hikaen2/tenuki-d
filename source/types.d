@@ -94,8 +94,8 @@ struct Square
     this(color_t c, type_t t) { this.i = cast(ubyte)(c * Square.W_PAWN.i + t); }
     bool isBlack() const { return COLOR[i] == Color.BLACK; }
     bool isWhite() const { return COLOR[i] == Color.WHITE; }
-    bool isFriend(color_t c) const { return COLOR[i] == c; }
-    bool isEnemy(color_t c) const { return COLOR[i] == (c ^ 1); }
+    bool isFriendOf(color_t c) const { return COLOR[i] == c; }
+    bool isEnemyOf(color_t c) const { return COLOR[i] == (c ^ 1); }
     bool isPromotable() const { return PROMOTABLE[i]; }
     type_t type() const { return TYPE[i]; }
     type_t baseType() const { return BASETYPE[i]; }

@@ -7,7 +7,7 @@ import types;
 // {
 //     Square sq = (p.sideToMove << 4) | (m.isDrop ? m.from : m.isPromote ? p.board[m.from].promote : p.board[m.from]);
 //     foreach (Dir d; DIRECTIONS[sq]) {
-//         for (int to = m.to + d.value; !isOverBound(to - d.value, to) && (p.board[to] == Square.EMPTY || p.board[to].isEnemy(p.sideToMove));  to += d.value) {
+//         for (int to = m.to + d.value; !isOverBound(to - d.value, to) && (p.board[to] == Square.EMPTY || p.board[to].isEnemyOf(p.sideToMove));  to += d.value) {
 //             if (p.board[to].type == Type.KING) {
 //                 return true;
 //             }
@@ -26,15 +26,15 @@ bool inCheck(Position p)
 {
     // 相手の駒を動かして自玉が取られるようなら王手をかけられている
     for (int from = SQ11; from <= SQ99; from++) {
-        if (!p.board[from].isEnemy(p.sideToMove)) {
+        if (!p.board[from].isEnemyOf(p.sideToMove)) {
             continue;
         }
         foreach (Dir d; DIRECTIONS[p.board[from].i]) {
-            for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.board[to] == Square.EMPTY || p.board[to].isFriend(p.sideToMove)); to += d.value) {
+            for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.board[to] == Square.EMPTY || p.board[to].isFriendOf(p.sideToMove)); to += d.value) {
                 if (p.board[to].type == Type.KING) {
                     return true;
                 }
-                if (!d.isFly || p.board[to].isFriend(p.sideToMove)) {
+                if (!d.isFly || p.board[to].isFriendOf(p.sideToMove)) {
                     break;
                 }
             }
@@ -63,21 +63,21 @@ bool isValid(Move m, const ref Position p)
     }
     Square sq_from = p.board[m.from];
     Square sq_to = p.board[m.to];
-    if (!sq_from.isFriend(p.sideToMove)) {
+    if (!sq_from.isFriendOf(p.sideToMove)) {
         return false;
     }
-    if (sq_to != Square.EMPTY && !sq_to.isEnemy(p.sideToMove)) {
+    if (sq_to != Square.EMPTY && !sq_to.isEnemyOf(p.sideToMove)) {
         return false;
     }
     if (m.isPromote && !canPromote(sq_from, m.from, m.to)) {
         return false;
     }
     foreach (Dir d; DIRECTIONS[sq_from.i]) {
-        for (int to = m.from + d.value; !isOverBound(to - d.value, to) && (p.board[to] == Square.EMPTY || p.board[to].isEnemy(p.sideToMove)); to += d.value) {
+        for (int to = m.from + d.value; !isOverBound(to - d.value, to) && (p.board[to] == Square.EMPTY || p.board[to].isEnemyOf(p.sideToMove)); to += d.value) {
             if (to == m.to && RANK_MIN[sq_from.i] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[sq_from.i]) {
                 return true;
             }
-            if (!d.isFly || p.board[to].isEnemy(p.sideToMove)) {
+            if (!d.isFly || p.board[to].isEnemyOf(p.sideToMove)) {
                 break;
             }
         }
@@ -98,12 +98,12 @@ int capturelMoves(const ref Position p, Move[] outMoves)
     // 盤上の駒を動かす
     int length = 0;
     for (int from = SQ11; from <= SQ99; from++) {
-        if (!p.board[from].isFriend(p.sideToMove)) {
+        if (!p.board[from].isFriendOf(p.sideToMove)) {
             continue;
         }
         foreach (Dir d; DIRECTIONS[p.board[from].i]) {
-            for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.board[to] == Square.EMPTY || p.board[to].isEnemy(p.sideToMove)); to += d.value) {
-                if (p.board[to].isEnemy(p.sideToMove)) {
+            for (int to = from + d.value; !isOverBound(to - d.value, to) && (p.board[to] == Square.EMPTY || p.board[to].isEnemyOf(p.sideToMove)); to += d.value) {
+                if (p.board[to].isEnemyOf(p.sideToMove)) {
                     if (canPromote(p.board[from], from, to)) {
                         outMoves[length++] = createPromote(from, to);
                         if (p.board[from].type == Type.SILVER
@@ -141,7 +141,7 @@ int legalMoves(const ref Position p, Move[] outMoves)
 
     // 盤上の駒を動かす
     for (int from = SQ11; from <= SQ99; from++) {
-        if (!p.board[from].isFriend(p.sideToMove)) {
+        if (!p.board[from].isFriendOf(p.sideToMove)) {
             continue;
         }
         pawned[FILE_OF[from]] |= (p.board[from].type == Type.PAWN);

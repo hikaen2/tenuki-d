@@ -218,7 +218,7 @@ private int qsearch(Position p, int depth, int a, const int b, Move[] outPv)
 
     {
         Move move = TT[p.key & MASK];
-        if (move.isValid(p) && p.board[move.to].isEnemy(p.sideToMove)) {
+        if (move.isValid(p) && p.board[move.to].isEnemyOf(p.sideToMove)) {
             int value = -p.doMove(move).qsearch(depth - 1, -b, -a, pv);
             if (a < value) {
                 a = value;

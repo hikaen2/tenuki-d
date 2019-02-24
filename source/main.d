@@ -64,13 +64,13 @@ int main(string[] args)
     const string password = args[3];
 
     stdout.writefln("Connecting to %s port %s.", hostname, port);
-    Socket s = new TcpSocket(new InternetAddress(hostname, port));
-    scope(exit) s.close();
+    Socket socket = new TcpSocket(new InternetAddress(hostname, port));
+    scope(exit) socket.close();
 
-    writeLine(s, format("LOGIN %s %s", username, password));
+    socket.writeLine(format("LOGIN %s %s", username, password));
 
     string[string] gameSummary;
-    for (string line = readLine(s); line != "END Game_Summary"; line = readLine(s)) {
+    for (string line = socket.readLine(); line != "END Game_Summary"; line = socket.readLine()) {
         auto m = line.matchFirst(r"^([^:]+):(.+)$");
         if (!m.empty) {
             gameSummary[m[1]] = m[2];
@@ -78,8 +78,8 @@ int main(string[] args)
     }
 
     const color_t us = (gameSummary["Your_Turn"] == "+" ? Color.BLACK : Color.WHITE);
-    writeLine(s, "AGREE");
-    readLineUntil(s, "START");
+    socket.writeLine("AGREE");
+    socket.readLineUntil("START");
 
     Position p = parsePosition("sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
     stdout.writeln(p.toString());
@@ -89,7 +89,7 @@ int main(string[] args)
             Move[64] pv;
             int score = p.ponder(pv);
             if (pv[0] == Move.TORYO) {
-                writeLine(s, pv[0].toString(p));
+                socket.writeLine(pv[0].toString(p));
             } else if (enhanced) {
                 string wk;
                 Position q = p.doMove(pv[0]);
@@ -97,9 +97,9 @@ int main(string[] args)
                     wk ~= format("%s ", pv[i].toString(q));
                     q = q.doMove(pv[i]);
                 }
-                writeLine(s, format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), wk));
+                socket.writeLine(format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), wk));
             } else {
-                writeLine(s, format("%s", pv[0].toString(p)));
+                socket.writeLine(format("%s", pv[0].toString(p)));
             }
         }
 
@@ -107,7 +107,7 @@ int main(string[] args)
         int second;
         for (bool retry = true; retry; ) {
             try {
-                string line = readLine(s);
+                string line = socket.readLine();
                 if (line == "#LOSE" || line == "#WIN" || line == "#DRAW" || line == "#CENSORED") {
                     return 0;
                 }
@@ -162,7 +162,7 @@ private string readLine(ref Socket s)
 private Captures!string readLineUntil(ref Socket s, string re)
 {
     Captures!string m;
-    for (string str = readLine(s); (m = str.matchFirst(re)).empty; str = readLine(s)) {}
+    for (string str = s.readLine(); (m = str.matchFirst(re)).empty; str = s.readLine()) {}
     return m;
 }
 

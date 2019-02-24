@@ -79,7 +79,7 @@ int main(string[] args)
 
     const color_t myColor = (gameSummary["Your_Turn"] == "+" ? Color.BLACK : Color.WHITE);
     writeLine(s, "AGREE");
-    readLineUntil(s, regex("START"));
+    readLineUntil(s, "START");
 
     Position p = parsePosition("sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
     stdout.writeln(p.toString());
@@ -159,10 +159,10 @@ private string readLine(ref Socket s)
 /**
  * ソケットからパターンに一致するまで行を読む
  */
-private RegexMatch!string readLineUntil(ref Socket s, Regex!char re)
+private Captures!string readLineUntil(ref Socket s, string re)
 {
-    RegexMatch!string m;
-    for (string str = readLine(s); (m = str.match(re)).empty; str = readLine(s)) {}
+    Captures!string m;
+    for (string str = readLine(s); (m = str.matchFirst(re)).empty; str = readLine(s)) {}
     return m;
 }
 

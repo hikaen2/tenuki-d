@@ -11,29 +11,12 @@ import std.getopt;
 import std.regex;
 import std.socket;
 import std.stdio;
+import std.algorithm.comparison;
+import core.thread;
 
-private void test()
-{
-    // Position p = parsePosition("sfen l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
-    // stdout.writeln(p.toString());
-    // Move[600] moves;
-    // for (int i = 0; i < 1000000; i++) {
-    //     p.legalMoves(moves);
-    // }
 
-    Position p = parsePosition("sfen l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1"); // 指し手生成祭り
-    //Position p = parsePosition("sfen kn6l/3g2r2/sGp2s3/lp1pp4/2N2ppl1/2P1P4/2NS1PP1+p/3GKS3/+b3G2+rL b Pbn6p 1"); // 打ち歩詰め局面
-    //Position p = parsePosition("sfen lnsgkgsnl/1r5b1/p1ppppppp/9/1p7/9/PPPPPPPPP/1B4KR1/LNSG1GSNL b - 0"); // test+default-1500-0+tenuki+neakih+20180403232658
-    writeln(p.sizeof);
-    stdout.writeln(p.toString());
-    Move[64] pv;
-    p.ponder(pv);
+__gshared Socket socket; // Global Socket
 
-    // Position p = parsePosition("sfen 9/9/9/9/9/9/9/9/P8 b - 1");
-    // stdout.writeln(p.toString());
-    // p = p.doMove(parseMove("+9998FU", p));
-    // stdout.writeln(p.toString());
-}
 
 int main(string[] args)
 {
@@ -64,10 +47,13 @@ int main(string[] args)
     const string password = args[3];
 
     stdout.writefln("Connecting to %s port %s.", hostname, port);
-    Socket socket = new TcpSocket(new InternetAddress(hostname, port));
+    socket = new TcpSocket(new InternetAddress(hostname, port));
     scope(exit) socket.close();
 
     socket.writeLine(format("LOGIN %s %s", username, password));
+    if (socket.readLine() == "LOGIN:incorrect") {
+        return 1;
+    }
 
     string[string] gameSummary;
     for (string line = socket.readLine(); line != "END Game_Summary"; line = socket.readLine()) {
@@ -79,7 +65,9 @@ int main(string[] args)
 
     const color_t us = (gameSummary["Your_Turn"] == "+" ? Color.BLACK : Color.WHITE);
     socket.writeLine("AGREE");
-    socket.readLineUntil("START");
+    if (!socket.readLine().matchFirst("^START:")) {
+        return 1;
+    }
 
     Position p = parsePosition("sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
     stdout.writeln(p.toString());
@@ -128,6 +116,103 @@ int main(string[] args)
     }
 }
 
+
+int csaloop(const string us)
+{
+    Position p;
+
+    if (us == "+") {
+        new SearchThread(p).start(); // search & send
+    }
+
+    for (;;) {
+        const string line = socket.readLine();
+
+        if (line.matchFirst(r"^(\+|-)\d{4}\D{2},T\d+$")) {
+
+            p.doMove(line);
+            if (line[0] != us[0]) {
+                new SearchThread(p).start(); // search & send
+            }
+
+        } else if (line.matchFirst(r"^%TORYO(,T\d+)?$") || line.matchFirst(r"^%KACHI(,T\d+)?$")) {
+
+            // do nothing
+
+        } else if (line.among("#ILLEGAL_ACTION", "#ILLEGAL_MOVE", "#JISHOGI", "#MAX_MOVES", "#OUTE_SENNICHITE", "#RESIGN", "#SENNICHITE", "#TIME_UP")) {
+
+            // do nothing
+
+        } else if (line.among("#WIN", "#LOSE", "#DRAW", "#CENSORED", "#CHUDAN")) {
+
+            socket.writeLine("LOGOUT");
+            return 0;
+
+        } else if (line == "") {
+
+            /*
+             * see http://www2.computer-shogi.org/protocol/tcp_ip_server_121.html
+             * > クライアントは対局中、手番にかかわらず、長さゼロの文字列、もしくはLF1文字のみをサーバに送信することができる。
+             * > サーバは前者を受け取った場合、単純に無視する。後者を受け取った場合、短い待ち時間の後にLF1文字のみをそのクライアントに返信する。
+             */
+
+        } else {
+
+            stderr.writefln("unknown command: '%s'", line);
+
+        }
+    }
+}
+
+
+class SearchThread : Thread
+{
+    private Position p;
+
+    this(Position p)
+    {
+        this.p = p;
+        super(&run);
+    }
+
+    private void run()
+    {
+        Thread.sleep(dur!("seconds")(5));
+        if (p.moveCount == 0) {
+            socket.writeLine("+2726FU");
+        } else if (p.moveCount == 1) {
+            socket.writeLine("-8384FU");
+        } else {
+            socket.writeLine("%TORYO");
+        }
+    }
+}
+
+
+private void test()
+{
+    // Position p = parsePosition("sfen l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
+    // stdout.writeln(p.toString());
+    // Move[600] moves;
+    // for (int i = 0; i < 1000000; i++) {
+    //     p.legalMoves(moves);
+    // }
+
+    Position p = parsePosition("sfen l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1"); // 指し手生成祭り
+    //Position p = parsePosition("sfen kn6l/3g2r2/sGp2s3/lp1pp4/2N2ppl1/2P1P4/2NS1PP1+p/3GKS3/+b3G2+rL b Pbn6p 1"); // 打ち歩詰め局面
+    //Position p = parsePosition("sfen lnsgkgsnl/1r5b1/p1ppppppp/9/1p7/9/PPPPPPPPP/1B4KR1/LNSG1GSNL b - 0"); // test+default-1500-0+tenuki+neakih+20180403232658
+    writeln(p.sizeof);
+    stdout.writeln(p.toString());
+    Move[64] pv;
+    p.ponder(pv);
+
+    // Position p = parsePosition("sfen 9/9/9/9/9/9/9/9/P8 b - 1");
+    // stdout.writeln(p.toString());
+    // p = p.doMove(parseMove("+9998FU", p));
+    // stdout.writeln(p.toString());
+}
+
+
 /**
  * ソケットに文字列を書き込む
  */
@@ -136,6 +221,7 @@ private void writeLine(ref Socket s, string str)
     s.send(str ~ "\n");
     stderr.writeln(format(">%s", str));
 }
+
 
 /**
  * ソケットから１行読み込む
@@ -156,6 +242,7 @@ private string readLine(ref Socket s)
     return line;
 }
 
+
 /**
  * ソケットからパターンに一致するまで行を読む
  */
@@ -166,11 +253,14 @@ private Captures!string readLineUntil(ref Socket s, string re)
     return m;
 }
 
+
 private File RecvLog;
+
 
 static this() {
     RecvLog = File("recv.log", "w");
 }
+
 
 static ~this() {
     RecvLog.close();

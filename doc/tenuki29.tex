@@ -1,0 +1,112 @@
+% lualatex tenuki29
+\nonstopmode
+
+
+\documentclass[a4paper]{ltjsarticle}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{here}
+\title{手抜きについて}
+\author{手抜きチーム}
+\date{2019年3月25日}
+
+
+\begin{document}
+
+\maketitle
+
+手抜きはCSAプロトコルで対局を行うコンピュータ将棋プログラムです。作者らが将棋のプログラムの仕組みを理解することを目的として開発しています。
+リポジトリ：https://github.com/hikaen2/tenuki-d
+
+
+
+\section{作者の紹介}
+
+\subsubsection*{鈴木太朗}
+鈴木はプログラマです。会社員をしています。
+仕事のかたわら趣味の自転車と合唱に打ち込んでいます。
+趣味のかたわら手抜きを作っていますが完成させる自信がありません
+（夏休みの宿題を9月1日にやるタイプです）。
+棋力は30級程度です。
+Twitter: @hikaen2
+
+\subsubsection*{玉川直樹}
+玉川はP兼召喚士です。KPPとレーティングシステムを疑っています。将棋ウォーズ2段。
+手抜きの定跡を手入力で作りました。
+Twitter: @Neakih\_kick
+
+
+\section{目標}
+
+\subsection{今年の目標}
+
+\begin{itemize}
+\item 探索をマルチスレッドにする
+\end{itemize}
+
+Ryzenを買っちゃったのでマルチスレッドにします。
+これからLazy SMPを実装します。
+スレッドがよくわからないし，実装できても正しく実装できているか分からなそうな予感がします。
+
+\begin{itemize}
+\item KPPTで評価する
+\end{itemize}
+
+去年はなのはさんの評価バイナリでKP + PPで評価しました。
+今年はAperyの評価バイナリでKPPTで評価しようと思います。
+予想として，静的評価に手番が含まれると静止探索がいらないか，もしくは軽くていいのではないかと思っています。
+
+評価バイナリの自作については来年挑戦します。
+
+
+\subsection{来年の目標}
+
+\begin{itemize}
+\item 評価バイナリを自作する
+\end{itemize}
+
+
+\subsection{去年までの目標と結果}
+
+第28回世界コンピュータ将棋選手権：
+\begin{itemize}
+\item ルール通りに指す → 結果：ルール通り指した？
+\item 投了する（WCSC27では投了しないで王手放置していた） → 結果：投了した。一次予選4勝4敗
+\item KPで評価する → 結果：なのはさんの評価バイナリでKP + PPで評価した
+\end{itemize}
+
+第27回世界コンピュータ将棋選手権：
+\begin{itemize}
+\item 出場する → 結果：出場した
+\item 対局する → 結果：対局した。一次予選2勝5敗
+\end{itemize}
+
+
+
+\section{データ構造}
+
+この章では手抜きのデータ構造の説明をします。
+
+手抜きの盤面には81要素の1次元配列を使用しています。そのアドレッシングはこうです：
+
+\begin{figure}[H]
+  \centering
+  \includegraphics{fig1.png}
+  \caption{盤面のデータ構造}
+\end{figure}
+
+第28回世界コンピュータ将棋選手権では「壁」がありましたが，なくしました。
+壁がないと，壁のレイアウトを考えなくて済む，盤面がコンパクトになる，zobrist hash seedもコンパクトになる，静的評価が簡単になる（盤面のアドレッシングと評価バイナリのアドレッシングが合っていれば）といった利点があります。
+一方で合法手生成が複雑になる欠点があります（1段目と9段目が繋がっているので油断すると駒がワープする）。
+
+盤面の各要素は0から28までの値を取ります。値の意味はこうです（次表のA列）：
+
+\begin{table}[H]
+  \centering
+  \caption{値の意味}
+  \includegraphics{fig2.png}
+\end{table}
+
+第28回世界コンピュータ将棋選手権では手番と成りをビット演算で管理していましたが，表で管理するようにしました。こうするとビットレイアウトを考えなくて済む利点があります。
+
+\end{document}

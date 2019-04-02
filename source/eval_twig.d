@@ -11,7 +11,7 @@ private immutable short[2][1548][1548][81] KPP;
  * 静的コンストラクタ
  * 評価関数バイナリをロードする
  */
-/*
+
 static this()
 {
     {
@@ -54,12 +54,12 @@ static this()
         }
     }
 }
-*/
+
 
 /**
  * 手番のある側から見た評価値を返す
  */
-/*
+
 short staticValue(const ref Position p)
 {
     if (p.piecesInHand[Color.BLACK][Type.KING] > 0) {
@@ -83,12 +83,13 @@ short staticValue(const ref Position p)
         for (int i = 0; i < p.piecesInHand[Color.BLACK][t]; i++) {
             list    [length] = OFFSET_HAND[Color.BLACK][t] + i;
             list_inv[length] = OFFSET_HAND[Color.WHITE][t] + i;
+            length++;
         }
         for (int i = 0; i < p.piecesInHand[Color.WHITE][t]; i++) {
             list    [length] = OFFSET_HAND[Color.BLACK][t] + i;
             list_inv[length] = OFFSET_HAND[Color.WHITE][t] + i;
+            length++;
         }
-        length++;
     }
     for (int i = SQ11; i <= SQ99; i++) {
         Square sq = p.board[i];
@@ -136,9 +137,12 @@ short staticValue(const ref Position p)
     // 手番に依存する評価値合計
     const int scoreTurn  = sum0b + sum1b + sum2b; // 先手玉から見たKKPの先手加算 + 後手玉から見たKPPの先手加算 + KKの先手加算 + KKPの先手加算
 
+    // stderr.writefln("material:%d", material);
+    // stderr.writefln("scoreBoard:%d", scoreBoard / FV_SCALE);
+    // stderr.writefln("scoreTurn:%d", scoreTurn / FV_SCALE);
     return cast(short)(((p.sideToMove == Color.BLACK ? scoreBoard : -scoreBoard) + scoreTurn) / FV_SCALE);
 }
-*/
+
 
 
 /*
@@ -159,8 +163,8 @@ private immutable short[] P_VALUE = [
  */
 private immutable short[][] OFFSET_HAND = [
   // 歩, 香, 桂, 銀, 金, 角, 飛,
-    [ 0, 38, 48, 58, 68, 78, 84, ],
-    [19, 43, 53, 63, 73, 81, 87, ],
+    [ 1, 39, 49, 59, 69, 79, 85, ],
+    [20, 44, 54, 64, 74, 82, 88, ],
 ];
 
 /*

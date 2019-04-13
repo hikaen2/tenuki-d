@@ -86,8 +86,8 @@ short staticValue(const ref Position p)
             length++;
         }
         for (int i = 0; i < p.piecesInHand[Color.WHITE][t]; i++) {
-            list    [length] = OFFSET_HAND[Color.BLACK][t] + i;
-            list_inv[length] = OFFSET_HAND[Color.WHITE][t] + i;
+            list    [length] = OFFSET_HAND[Color.WHITE][t] + i;
+            list_inv[length] = OFFSET_HAND[Color.BLACK][t] + i;
             length++;
         }
     }

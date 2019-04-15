@@ -7,11 +7,11 @@ private immutable int[2][81][81] KK;
 private immutable int[2][1548][81][81] KKP;
 private immutable short[2][1548][1548][81] KPP;
 
+
 /**
  * 静的コンストラクタ
  * 評価関数バイナリをロードする
  */
-
 static this()
 {
     {
@@ -59,7 +59,6 @@ static this()
 /**
  * 手番のある側から見た評価値を返す
  */
-
 short staticValue(const ref Position p)
 {
     if (p.piecesInHand[Color.BLACK][Type.KING] > 0) {
@@ -104,9 +103,9 @@ short staticValue(const ref Position p)
     }
     assert(length == 38);
 
-    int sum0a, sum0b; // 先手玉から見たKPP,  先手玉から見たKPPの先手加算
-    int sum1a, sum1b; // 後手玉から見たKPP,  後手玉から見たKPPの先手加算
-    int sum2a, sum2b; // KK + KKP,  KKの先手加算 + KKPの先手加算
+    int sum0a, sum0b; // 先手玉から見たKPP,  先手玉から見たKPPの手番ボーナス
+    int sum1a, sum1b; // 後手玉から見たKPP,  後手玉から見たKPPの手番ボーナス
+    int sum2a, sum2b; // KK + KKP,  KKの手番ボーナス + KKPの手番ボーナス
 
     // KK
     sum2a = KK[bk][wk][0];
@@ -135,14 +134,13 @@ short staticValue(const ref Position p)
     const int scoreBoard = sum0a - sum1a + sum2a + (material * FV_SCALE); // 先手玉から見たKKP - 後手玉から見たKPP + KK + KKP + 駒割
 
     // 手番に依存する評価値合計
-    const int scoreTurn  = sum0b + sum1b + sum2b; // 先手玉から見たKKPの先手加算 + 後手玉から見たKPPの先手加算 + KKの先手加算 + KKPの先手加算
+    const int scoreTurn  = sum0b + sum1b + sum2b; // 先手玉から見たKKPの手番ボーナス + 後手玉から見たKPPの手番ボーナス + KKの手番ボーナス + KKPの手番ボーナス
 
     // stderr.writefln("material:%d", material);
     // stderr.writefln("scoreBoard:%d", scoreBoard / FV_SCALE);
     // stderr.writefln("scoreTurn:%d", scoreTurn / FV_SCALE);
     return cast(short)(((p.sideToMove == Color.BLACK ? scoreBoard : -scoreBoard) + scoreTurn) / FV_SCALE);
 }
-
 
 
 /*
@@ -156,6 +154,7 @@ private immutable short[] P_VALUE = [
     -90, -315, -405, -495, -540, -855, -990, -15000, -540, -540, -540, -540, -945, -1395, 0,
 ];
 
+
 /*
  * 持ち駒（手番と駒のタイプ）からオフセットを引く表
  * key: [color_t][type_t]
@@ -166,6 +165,7 @@ private immutable short[][] OFFSET_HAND = [
     [ 1, 39, 49, 59, 69, 79, 85, ],
     [20, 44, 54, 64, 74, 82, 88, ],
 ];
+
 
 /*
  * 駒からオフセットを引く表

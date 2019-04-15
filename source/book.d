@@ -8,7 +8,7 @@ import std.regex;
 
 immutable Move[][string] BOOK;
 
-static this()
+shared static this()
 {
     File f = File("kick.txt", "r");
     scope(exit) f.close();

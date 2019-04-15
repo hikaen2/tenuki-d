@@ -187,7 +187,7 @@ private void test()
 private void writeLine(ref Socket s, string str)
 {
     s.send(str ~ "\n");
-    stderr.writefln(">%s", str);
+    stderr.writefln(">\"%s\\n\"", str);
 }
 
 
@@ -204,7 +204,7 @@ private string readLine(ref Socket s)
         }
         line ~= c;
     }
-    stderr.writefln("<%s", line);
+    stderr.writefln("<\"%s\\n\"", line);
     RecvLog.writeln(line);
     RecvLog.flush();
     return line;
@@ -225,11 +225,11 @@ private Captures!string readLineUntil(ref Socket s, string re)
 private File RecvLog;
 
 
-static this() {
+shared static this() {
     RecvLog = File("recv.log", "w");
 }
 
 
-static ~this() {
+shared static ~this() {
     RecvLog.close();
 }

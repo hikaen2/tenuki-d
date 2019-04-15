@@ -69,59 +69,16 @@ int main(string[] args)
         return 1;
     }
 
-    Position p = parsePosition("sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
-    stdout.writeln(p.toString());
-
-    for (;;) {
-        if (p.sideToMove == us) {
-            Move[64] pv;
-            int score = p.ponder(pv);
-            if (pv[0] == Move.TORYO) {
-                socket.writeLine(pv[0].toString(p));
-            } else if (enhanced) {
-                string wk;
-                Position q = p.doMove(pv[0]);
-                for (int i = 1; pv[i] != Move.NULL; i++) {
-                    wk ~= format("%s ", pv[i].toString(q));
-                    q = q.doMove(pv[i]);
-                }
-                socket.writeLine(format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), wk));
-            } else {
-                socket.writeLine(format("%s", pv[0].toString(p)));
-            }
-        }
-
-        Move m;
-        int second;
-        for (bool retry = true; retry; ) {
-            try {
-                string line = socket.readLine();
-                if (line == "#LOSE" || line == "#WIN" || line == "#DRAW" || line == "#CENSORED") {
-                    return 0;
-                }
-                m = parseMove(line, p);
-                second = to!int(line.matchFirst(r",T(\d+)")[1]);
-                retry = false;
-            } catch (Exception e) {
-                retry = true;
-            }
-        }
-        if (p.sideToMove == us) {
-            search.remainSeconds -= second;
-        }
-        stderr.writeln(toString(m, p));
-        p = p.doMove(m);
-        stderr.writeln(toString(p));
-        stderr.writeln(search.remainSeconds);
-    }
+    return csaloop(us);
 }
 
 
-int csaloop(const string us)
+int csaloop(const color_t us)
 {
-    Position p;
+    Position p = parsePosition("sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
+    stdout.writeln(p.toString());
 
-    if (us == "+") {
+    if (us == Color.BLACK) {
         new SearchThread(p).start(); // search & send
     }
 
@@ -130,8 +87,11 @@ int csaloop(const string us)
 
         if (line.matchFirst(r"^(\+|-)\d{4}\D{2},T\d+$")) {
 
-            p.doMove(line);
-            if (line[0] != us[0]) {
+            int second = to!int(line.matchFirst(r",T(\d+)")[1]);
+            p = p.doMove(parseMove(line, p));
+            stderr.writeln(toString(p));
+            stderr.writeln(search.remainSeconds);
+            if (p.sideToMove == us) {
                 new SearchThread(p).start(); // search & send
             }
 
@@ -168,6 +128,7 @@ int csaloop(const string us)
 class SearchThread : Thread
 {
     private Position p;
+    private bool enhanced = true;
 
     this(Position p)
     {
@@ -177,13 +138,20 @@ class SearchThread : Thread
 
     private void run()
     {
-        Thread.sleep(dur!("seconds")(5));
-        if (p.moveCount == 0) {
-            socket.writeLine("+2726FU");
-        } else if (p.moveCount == 1) {
-            socket.writeLine("-8384FU");
+        Move[64] pv;
+        int score = p.ponder(pv);
+        if (pv[0] == Move.TORYO) {
+            socket.writeLine(pv[0].toString(p));
+        } else if (enhanced) {
+            string wk;
+            Position q = p.doMove(pv[0]);
+            for (int i = 1; pv[i] != Move.NULL; i++) {
+                wk ~= format("%s ", pv[i].toString(q));
+                q = q.doMove(pv[i]);
+            }
+            socket.writeLine(format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), wk));
         } else {
-            socket.writeLine("%TORYO");
+            socket.writeLine(format("%s", pv[0].toString(p)));
         }
     }
 }
@@ -219,7 +187,7 @@ private void test()
 private void writeLine(ref Socket s, string str)
 {
     s.send(str ~ "\n");
-    stderr.writeln(format(">%s", str));
+    stderr.writefln(">%s", str);
 }
 
 
@@ -236,7 +204,7 @@ private string readLine(ref Socket s)
         }
         line ~= c;
     }
-    stderr.writeln(line);
+    stderr.writefln("<%s", line);
     RecvLog.writeln(line);
     RecvLog.flush();
     return line;

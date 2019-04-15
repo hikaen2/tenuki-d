@@ -12,7 +12,7 @@ private immutable short[2][1548][1548][81] KPP;
  * 静的コンストラクタ
  * 評価関数バイナリをロードする
  */
-static this()
+shared static this()
 {
     {
         File f = File("KK_synthesized.bin", "r");

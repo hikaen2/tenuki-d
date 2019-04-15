@@ -107,7 +107,7 @@ private enum FV_SCALE = 32;
 private immutable short[1386][1386] FV_PP;
 private immutable short[1476][81] FV_KP;
 
-static this()
+shared static this()
 {
     short[1386][693] ppOri;
     File f = File("fv_mini.bin", "r");

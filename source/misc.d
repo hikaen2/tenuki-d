@@ -2,6 +2,7 @@ module misc;
 
 import std.socket;
 import std.stdio;
+import core.stdc.errno;
 
 /**
  * ソケットに文字列を書き込む
@@ -21,7 +22,10 @@ string readln(ref Socket s)
     char[1] c;
     for (auto len = s.receive(c); c[0] != '\n'; len = s.receive(c)) {
         if (len == Socket.ERROR) {
-            stderr.writeln(lastSocketError());
+            if (errno() == EAGAIN) {
+                throw new Exception("timed out");
+            }
+            continue;
         }
         if (len == 0) {
             throw new Exception("connection lost");

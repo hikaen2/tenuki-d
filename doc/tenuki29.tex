@@ -2,7 +2,7 @@
 \nonstopmode
 
 
-\documentclass[10pt,a4paper]{ltjsarticle}
+\documentclass[11pt,a4paper]{ltjsarticle}
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage{here}
@@ -94,19 +94,20 @@ Aperyの選定理由は評価バイナリがKPPTだからです。
 
 \subsection{データ構造}
 
-盤面に81要素の1次元配列を使用しています。そのアドレッシングはこうです：
-\begin{figure}[H]
+盤面に81要素の1次元配列を使用しています。そのアドレッシングはこうです（図\ref{fig1}）：
+\begin{figure}[h]
   \centering
   \includegraphics{fig/fig1.pdf}
   \caption{盤面のデータ構造}
+  \label{fig1}
 \end{figure}
 
 第28回世界コンピュータ将棋選手権では「壁」がありましたが，なくしました。
 壁がないと，壁のレイアウトを考えなくて済む，盤面がコンパクトになる，zobrist hash seedもコンパクトになる，静的評価が簡単になる（盤面のアドレッシングと評価バイナリのアドレッシングが合っていれば）といった利点があります。
 一方で合法手生成が複雑になる欠点があります（1段目と9段目が繋がっているので油断すると駒がワープする）。
 
-盤面の各要素は0から28までの値を取ります。値の意味はこうです（次表のA列）：
-\begin{table}[H]
+盤面の各要素は0から28までの値を取ります。値の意味はこうです（表\ref{tab1}のA列）：
+\begin{table}[h]
   \centering
   \caption{値の意味}
   \small
@@ -142,6 +143,7 @@ Aperyの選定理由は評価バイナリがKPPTだからです。
     27 & △龍   & 龍   & 飛 & △ & F & △龍   & ▲龍   \\
     28 & 空     & 空   & 空 & -  & F & 空     & 空
   \end{tabular}
+  \label{tab1}
 \end{table}
 
 第28回世界コンピュータ将棋選手権では手番と成りをビット演算で管理していましたが，表で管理するようにしました。
@@ -202,13 +204,14 @@ KKP\_synthesized.binには4バイトの評価値を持つ2つ組（8バイト）
 
 KPP\_synthesized.binには2バイトの評価値を持つ2つ組（4バイト）が81（自玉の位置） \times 1548（※） \times 1548（※） = 194,100,624個格納されている。\\
 
-※ 次表の1548要素：
-\begin{table}[H]
+※：表\ref{tab2}の1548要素。\\
+
+\begin{table}[h]
   \centering
   \caption{1548要素の内訳}
   \small
   \begin{tabular}{lrrr}
-    意味 & from & to & 要素数 \\ \hline
+    内容 & from & to & 要素数 \\ \hline
     味方の持駒の歩の0枚目～18枚目の評価値 &  0 & 18 & 19 \\
     相手の持駒の歩の0枚目～18枚目の評価値 & 19 & 37 & 19 \\
     味方の持駒の香の0枚目～4枚目の評価値  & 38 & 42 &  5 \\
@@ -243,10 +246,12 @@ KPP\_synthesized.binには2バイトの評価値を持つ2つ組（4バイト）
     相手の龍がアドレス0～80にいるときの評価値 & 1467 & 1547 & 81 \\ \hline
                                               &      & 合計: & 1548
   \end{tabular}
+  \label{tab2}
 \end{table}
 
 例：
 \begin{enumerate}
+  \small
   \item KK[44][36][0] : 先手玉がアドレス44にいて，後手玉がアドレス36にいるときの評価値
   \item KK[44][36][1] : 先手玉がアドレス44にいて，後手玉がアドレス36にいるときの，手番を持つ側に加算される評価値
   \item KKP[44][36][1][0] : 先手玉がアドレス44にいて，後手玉がアドレス36にいるときの，先手の持駒の1枚目の歩の評価値

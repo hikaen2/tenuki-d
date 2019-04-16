@@ -13,6 +13,7 @@ import std.socket;
 import std.stdio;
 import std.algorithm.comparison;
 import core.thread;
+static import misc;
 
 
 __gshared Socket socket; // Global Socket
@@ -49,6 +50,7 @@ int main(string[] args)
     stdout.writefln("Connecting to %s port %s.", hostname, port);
     socket = new TcpSocket(new InternetAddress(hostname, port));
     scope(exit) socket.close();
+    socket.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(3600));
 
     socket.writeLine(format("LOGIN %s %s", username, password));
     if (socket.readLine() == "LOGIN:incorrect") {
@@ -186,7 +188,7 @@ private void test()
  */
 private void writeLine(ref Socket s, string str)
 {
-    s.send(str ~ "\n");
+    misc.writeln(s, str);
     stderr.writefln(">\"%s\\n\"", str);
 }
 
@@ -196,14 +198,7 @@ private void writeLine(ref Socket s, string str)
  */
 private string readLine(ref Socket s)
 {
-    string line;
-    char[1] c;
-    for (auto len = s.receive(c); c[0] != '\n'; len = s.receive(c)) {
-        if (len == 0) {
-            throw new Exception("connection lost");
-        }
-        line ~= c;
-    }
+    string line = misc.readln(s);
     stderr.writefln("<\"%s\\n\"", line);
     RecvLog.writeln(line);
     RecvLog.flush();

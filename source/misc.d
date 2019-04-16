@@ -20,8 +20,8 @@ string readln(ref Socket s)
     string line;
     char[1] c;
     for (auto len = s.receive(c); c[0] != '\n'; len = s.receive(c)) {
-        if (len == -1) {
-            throw new Exception("recv timeout");
+        if (len == Socket.ERROR) {
+            stderr.writeln(lastSocketError());
         }
         if (len == 0) {
             throw new Exception("connection lost");

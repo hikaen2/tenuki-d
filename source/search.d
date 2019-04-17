@@ -10,6 +10,8 @@ import std.algorithm.comparison;
 import std.algorithm.mutation;
 import std.algorithm.searching;
 import std.datetime.stopwatch;
+import core.thread;
+
 
 private int COUNT = 0;
 
@@ -47,7 +49,13 @@ int ponder(const ref Position p, Move[] outPv)
     SW = StopWatch(AutoStart.yes);
     //for (int depth = 1; depth <= 6; depth++) {
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
+
+        HelperThread t = new HelperThread(p, depth);
+        t.start();
         p.search0(depth, pv, value);
+        t.stop();
+        t.join();
+
         Move[64] v = pv;
         if (value <= -15000) {
             v[0] = Move.TORYO;
@@ -266,3 +274,117 @@ private bool inUchifuzume(Position p)
     }
     return true; // 王手を解除する手がなければ打ち歩詰め
 }
+
+
+class HelperThread : Thread
+{
+    private Position p;
+    private int depth;
+    private bool abort = false;
+
+    this(Position p, int depth)
+    {
+        this.p = p;
+        this.depth = depth;
+        super(&run);
+    }
+
+    public void stop()
+    {
+        this.abort = true;
+    }
+
+    private void run()
+    {
+        Move[593] moves;
+        int length = p.legalMoves(moves);
+        if (length == 0) {
+            return;
+        }
+        randomShuffle(moves[0..length]);
+
+        int a = short.min;
+        const int b = short.max;
+        foreach (Move move; moves[0..length]) {
+            int value = -this.search(p.doMove(move), depth - 1, -b, -a);
+            if (abort) {
+                return;
+            }
+            if (a < value) {
+                a = value;
+            }
+        }
+    }
+
+    /**
+     * search
+     * @param p
+     * @param depth
+     * @param a 探索済みminノードの最大値
+     * @param b 探索済みmaxノードの最小値
+     * @return 評価値
+     */
+    private int search(Position p, int depth, int a, const int b, bool doNullMove = true)
+    {
+        assert(a < b);
+
+        if (this.abort) {
+            return b;
+        }
+
+        if (p.inUchifuzume) {
+            return 15000; // 打ち歩詰めされていれば勝ち
+        }
+
+        if (depth <= 0) {
+            return p.staticValue;
+            //return p.qsearch(depth + 4, a, b, outPv);
+        }
+        COUNT++;
+
+        if (!p.inCheck && depth + 1 <= 3 && b <= p.staticValue - 300) {
+            return b;
+        }
+
+
+        if (doNullMove /* && !p.inCheck */ ) {
+            immutable R = 2;
+            int value = -this.search(p.doMove(Move.NULL_MOVE), depth - R - 1, -b, -b + 1, false);
+            if (b <= value) {
+                return b;
+            }
+        }
+
+        {
+            Move move = TT[p.key & MASK];
+            if (move.isValid(p)) {
+                int value = -this.search(p.doMove(move), depth - 1, -b, -a);
+                if (a < value) {
+                    a = value;
+                    if (b <= a) {
+                        return b;
+                    }
+                }
+            }
+        }
+
+        Move[593] moves;
+        int length = p.legalMoves(moves);
+        if (length == 0) {
+            return p.staticValue;
+        }
+        foreach (Move move; moves[0..length]) {
+            int value = -this.search(p.doMove(move), depth - 1, -b, -a);
+            if (a < value) {
+                a = value;
+                TT[p.key & MASK] = move;
+                if (b <= a) {
+                    return b;
+                }
+            }
+        }
+        return a;
+    }
+
+}
+

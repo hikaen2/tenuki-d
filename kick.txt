@@ -9,7 +9,6 @@ sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL b - 3
 2h6h 8c8d 0 0 1
 6g6f 8b3b 0 0 2
 7f7e 8c8d 0 0 1
-7i7h 8b3b 0 0 1
 sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P4P1/PP1PPPP1P/1B5R1/LNSGKGSNL w - 4
 5c5d 2f2e 0 0 4
 4c4d 2f2e 0 0 2
@@ -624,8 +623,6 @@ sfen ln1gkgsnl/1r1s3b1/p1pppp1pp/6p2/1pP6/3P5/PP2PPPPP/1BR6/LNSGKGSNL b - 9
 7h7f 5a4b 0 0 1
 sfen ln1gkgsnl/1r1s3b1/p1pppp1pp/6p2/1pP6/2RP5/PP2PPPPP/1B7/LNSGKGSNL w - 10
 5a4b none 0 0 1
-sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1BS4R1/LN1GKGSNL w - 4
-8b3b none 0 0 1
 sfen lnsgkgsnl/1r5b1/p1ppppppp/1p7/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL b - 3
 5g5f 3c3d 0 0 2
 2h6h 3c3d 0 0 3

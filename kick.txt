@@ -8,6 +8,7 @@ sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL w - 2
 sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P6/PP1PPPPPP/1B5R1/LNSGKGSNL b - 3
 2h6h 8c8d 0 0 1
 6g6f 8b3b 0 0 2
+7f7e 8c8d 0 0 1
 7i7h 8b3b 0 0 1
 sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/2P4P1/PP1PPPP1P/1B5R1/LNSGKGSNL w - 4
 5c5d 2f2e 0 0 4
@@ -974,7 +975,6 @@ sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/4P4/PPPP1PPPP/1B2R4/LNSGKGSNL w - 4
 sfen lnsgkgsnl/1r5b1/p1pppp1pp/1p4p2/9/4P4/PPPP1PPPP/1B2R4/LNSGKGSNL b - 5
 7g7f none 0 0 1
 sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/7P1/PPPPPPP1P/1B5R1/LNSGKGSNL w - 2
-8c8d 7g7f 0 0 1
 3c3d 7g7f 0 0 1
 sfen lnsgkgsnl/1r5b1/p1ppppppp/1p7/9/7P1/PPPPPPP1P/1B5R1/LNSGKGSNL b - 3
 7g7f 8d8e 0 0 1
@@ -1020,8 +1020,11 @@ sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/9/7P1/PPPPPPP1P/1B5R1/LNSGKGSNL b - 3
 sfen lnsgkgsnl/1r5b1/pppppp1pp/6p2/7P1/9/PPPPPPP1P/1B5R1/LNSGKGSNL w - 4
 2b3c 7g7f 0 0 1
 sfen lnsgkgsnl/1r7/ppppppbpp/6p2/7P1/9/PPPPPPP1P/1B5R1/LNSGKGSNL b - 5
-7g7f 3a4b 0 0 1
+7g7f 4c4d 0 0 1
 sfen lnsgkgsnl/1r7/ppppppbpp/6p2/7P1/2P6/PP1PPPP1P/1B5R1/LNSGKGSNL w - 6
-3a4b none 0 0 1
+4c4d 3i4h 0 0 1
+8b2b none 0 0 1
+sfen lnsgkgsnl/7r1/pppppp+Bpp/6p2/7P1/2P6/PP1PPPP1P/7R1/LNSGKGSNL w B 8
+2a3c none 0 0 1
 sfen lnsg1gsnl/1k2r4/pppp1pbpp/6p2/4p2P1/2P2SP2/PP1PPP2P/1B1K3R1/LNSG1G1NL b - 1
 6h7h none 0 0 1

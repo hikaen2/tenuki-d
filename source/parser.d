@@ -94,6 +94,7 @@ Position parsePosition(string sfen)
         "G":  Type.GOLD,
         "B":  Type.BISHOP,
         "R":  Type.ROOK,
+        "K":  Type.KING,
         "p":  Type.PAWN,
         "l":  Type.LANCE,
         "n":  Type.KNIGHT,
@@ -101,6 +102,7 @@ Position parsePosition(string sfen)
         "g":  Type.GOLD,
         "b":  Type.BISHOP,
         "r":  Type.ROOK,
+        "k":  Type.KING,
     ];
 
     Position p;
@@ -155,6 +157,9 @@ Position parsePosition(string sfen)
         for (type_t t = Type.PAWN; t <= Type.KING; t++) {
             p.key ^= zobrist.HAND[s][t][ p.piecesInHand[s][t] ];
         }
+    }
+    if (sideToMove == "w") {
+        p.key ^= zobrist.SIDE;
     }
     return p;
 }

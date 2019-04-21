@@ -9,6 +9,7 @@ import std.array;
 import std.container;
 import std.conv;
 import std.regex;
+static import parser;
 static import zobrist;
 
 /**
@@ -43,5 +44,8 @@ Position doMove(Position p, Move m)
     p.key ^= zobrist.SIDE;
     p.moveCount++;
     p.previousMove = m;
+
+    assert(parser.parsePosition(p.toSfen()).key == p.key); // ハッシュ値の差分計算したやつと差分計算してないやつが一致すること
+
     return p;
 }

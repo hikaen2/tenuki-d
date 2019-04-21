@@ -76,7 +76,7 @@ string toSfen(const ref Position p)
     // 飛車, 角, 金, 銀, 桂, 香, 歩
     string hand;
     foreach (color_t c; [Color.BLACK, Color.WHITE]) {
-        foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
+        foreach (type_t t; [Type.KING, Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
             int n = p.piecesInHand[c][t];
             if (n > 0) {
                 hand ~= (n > 1 ? to!string(n) : "") ~ TO_SFEN[Square(c, t).i];
@@ -101,7 +101,7 @@ string toKi2(const ref Position p)
     ];
 
     immutable string[] HAND = [
-        "歩", "香", "桂", "銀", "金", "角", "飛",
+        "歩", "香", "桂", "銀", "金", "角", "飛", "玉",
     ];
 
     immutable string[] NUM = [
@@ -110,7 +110,7 @@ string toKi2(const ref Position p)
 
     string[2] hand;
     foreach (color_t s; [Color.BLACK, Color.WHITE]) {
-        foreach (type_t t; [Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
+        foreach (type_t t; [Type.KING, Type.ROOK, Type.BISHOP, Type.GOLD, Type.SILVER, Type.KNIGHT, Type.LANCE, Type.PAWN]) {
             int n = p.piecesInHand[s][t];
             if (n > 0) {
                 hand[s] ~= format("%s%s　", HAND[t], (n > 1 ? NUM[n] : ""));

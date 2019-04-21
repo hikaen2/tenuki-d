@@ -11,13 +11,9 @@ import std.algorithm.mutation;
 import std.algorithm.searching;
 import std.datetime.stopwatch;
 import core.thread;
-
+static import tt;
 
 private int COUNT = 0;
-
-private immutable MASK = 0xffffff;  // 1024 * 1024 * 16 - 1
-private shared Move[MASK + 1] TT;
-
 private StopWatch SW;
 private int SECOND = 20;
 
@@ -170,7 +166,7 @@ private int search(Position p, int depth, int a, const int b, Move[] outPv, bool
     }
 
     {
-        Move move = TT[p.key & MASK];
+        Move move =  tt.probe(p.key);
         if (move.isValid(p)) {
             int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
             if (a < value) {
@@ -193,7 +189,7 @@ private int search(Position p, int depth, int a, const int b, Move[] outPv, bool
         int value = -p.doMove(move).search(depth - 1, -b, -a, pv);
         if (a < value) {
             a = value;
-            TT[p.key & MASK] = move;
+            tt.store(p.key, move);
             if (b <= a) {
                 return b;
             }
@@ -225,7 +221,7 @@ private int qsearch(Position p, int depth, int a, const int b, Move[] outPv)
     }
 
     {
-        Move move = TT[p.key & MASK];
+        Move move =  tt.probe(p.key);
         if (move.isValid(p) && p.board[move.to].isEnemyOf(p.sideToMove)) {
             int value = -p.doMove(move).qsearch(depth - 1, -b, -a, pv);
             if (a < value) {
@@ -245,7 +241,7 @@ private int qsearch(Position p, int depth, int a, const int b, Move[] outPv)
         int value = -p.doMove(move).qsearch(depth - 1, -b, -a, pv);
         if (a < value) {
             a = value;
-            TT[p.key & MASK] = move;
+            tt.store(p.key, move);
             if (b <= a) {
                 return b;
             }
@@ -356,7 +352,7 @@ class HelperThread : Thread
         }
 
         {
-            Move move = TT[p.key & MASK];
+            Move move =  tt.probe(p.key);
             if (move.isValid(p)) {
                 int value = -this.search(p.doMove(move), depth - 1, -b, -a);
                 if (a < value) {
@@ -377,7 +373,7 @@ class HelperThread : Thread
             int value = -this.search(p.doMove(move), depth - 1, -b, -a);
             if (a < value) {
                 a = value;
-                TT[p.key & MASK] = move;
+                tt.store(p.key, move);
                 if (b <= a) {
                     return b;
                 }

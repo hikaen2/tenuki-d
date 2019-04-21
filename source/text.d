@@ -4,6 +4,7 @@ import std.array;
 import std.conv;
 import std.format;
 import std.stdio;
+static import tt;
 
 /**
  * mのCSA形式の文字列を返す
@@ -38,7 +39,12 @@ string toString(Move m, const ref Position p)
 
 string toString(const ref Position p)
 {
-    return format("%s\nkey: 0x%016x\nstaticValue: %d\n%s\n", p.toSfen, p.key, (p.sideToMove == Color.BLACK ? p.staticValue : -cast(int)(staticValue(p))), p.toKi2());
+    return format("%s\nkey: 0x%016x\nstaticValue: %d\nTT fill rate: %d\n%s\n",
+        p.toSfen,
+        p.key,
+        (p.sideToMove == Color.BLACK ? p.staticValue : -cast(int)(staticValue(p))),
+        tt.hashfull(),
+        p.toKi2());
 }
 
 /**

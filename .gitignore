@@ -12,3 +12,7 @@ tenuki-test-*
 *.o
 *.obj
 *.lst
+
+# add
+*.bin
+*.log

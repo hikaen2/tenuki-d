@@ -43,15 +43,18 @@ int ponder(const ref Position p, Move[] outPv)
     Move[64][] pvs;
     Move[64] pv;
     SW = StopWatch(AutoStart.yes);
+
+
+    HelperThread t1 = new HelperThread(p, 2);
+    //HelperThread t2 = new HelperThread(p, 2);
+    //HelperThread t3 = new HelperThread(p, 2);
+    t1.start();
+    //t2.start();
+    //t3.start();
+
     //for (int depth = 1; depth <= 6; depth++) {
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
-
-        HelperThread t = new HelperThread(p, depth);
-        t.start();
         p.search0(depth, pv, value);
-        t.stop();
-        t.join();
-
         Move[64] v = pv;
         if (value <= -15000) {
             v[0] = Move.TORYO;
@@ -60,6 +63,12 @@ int ponder(const ref Position p, Move[] outPv)
         pvs ~= v;
     }
     //writeln(COUNT);
+    t1.stop();
+    //t2.stop();
+    //t3.stop();
+    t1.join();
+    //t2.join();
+    //t3.join();
 
     foreach_reverse (ref v; pvs[1..$]) {
         if (v[0] != Move.TORYO) {
@@ -275,13 +284,14 @@ private bool inUchifuzume(Position p)
 class HelperThread : Thread
 {
     private Position p;
-    private int depth;
+    private int depthInit;
     private bool abort = false;
+    private Move bestMove = Move.NULL;
 
     this(Position p, int depth)
     {
         this.p = p;
-        this.depth = depth;
+        this.depthInit = depth;
         super(&run);
     }
 
@@ -292,6 +302,13 @@ class HelperThread : Thread
 
     private void run()
     {
+        for (int depth = this.depthInit; !this.abort; depth++) {
+            this.search0(p, depth);
+        }
+    }
+
+    private void search0(Position p, int depth)
+    {
         Move[593] moves;
         int length = p.legalMoves(moves);
         if (length == 0) {
@@ -301,25 +318,21 @@ class HelperThread : Thread
 
         int a = short.min;
         const int b = short.max;
-        foreach (Move move; moves[0..length]) {
-            int value = -this.search(p.doMove(move), depth - 1, -b, -a);
-            if (abort) {
-                return;
-            }
+        if (this.bestMove != Move.NULL) {
+            int value = -this.search(p.doMove(this.bestMove), depth - 1, -b, -a);
             if (a < value) {
                 a = value;
             }
         }
+        foreach (Move move; moves[0..length]) {
+            int value = -this.search(p.doMove(move), depth - 1, -b, -a);
+            if (a < value) {
+                a = value;
+                this.bestMove = move;
+            }
+        }
     }
 
-    /**
-     * search
-     * @param p
-     * @param depth
-     * @param a 探索済みminノードの最大値
-     * @param b 探索済みmaxノードの最小値
-     * @return 評価値
-     */
     private int search(Position p, int depth, int a, const int b, bool doNullMove = true)
     {
         assert(a < b);
@@ -336,12 +349,10 @@ class HelperThread : Thread
             return p.staticValue;
             //return p.qsearch(depth + 4, a, b, outPv);
         }
-        COUNT++;
 
         if (!p.inCheck && depth + 1 <= 3 && b <= p.staticValue - 300) {
             return b;
         }
-
 
         if (doNullMove /* && !p.inCheck */ ) {
             immutable R = 2;

@@ -16,7 +16,8 @@ import core.thread;
 static import misc;
 
 
-__gshared Socket socket; // Global Socket
+__gshared Socket SOCKET; // Global Socket
+__gshared bool USE_ENHANCED_CSA_PROTOCOL = false;
 
 
 int main(string[] args)
@@ -30,10 +31,9 @@ int main(string[] args)
         return 0;
     }
 
-    bool enhanced = false;
     ushort port = 4081;
     try {
-        getopt(args, "e", &enhanced, "p", &port);
+        getopt(args, "e", &USE_ENHANCED_CSA_PROTOCOL, "p", &port);
         if (args.length < 4) {
             throw new Exception("");
         }
@@ -48,17 +48,17 @@ int main(string[] args)
     const string password = args[3];
 
     stdout.writefln("Connecting to %s port %s.", hostname, port);
-    socket = new TcpSocket(new InternetAddress(hostname, port));
-    scope(exit) socket.close();
-    socket.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(3600));
+    SOCKET = new TcpSocket(new InternetAddress(hostname, port));
+    scope(exit) SOCKET.close();
+    SOCKET.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(3600));
 
-    socket.writeLine(format("LOGIN %s %s", username, password));
-    if (socket.readLine() == "LOGIN:incorrect") {
+    SOCKET.writeLine(format("LOGIN %s %s", username, password));
+    if (SOCKET.readLine() == "LOGIN:incorrect") {
         return 1;
     }
 
     string[string] gameSummary;
-    for (string line = socket.readLine(); line != "END Game_Summary"; line = socket.readLine()) {
+    for (string line = SOCKET.readLine(); line != "END Game_Summary"; line = SOCKET.readLine()) {
         auto m = line.matchFirst(r"^([^:]+):(.+)$");
         if (!m.empty) {
             gameSummary[m[1]] = m[2];
@@ -66,8 +66,8 @@ int main(string[] args)
     }
 
     const color_t us = (gameSummary["Your_Turn"] == "+" ? Color.BLACK : Color.WHITE);
-    socket.writeLine("AGREE");
-    if (!socket.readLine().matchFirst("^START:")) {
+    SOCKET.writeLine("AGREE");
+    if (!SOCKET.readLine().matchFirst("^START:")) {
         return 1;
     }
 
@@ -85,7 +85,7 @@ int csaloop(const color_t us)
     }
 
     for (;;) {
-        const string line = socket.readLine();
+        const string line = SOCKET.readLine();
 
         if (line.matchFirst(r"^(\+|-)\d{4}\D{2},T\d+$")) {
 
@@ -107,7 +107,7 @@ int csaloop(const color_t us)
 
         } else if (line.among("#WIN", "#LOSE", "#DRAW", "#CENSORED", "#CHUDAN")) {
 
-            socket.writeLine("LOGOUT");
+            SOCKET.writeLine("LOGOUT");
             return 0;
 
         } else if (line == "") {
@@ -130,7 +130,6 @@ int csaloop(const color_t us)
 class SearchThread : Thread
 {
     private Position p;
-    private bool enhanced = true;
 
     this(Position p)
     {
@@ -143,11 +142,11 @@ class SearchThread : Thread
         Move[64] pv;
         int score = p.ponder(pv);
         if (pv[0] == Move.TORYO) {
-            socket.writeLine(pv[0].toString(p));
-        } else if (enhanced) {
-            socket.writeLine(format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), pv.toString(p)));
+            SOCKET.writeLine(pv[0].toString(p));
+        } else if (USE_ENHANCED_CSA_PROTOCOL) {
+            SOCKET.writeLine(format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), pv.toString(p)));
         } else {
-            socket.writeLine(format("%s", pv[0].toString(p)));
+            SOCKET.writeLine(format("%s", pv[0].toString(p)));
         }
     }
 }

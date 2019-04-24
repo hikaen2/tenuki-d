@@ -47,10 +47,18 @@ int ponder(const ref Position p, Move[] outPv)
 
     HelperThread t1 = new HelperThread(p, 2);
     //HelperThread t2 = new HelperThread(p, 2);
-    //HelperThread t3 = new HelperThread(p, 2);
+    //HelperThread t3 = new HelperThread(p, 3);
+    //HelperThread t4 = new HelperThread(p, 3);
+    //HelperThread t5 = new HelperThread(p, 3);
+    //HelperThread t6 = new HelperThread(p, 3);
+    //HelperThread t7 = new HelperThread(p, 4);
     t1.start();
     //t2.start();
     //t3.start();
+    //t4.start();
+    //t5.start();
+    //t6.start();
+    //t7.start();
 
     //for (int depth = 1; depth <= 6; depth++) {
     for (int depth = 1; SW.peek().total!"seconds" < SECOND; depth++) {
@@ -66,9 +74,17 @@ int ponder(const ref Position p, Move[] outPv)
     t1.stop();
     //t2.stop();
     //t3.stop();
+    //t4.stop();
+    //t5.stop();
+    //t6.stop();
+    //t7.stop();
     t1.join();
     //t2.join();
     //t3.join();
+    //t4.join();
+    //t5.join();
+    //t6.join();
+    //t7.join();
 
     foreach_reverse (ref v; pvs[1..$]) {
         if (v[0] != Move.TORYO) {

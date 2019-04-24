@@ -23,7 +23,7 @@ string readln(ref Socket s)
     for (auto len = s.receive(c); c[0] != '\n'; len = s.receive(c)) {
         if (len == Socket.ERROR) {
             if (errno() == EAGAIN) {
-                throw new Exception("timed out");
+                throw new Exception("recv timed out");
             }
             continue;
         }

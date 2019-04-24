@@ -1,5 +1,6 @@
 import types;
 import eval;
+import position;
 import std.array;
 import std.conv;
 import std.format;
@@ -132,4 +133,21 @@ string toKi2(const ref Position p)
     s ~= "+---------------------------+\n";
     s ~= format("先手の持駒：%s\n", (hand[Color.BLACK] == "" ? "なし" : hand[Color.BLACK]));
     return s;
+}
+
+/**
+ * 例："+1917KY -3917UM +0023KI -2223KI +2423TO -1223OU"
+ */
+string toString(Move[] pv, const ref Position p)
+{
+    if (pv[0] == Move.NULL) {
+        return "";
+    }
+    string[] result;
+    Position q = p.doMove(pv[0]);
+    for (int i = 1; pv[i] != Move.NULL; i++) {
+        result ~= pv[i].toString(q);
+        q = q.doMove(pv[i]);
+    }
+    return join(result, " ");
 }

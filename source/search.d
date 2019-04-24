@@ -125,12 +125,8 @@ private int search0(Position p, int depth, Move[] outPv, ref int outScore)
             outScore = value;
         }
     }
-    stderr.write(" : ");
-    Position q = p;
-    for (int i = 0; outPv[i] != Move.NULL; q = q.doMove(outPv[i]), i++) {
-        stderr.writef("%s ", outPv[i].toString(q));
-    }
-    stderr.write("\n");
+    stderr.writefln("\t-> %s", outPv.toString(p));
+
     return a;
 }
 

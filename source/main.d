@@ -145,13 +145,7 @@ class SearchThread : Thread
         if (pv[0] == Move.TORYO) {
             socket.writeLine(pv[0].toString(p));
         } else if (enhanced) {
-            string wk;
-            Position q = p.doMove(pv[0]);
-            for (int i = 1; pv[i] != Move.NULL; i++) {
-                wk ~= format("%s ", pv[i].toString(q));
-                q = q.doMove(pv[i]);
-            }
-            socket.writeLine(format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), wk));
+            socket.writeLine(format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), pv.toString(p)));
         } else {
             socket.writeLine(format("%s", pv[0].toString(p)));
         }

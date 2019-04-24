@@ -15,8 +15,9 @@ shared long stat_stored = 0;
 
 struct TTEntry
 {
-    ulong key64;
+    uint key32;
     ushort move16;
+    ushort _;
 }
 
 Move probe(ulong key)
@@ -24,12 +25,12 @@ Move probe(ulong key)
     for (int i = 0; i < 5; i++)
     {
         TTEntry e = TT[((key & MASK) + i * 2) % (MASK + 1)];
-        if (e.key64 == 0)
+        if (e.key32 == 0)
         {
             atomicOp!"+="(stat_nothing, 1);
             return cast(Move)(0);
         }
-        if (e.key64 == key)
+        if (e.key32 == (key >> 32))
         {
             atomicOp!"+="(stat_hit, 1);
             return cast(Move)(e.move16);
@@ -46,9 +47,9 @@ void store(ulong key, Move m)
     for (int i = 0; i < 5; i++)
     {
         const long address = ((key & MASK) + i * 2) % (MASK + 1);
-        if (TT[address].key64 == 0 || TT[address].key64 == key)
+        if (TT[address].key32 == 0 || TT[address].key32 == (key >> 32))
         {
-            TT[address] = TTEntry(key, m.i);
+            TT[address] = TTEntry((key >> 32), m.i);
             atomicOp!"+="(stat_stored, 1);
             return;
         }
@@ -63,6 +64,6 @@ long hashfull()
     {
         cnt += e.move16 == 0 ? 0 : 1;
     }
-    return cnt;
-    //return cnt * 1000 / (MASK + 1);
+    return cnt * 1000 / (MASK + 1);
+    //return cnt;
 }

@@ -14,6 +14,7 @@ import std.stdio;
 import std.algorithm.comparison;
 import core.thread;
 static import misc;
+static import tt;
 
 
 __gshared Socket SOCKET; // Global Socket
@@ -168,6 +169,10 @@ private void test()
     stdout.writeln(p.toString());
     Move[64] pv;
     p.ponder(pv);
+    stdout.writefln("stored: %12d", tt.stat_stored);
+    stdout.writefln("nothing:%12d", tt.stat_nothing);
+    stdout.writefln("hit:    %12d", tt.stat_hit);
+    stdout.writefln("misshit:%12d", tt.stat_misshit);
 
     // Position p = parsePosition("sfen 9/9/9/9/9/9/9/9/P8 b - 1");
     // stdout.writeln(p.toString());

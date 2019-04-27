@@ -15,10 +15,12 @@ import std.algorithm.comparison;
 import core.thread;
 static import misc;
 static import tt;
+import std.datetime.systime : SysTime, Clock;
 
 
-__gshared Socket SOCKET; // Global Socket
-__gshared bool USE_ENHANCED_CSA_PROTOCOL = false;
+__gshared private Socket SOCKET;
+__gshared private bool USE_ENHANCED_CSA_PROTOCOL = false;
+__gshared private File RECV_LOG;
 
 
 int main(string[] args)
@@ -52,6 +54,13 @@ int main(string[] args)
     SOCKET = new TcpSocket(new InternetAddress(hostname, port));
     scope(exit) SOCKET.close();
     SOCKET.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(3600));
+
+    {
+        SysTime now = Clock.currTime();
+        now.fracSecs(Duration.zero());
+        RECV_LOG = File(format("log/%s.log", now.toISOString()), "w");
+    }
+    scope(exit) RECV_LOG.close();
 
     SOCKET.writeLine(format("LOGIN %s %s", username, password));
     if (SOCKET.readLine() == "LOGIN:incorrect") {
@@ -198,8 +207,8 @@ private string readLine(ref Socket s)
 {
     string line = misc.readln(s);
     stderr.writefln("<\"%s\\n\"", line);
-    RecvLog.writeln(line);
-    RecvLog.flush();
+    RECV_LOG.writeln(line);
+    RECV_LOG.flush();
     return line;
 }
 
@@ -212,17 +221,4 @@ private Captures!string readLineUntil(ref Socket s, string re)
     Captures!string m;
     for (string str = s.readLine(); (m = str.matchFirst(re)).empty; str = s.readLine()) {}
     return m;
-}
-
-
-private File RecvLog;
-
-
-shared static this() {
-    RecvLog = File("recv.log", "w");
-}
-
-
-shared static ~this() {
-    RecvLog.close();
 }

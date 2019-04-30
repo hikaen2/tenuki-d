@@ -13,11 +13,13 @@ $ dub build -b release
 ~~~
 
 ## 動かしかた
-評価ベクターになのはminiのfv_mini.binを使っています。
-fv_mini.binを作業ディレクトリに置いて実行してください。
+評価ベクターにApery, commit 3221627のKK_synthesized.bin, KKP_synthesized.bin, KPP_synthesized.binを使っています。
+KK_synthesized.bin, KKP_synthesized.bin, KPP_synthesized.binを作業ディレクトリに置いて実行してください。
+
 ~~~
 $ ./tenuki hostname username password
 ~~~
+
 例：
 ~~~
 $ ./tenuki wdoor.c.u-tokyo.ac.jp tenuki floodgate-300-10F

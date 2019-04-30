@@ -4,9 +4,12 @@ import text;
 import movegen;
 import std.stdio;
 import std.string;
+import std.random;
 import std.regex;
 
+
 immutable Move[][string] BOOK;
+
 
 shared static this()
 {
@@ -27,13 +30,29 @@ shared static this()
         }
     }
 
-    // foreach (key, value; BOOK) {
-    //     writeln(key);
-    //     foreach (move; value) {
-    //         writeln(move);
-    //     }
-    // }
 }
+
+
+Move pick(const ref Position p)
+{
+    const string sfen = p.toSfen();
+    if (sfen in book.BOOK) {
+        return book.BOOK[sfen][ uniform(0, book.BOOK[sfen].length) ];
+    }
+    return Move.NULL;
+}
+
+
+void dump()
+{
+    foreach (key, value; BOOK) {
+        writeln(key);
+        foreach (move; value) {
+            writeln(move);
+        }
+    }
+}
+
 
 void validateBook()
 {
@@ -48,6 +67,7 @@ void validateBook()
         }
     }
 }
+
 
 /*
  * 7g7f

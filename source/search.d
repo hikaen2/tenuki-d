@@ -1,5 +1,4 @@
 import types;
-import book;
 import text;
 import position;
 import movegen;
@@ -11,13 +10,14 @@ import std.algorithm.mutation;
 import std.algorithm.searching;
 import std.datetime.stopwatch;
 import core.thread;
-static import tt;
+static import book, tt;
+
 
 private int COUNT = 0;
 private StopWatch SW;
 private int SECOND = 20;
-
 int remainSeconds = 600;
+
 
 int ponder(const ref Position p, Move[] outPv)
 {
@@ -34,10 +34,13 @@ int ponder(const ref Position p, Move[] outPv)
     // }
     // writeln(COUNT);
 
-    if (p.toSfen in BOOK) {
-        outPv[0] = BOOK[p.toSfen][ uniform(0, BOOK[p.toSfen].length) ];
-        outPv[1] = Move.NULL;
-        return 0;
+    {
+        Move move = book.pick(p);
+        if (move != Move.NULL) {
+            outPv[0] = move;
+            outPv[1] = Move.NULL;
+            return 0;
+        }
     }
 
     Move[64][] pvs;

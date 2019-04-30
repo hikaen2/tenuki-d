@@ -33,6 +33,16 @@ shared static this()
 }
 
 
+struct BookPos
+{
+    Move bestMove;
+    Move nextMove;
+    int value;
+    int depth;
+    int num;
+}
+
+
 Move pick(const ref Position p)
 {
     const string sfen = p.toSfen();

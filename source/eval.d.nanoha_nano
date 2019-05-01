@@ -1,0 +1,164 @@
+// eval.d.nanoha_nano
+
+/*
+ * fv_nano.binには符号付き16ビット整数がリトルエンディアンで1,476 x 81 = 119,556個格納されている(239,112バイト)。
+ * 1エントリーの長さは1476で，これが自玉の位置に合わせて81レコード格納されている。
+ * 最初のエントリー(FV[0])は自玉が1一にいるときの評価値である。
+ * 9番目のエントリー(FV[8])は自玉が9一にいるときの評価値である。
+ * 最後のエントリー(FV[80])は自玉が9九にいるときの評価値である。
+ * エントリーの内訳は次のとおり：
+ *
+ * 内容                                       index from index to 要素数
+ * ------------------------------------------ ---------- -------- ------
+ * 味方の持駒に歩が0～18枚あるときの評価値             0       18     19
+ * 相手の持駒に歩が0～18枚あるときの評価値            19       37     19
+ * 味方の持駒に香が0～4枚あるときの評価値             38       42      5
+ * 相手の持駒に香が0～4枚あるときの評価値             43       47      5
+ * 味方の持駒に桂が0～4枚あるときの評価値             48       52      5
+ * 相手の持駒に桂が0～4枚あるときの評価値             53       57      5
+ * 味方の持駒に銀が0～4枚あるときの評価値             58       62      5
+ * 相手の持駒に銀が0～4枚あるときの評価値             63       67      5
+ * 味方の持駒に金が0～4枚あるときの評価値             68       72      5
+ * 相手の持駒に金が0～4枚あるときの評価値             73       77      5
+ * 味方の持駒に角が0～2枚あるときの評価値             78       80      3
+ * 相手の持駒に角が0～2枚あるときの評価値             81       83      3
+ * 味方の持駒に飛が0～2枚あるときの評価値             84       86      3
+ * 相手の持駒に飛が0～2枚あるときの評価値             87       89      3
+ * 味方の歩がアドレス9～80にいるときの評価値          90      161     72
+ * 相手の歩がアドレス0～71にいるときの評価値         162      233     72
+ * 味方の香がアドレス9～80にいるときの評価値         234      305     72
+ * 相手の香がアドレス0～71にいるときの評価値         306      377     72
+ * 味方の桂がアドレス18～80にいるときの評価値        378      440     63
+ * 相手の桂がアドレス0～62にいるときの評価値         441      503     63
+ * 味方の銀がアドレス0～80にいるときの評価値         504      584     81
+ * 相手の銀がアドレス0～80にいるときの評価値         585      665     81
+ * 味方の金がアドレス0～80にいるときの評価値         666      746     81
+ * 相手の金がアドレス0～80にいるときの評価値         747      827     81
+ * 味方の角がアドレス0～80にいるときの評価値         828      908     81
+ * 相手の角がアドレス0～80にいるときの評価値         909      989     81
+ * 味方の馬がアドレス0～80にいるときの評価値         990     1070     81
+ * 相手の馬がアドレス0～80にいるときの評価値        1071     1151     81
+ * 味方の飛がアドレス0～80にいるときの評価値        1152     1232     81
+ * 相手の飛がアドレス0～80にいるときの評価値        1233     1313     81
+ * 味方の龍がアドレス0～80にいるときの評価値        1314     1394     81
+ * 相手の龍がアドレス0～80にいるときの評価値        1395     1475     81
+ * ------------------------------------------ ---------- -------- ------
+ *                                                            合計：1476
+ */
+
+
+import types;
+import std.stdio;
+
+
+private enum FV_SCALE = 32;
+private immutable short[1476][81] KP;
+
+
+shared static this()
+{
+    File f = File("fv_nano.bin", "r");
+    scope(exit) f.close();
+    for (int i = 0; i < 81; i++) {
+        for (int j = 0; j < 1476; j++) {
+            short[1] buf;
+            KP[i][j] = f.rawRead(buf)[0];
+        }
+    }
+}
+
+
+/**
+ * 手番のある側から見た評価値を返す
+ */
+short staticValue(const ref Position p)
+{
+    if (p.piecesInHand[Color.BLACK][Type.KING] > 0) {
+        return p.sideToMove == Color.BLACK ? +15000 : -15000;
+    }
+    if (p.piecesInHand[Color.WHITE][Type.KING] > 0) {
+        return p.sideToMove == Color.BLACK ? -15000 : +15000;
+    }
+
+    // 駒割りの計算
+    int material = 0;
+    int bk = 0;
+    int wk = 0;
+    for (int i = SQ11; i <= SQ99; i++) {
+        material += P_VALUE[p.board[i].i];
+        bk = (p.board[i] == Square.B_KING ? ADDRESS_OF[i       ] : bk);
+        wk = (p.board[i] == Square.W_KING ? ADDRESS_OF[SQ99 - i] : wk);
+    }
+    for (int t = Type.PAWN; t <= Type.ROOK; t++) {
+        material += (p.piecesInHand[Color.BLACK][t] - p.piecesInHand[Color.WHITE][t]) * P_VALUE[t];
+    }
+
+    // KPの計算
+    int sum = 0;
+    for (int i = SQ11; i <= SQ99; i++) {
+        if (p.board[i] != Square.EMPTY && p.board[i].type != Type.KING) {
+            sum += KP[bk][ OFFSET_KP[p.board[i].i    ] + ADDRESS_OF[i       ] ];
+            sum -= KP[wk][ OFFSET_KP[p.board[i].inv.i] + ADDRESS_OF[SQ99 - i] ];
+        }
+    }
+    for (type_t t = Type.PAWN; t <= Type.ROOK; t++) {
+        sum += KP[bk][ OFFSET_HAND[Color.BLACK][t] + p.piecesInHand[Color.BLACK][t] ];
+        sum += KP[bk][ OFFSET_HAND[Color.WHITE][t] + p.piecesInHand[Color.WHITE][t] ];
+        sum -= KP[wk][ OFFSET_HAND[Color.BLACK][t] + p.piecesInHand[Color.WHITE][t] ];
+        sum -= KP[wk][ OFFSET_HAND[Color.WHITE][t] + p.piecesInHand[Color.BLACK][t] ];
+    }
+
+    sum /= FV_SCALE;
+    int value = material + sum;
+    return cast(short)(p.sideToMove == Color.BLACK ? value : -value);
+}
+
+
+/*
+ * value: 駒得の評価値
+ * key: Square
+ */
+private immutable short[] P_VALUE = [
+   // 歩,   香,   桂,   銀,   金,   角,   飛,     王,   と, 成香, 成桂, 成銀,   馬,    龍,
+     100,  260,  235,  392,  389,  625,  844,  15000,  458,  401,  423,  409,  800,  1164,
+    -100, -260, -235, -392, -389, -625, -844, -15000, -458, -401, -423, -409, -800, -1164, 0,
+];
+
+
+/*
+ * 持ち駒（手番と駒のタイプ）からオフセットを引く表
+ * key: [color_t][type_t]
+ */
+private immutable short[][] OFFSET_HAND = [
+  // 歩, 香, 桂, 銀, 金, 角, 飛,
+    [ 0, 38, 48, 58, 68, 78, 84, ],
+    [19, 43, 53, 63, 73, 81, 87, ],
+];
+
+
+/*
+ * 駒からオフセットを引く表
+ * key: Square
+ */
+private immutable short[] OFFSET_KP = [
+  // 歩,  香,  桂,  銀,  金,  角,   飛, 王,  と, 成香, 成桂, 成銀,   馬,   龍,
+     81, 225, 360, 504, 666, 828, 1152,  0, 666,  666,  666,  666,  990, 1314,
+    162, 306, 441, 585, 747, 909, 1233,  0, 747,  747,  747,  747, 1071, 1395,
+];
+
+
+/*
+ * FVのインデックス
+ * key: Position.boardのインデックス
+ */
+private immutable ubyte[] ADDRESS_OF = [
+     0,  9, 18, 27, 36, 45, 54, 63, 72,
+     1, 10, 19, 28, 37, 46, 55, 64, 73,
+     2, 11, 20, 29, 38, 47, 56, 65, 74,
+     3, 12, 21, 30, 39, 48, 57, 66, 75,
+     4, 13, 22, 31, 40, 49, 58, 67, 76,
+     5, 14, 23, 32, 41, 50, 59, 68, 77,
+     6, 15, 24, 33, 42, 51, 60, 69, 78,
+     7, 16, 25, 34, 43, 52, 61, 70, 79,
+     8, 17, 26, 35, 44, 53, 62, 71, 80,
+];

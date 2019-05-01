@@ -1,0 +1,193 @@
+// eval.d.nanoha_mini
+
+
+import types;
+import std.stdio;
+
+
+private enum FV_SCALE = 32;
+private immutable short[1386][1386] FV_PP;
+private immutable short[1476][81] FV_KP;
+
+
+shared static this()
+{
+    short[1386][693] ppOri;
+    File f = File("fv_mini.bin", "r");
+    scope(exit) f.close();
+    for (int i = 0; i < 693; i++) {
+        for (int j = 0; j < 1386; j++) {
+            short[1] buf;
+            ppOri[i][j] = f.rawRead(buf)[0];
+        }
+    }
+
+    {
+        struct Hoge {
+            int base, invBase, start, end;
+        }
+        immutable Hoge[18] tbl = [
+            {OFFSET_PP[Square.B_PAWN.i]            , OFFSET_PP[Square.W_PAWN.i],             9, 81},
+            {OFFSET_PP[Square.B_LANCE.i]           , OFFSET_PP[Square.W_LANCE.i] ,           9, 81},
+            {OFFSET_PP[Square.B_KNIGHT.i]          , OFFSET_PP[Square.W_KNIGHT.i],          18, 81},
+            {OFFSET_PP[Square.B_SILVER.i]          , OFFSET_PP[Square.W_SILVER.i],           0, 81},
+            {OFFSET_PP[Square.B_GOLD.i]            , OFFSET_PP[Square.W_GOLD.i]  ,           0, 81},
+            {OFFSET_PP[Square.B_BISHOP.i]          , OFFSET_PP[Square.W_BISHOP.i],           0, 81},
+            {OFFSET_PP[Square.B_PROMOTED_BISHOP.i] , OFFSET_PP[Square.W_PROMOTED_BISHOP.i],  0, 81},
+            {OFFSET_PP[Square.B_ROOK.i]            , OFFSET_PP[Square.W_ROOK.i]  ,           0, 81},
+            {OFFSET_PP[Square.B_PROMOTED_ROOK.i]   , OFFSET_PP[Square.W_PROMOTED_ROOK.i],    0, 81},
+            {OFFSET_PP[Square.W_PAWN.i]            , OFFSET_PP[Square.B_PAWN.i]  ,           0, 72},
+            {OFFSET_PP[Square.W_LANCE.i]           , OFFSET_PP[Square.B_LANCE.i] ,           0, 72},
+            {OFFSET_PP[Square.W_KNIGHT.i]          , OFFSET_PP[Square.B_KNIGHT.i],           0, 63},
+            {OFFSET_PP[Square.W_SILVER.i]          , OFFSET_PP[Square.B_SILVER.i],           0, 81},
+            {OFFSET_PP[Square.W_GOLD.i]            , OFFSET_PP[Square.B_GOLD.i]  ,           0, 81},
+            {OFFSET_PP[Square.W_BISHOP.i]          , OFFSET_PP[Square.B_BISHOP.i],           0, 81},
+            {OFFSET_PP[Square.W_PROMOTED_BISHOP.i] , OFFSET_PP[Square.B_PROMOTED_BISHOP.i] , 0, 81},
+            {OFFSET_PP[Square.W_ROOK.i]            , OFFSET_PP[Square.B_ROOK.i]  ,           0, 81},
+            {OFFSET_PP[Square.W_PROMOTED_ROOK.i]   , OFFSET_PP[Square.B_PROMOTED_ROOK.i],    0, 81},
+        ];
+        int inv(int sq) {
+            return 81 - 1 - sq;
+        }
+        for (int i = 0; i < 9; i++) {
+            for (int sq1 = tbl[i].start; sq1 < tbl[i].end; sq1++) {
+                for (int j = 0; j < 18; j++) {
+                    for (int sq2 = tbl[j].start; sq2 < tbl[j].end; sq2++) {
+                        const int p1    = tbl[i].base    +     sq1;
+                        const int p1inv = tbl[i].invBase + inv(sq1);
+                        const int p2    = tbl[j].base    +     sq2;
+                        const int p2inv = tbl[j].invBase + inv(sq2);
+                        FV_PP[p1][p2] =  ppOri[p1][p2];
+                        FV_PP[p1inv][p2inv] = (p2inv < OFFSET_PP[Square.W_PAWN.i] ? ppOri[p2inv][p1inv] : -ppOri[p1][p2]);
+                    }
+                }
+            }
+        }
+    }
+
+    // KP
+    for (int i = 0; i < 81; i++) {
+        for (int j = 0; j < 1476; j++) {
+            short[1] buf;
+            FV_KP[i][j] = f.rawRead(buf)[0];
+        }
+    }
+}
+
+
+/**
+ * 手番のある側から見た評価値を返す
+ */
+short staticValue(const ref Position p)
+{
+    if (p.piecesInHand[Color.BLACK][Type.KING] > 0) {
+        return p.sideToMove == Color.BLACK ? +15000 : -15000;
+    }
+    if (p.piecesInHand[Color.WHITE][Type.KING] > 0) {
+        return p.sideToMove == Color.BLACK ? -15000 : +15000;
+    }
+
+    // 駒割りの計算
+    int material = 0;
+    int bk = 0;
+    int wk = 0;
+    for (int i = SQ11; i <= SQ99; i++) {
+        material += P_VALUE[p.board[i].i];
+        bk = (p.board[i] == Square.B_KING ? ADDRESS_OF[i       ] : bk);
+        wk = (p.board[i] == Square.W_KING ? ADDRESS_OF[SQ99 - i] : wk);
+    }
+    for (int t = Type.PAWN; t <= Type.ROOK; t++) {
+        material += (p.piecesInHand[Color.BLACK][t] - p.piecesInHand[Color.WHITE][t]) * P_VALUE[t];
+    }
+
+    // KPの計算
+    int sum = 0;
+    short[40] list = void;
+    int nlist = 0;
+    for (int i = SQ11; i <= SQ99; i++) {
+        if (p.board[i] != Square.EMPTY && p.board[i].type != Type.KING) {
+            sum += FV_KP[bk][ OFFSET_KP[p.board[i].i    ] + ADDRESS_OF[i       ] ];
+            sum -= FV_KP[wk][ OFFSET_KP[p.board[i].inv.i] + ADDRESS_OF[SQ99 - i] ];
+            list[nlist++] = cast(short)(OFFSET_PP[p.board[i].i] + ADDRESS_OF[i]);
+        }
+    }
+    for (type_t t = Type.PAWN; t <= Type.ROOK; t++) {
+        sum += FV_KP[bk][ OFFSET_HAND[Color.BLACK][t] + p.piecesInHand[Color.BLACK][t] ];
+        sum += FV_KP[bk][ OFFSET_HAND[Color.WHITE][t] + p.piecesInHand[Color.WHITE][t] ];
+        sum -= FV_KP[wk][ OFFSET_HAND[Color.BLACK][t] + p.piecesInHand[Color.WHITE][t] ];
+        sum -= FV_KP[wk][ OFFSET_HAND[Color.WHITE][t] + p.piecesInHand[Color.BLACK][t] ];
+    }
+
+    // PPの計算
+    for (int i = 0; i < nlist; i++) {
+        for (int j = i + 1; j < nlist; j++) {
+            assert(FV_PP[list[i]][list[j]] == FV_PP[list[j]][list[i]]);
+            sum += FV_PP[list[i]][list[j]];
+        }
+    }
+
+    sum /= FV_SCALE;
+    int value = material + sum;
+    return cast(short)(p.sideToMove == Color.BLACK ? value : -value);
+}
+
+
+/*
+ * value: 駒得の評価値
+ * key: Square
+ */
+private immutable short[] P_VALUE = [
+   // 歩,   香,   桂,   銀,   金,   角,   飛,     王,   と, 成香, 成桂, 成銀,   馬,    龍,
+     100,  260,  235,  392,  389,  625,  844,  15000,  458,  401,  423,  409,  800,  1164,
+    -100, -260, -235, -392, -389, -625, -844, -15000, -458, -401, -423, -409, -800, -1164, 0,
+];
+
+
+/*
+ * PPのオフセット
+ * key: Square
+ */
+private immutable short[] OFFSET_PP = [
+  // 歩,  香,  桂,  銀,  金,   角,   飛, 王,  と, 成香, 成桂, 成銀,   馬,   龍,
+     -9,  63, 126, 207, 288,  369,  531,  0, 288,  288,  288,  288,  450,  612,
+    693, 765, 837, 900, 981, 1062, 1224,  0, 981,  981,  981,  981, 1143, 1305, 0,
+];
+
+
+/*
+ * FVのオフセット
+ * key: [color_t][type_t]
+ */
+private immutable short[][] OFFSET_HAND = [
+  // 歩, 香, 桂, 銀, 金, 角, 飛,
+    [ 0, 38, 48, 58, 68, 78, 84, ],
+    [19, 43, 53, 63, 73, 81, 87, ],
+];
+
+
+/*
+ * KPのオフセット
+ * key: Square
+ */
+private immutable short[] OFFSET_KP = [
+  // 歩,  香,  桂,  銀,  金,  角,   飛, 王,  と, 成香, 成桂, 成銀,   馬,   龍,
+     81, 225, 360, 504, 666, 828, 1152,  0, 666,  666,  666,  666,  990, 1314,
+    162, 306, 441, 585, 747, 909, 1233,  0, 747,  747,  747,  747, 1071, 1395,
+];
+
+
+/*
+ * FVのインデックス
+ * key: Position.boardのインデックス
+ */
+private immutable ubyte[] ADDRESS_OF = [
+     0,  9, 18, 27, 36, 45, 54, 63, 72,
+     1, 10, 19, 28, 37, 46, 55, 64, 73,
+     2, 11, 20, 29, 38, 47, 56, 65, 74,
+     3, 12, 21, 30, 39, 48, 57, 66, 75,
+     4, 13, 22, 31, 40, 49, 58, 67, 76,
+     5, 14, 23, 32, 41, 50, 59, 68, 77,
+     6, 15, 24, 33, 42, 51, 60, 69, 78,
+     7, 16, 25, 34, 43, 52, 61, 70, 79,
+     8, 17, 26, 35, 44, 53, 62, 71, 80,
+];

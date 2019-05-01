@@ -13,8 +13,7 @@ import std.socket;
 import std.stdio;
 import std.algorithm.comparison;
 import core.thread;
-static import misc;
-static import tt;
+static import config, misc, tt;
 import std.datetime.systime : SysTime, Clock;
 
 
@@ -91,6 +90,7 @@ int csaloop(const color_t us)
     stdout.writeln(p.toString());
 
     if (us == Color.BLACK) {
+        search.REMAIN_SECONDS += config.INCREMENT_SECONDS;
         new SearchThread(p).start(); // search & send
     }
 
@@ -99,11 +99,15 @@ int csaloop(const color_t us)
 
         if (line.matchFirst(r"^(\+|-)\d{4}\D{2},T\d+$")) {
 
-            int second = to!int(line.matchFirst(r",T(\d+)")[1]);
+            if (p.sideToMove == us) {
+                search.REMAIN_SECONDS -= to!int(line.matchFirst(r",T(\d+)")[1]);
+            }
+
             p = p.doMove(parseMove(line, p));
             stderr.writeln(toString(p));
-            stderr.writeln(search.remainSeconds);
+            stderr.writeln(search.REMAIN_SECONDS);
             if (p.sideToMove == us) {
+                search.REMAIN_SECONDS += config.INCREMENT_SECONDS;
                 new SearchThread(p).start(); // search & send
             }
 

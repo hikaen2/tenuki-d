@@ -1,0 +1,7 @@
+
+enum SEARCH_THREADS = 2;
+enum SEARCH_SECONDS = 20;
+enum TT_SIZE = 0x7ffffff;
+
+enum TOTAL_SECONDS = 900;
+enum INCREMENT_SECONDS = 5;

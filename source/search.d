@@ -10,20 +10,19 @@ import std.algorithm.mutation;
 import std.algorithm.searching;
 import std.datetime.stopwatch;
 import core.thread;
-static import book, tt;
+static import book, config, tt;
 
 
 private int COUNT = 0;
 private StopWatch SW;
-private int SECOND = 20;
-int remainSeconds = 600;
+private int SECOND = config.SEARCH_SECONDS;
+__gshared int REMAIN_SECONDS = config.TOTAL_SECONDS;
 
 
 int ponder(const ref Position p, Move[] outPv)
 {
 
-    SECOND = min(20, remainSeconds);
-    remainSeconds += 10;
+    SECOND = min(config.SEARCH_SECONDS, REMAIN_SECONDS);
 
     Move m = Move.NULL;
     int value = 0;

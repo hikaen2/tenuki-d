@@ -5,13 +5,15 @@ import core.atomic;
 import types;
 import text;
 import core.atomic;
+static import config;
 
-private immutable MASK = 0x7ffffff; // 1024 * 1024 * 16 - 1
-__gshared private TTEntry[MASK + 1] TT;
+
+__gshared private TTEntry[config.TT_SIZE + 1] TT;
 shared long stat_nothing = 0;
 shared long stat_misshit = 0;
 shared long stat_hit = 0;
 shared long stat_stored = 0;
+
 
 struct TTEntry
 {
@@ -24,7 +26,7 @@ Move probe(ulong key)
 {
     for (int i = 0; i < 5; i++)
     {
-        TTEntry e = TT[((key & MASK) + i * 2) % (MASK + 1)];
+        TTEntry e = TT[((key & config.TT_SIZE) + i * 2) % (config.TT_SIZE + 1)];
         if (e.key32 == 0)
         {
             atomicOp!"+="(stat_nothing, 1);
@@ -46,7 +48,7 @@ void store(ulong key, Move m)
 {
     for (int i = 0; i < 5; i++)
     {
-        const long address = ((key & MASK) + i * 2) % (MASK + 1);
+        const long address = ((key & config.TT_SIZE) + i * 2) % (config.TT_SIZE + 1);
         if (TT[address].key32 == 0 || TT[address].key32 == (key >> 32))
         {
             TT[address] = TTEntry((key >> 32), m.i);
@@ -64,6 +66,6 @@ long hashfull()
     {
         cnt += e.move16 == 0 ? 0 : 1;
     }
-    return cnt * 1000 / (MASK + 1);
+    return cnt * 1000 / (config.TT_SIZE + 1);
     //return cnt;
 }

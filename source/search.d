@@ -283,9 +283,10 @@ private bool inUchifuzume(Position p)
 
 class HelperThread : Thread
 {
+    private int idx;
+    private bool exit = false;
     private Position p;
     private int depthInit;
-    private bool abort = false;
     private Move bestMove = Move.NULL;
 
     this(Position p, int depth)
@@ -297,12 +298,12 @@ class HelperThread : Thread
 
     public void stop()
     {
-        this.abort = true;
+        this.exit = true;
     }
 
     private void run()
     {
-        for (int depth = this.depthInit; !this.abort; depth++) {
+        for (int depth = this.depthInit; !this.exit; depth++) {
             this.search0(p, depth);
         }
     }
@@ -337,7 +338,7 @@ class HelperThread : Thread
     {
         assert(a < b);
 
-        if (this.abort) {
+        if (this.exit) {
             return b;
         }
 

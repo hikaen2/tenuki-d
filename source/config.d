@@ -15,10 +15,10 @@ enum TT_SIZE = 0x1ffffff;  // 256MB
 
 
 // floodgate
-enum TOTAL_SECONDS = 300;
+enum TOTAL_SECONDS = 290;
 enum INCREMENT_SECONDS = 10;
 
 
 // WCSC29
-//enum TOTAL_SECONDS = 900;
+//enum TOTAL_SECONDS = 895;
 //enum INCREMENT_SECONDS = 5;

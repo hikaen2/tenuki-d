@@ -8,11 +8,17 @@ import types;
 static import config;
 
 
-__gshared private TTEntry[config.TT_SIZE + 1] TT;
+__gshared private TTEntry[] TT;
 shared long stat_nothing = 0;
 shared long stat_misshit = 0;
 shared long stat_hit = 0;
 shared long stat_stored = 0;
+
+
+shared static this()
+{
+    TT.length = config.TT_SIZE + 1;
+}
 
 
 struct TTEntry
@@ -79,5 +85,5 @@ long hashfull()
  */
 string info()
 {
-    return format("TT: %,d entries, %,d bytes", (config.TT_SIZE + 1), (config.TT_SIZE + 1) * TTEntry.sizeof);
+    return format("TT: %,d entries, %,d bytes", TT.length, TT.length * TTEntry.sizeof);
 }

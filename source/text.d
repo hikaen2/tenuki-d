@@ -138,16 +138,14 @@ string toKi2(const ref Position p)
 /**
  * 例："+1917KY -3917UM +0023KI -2223KI +2423TO -1223OU"
  */
-string toString(Move[] pv, const ref Position p)
+string toString(Move[] pv, Position p, int from = 0)
 {
-    if (pv[0] == Move.NULL) {
-        return "";
-    }
     string[] result;
-    Position q = p.doMove(pv[0]);
-    for (int i = 1; pv[i] != Move.NULL; i++) {
-        result ~= pv[i].toString(q);
-        q = q.doMove(pv[i]);
+    for (int i = 0; pv[i] != Move.NULL; i++) {
+        if (i >= from) {
+            result ~= pv[i].toString(p);
+        }
+        p = p.doMove(pv[i]);
     }
     return join(result, " ");
 }

@@ -158,7 +158,7 @@ class SearchThread : Thread
         if (pv[0] == Move.TORYO) {
             SOCKET.writeLine(pv[0].toString(p));
         } else if (USE_ENHANCED_CSA_PROTOCOL) {
-            SOCKET.writeLine(format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), pv.toString(p)));
+            SOCKET.writeLine(format("%s,'* %d %s", pv[0].toString(p), (p.sideToMove == Color.BLACK ? score : -score), pv.toString(p, 1)));
         } else {
             SOCKET.writeLine(format("%s", pv[0].toString(p)));
         }

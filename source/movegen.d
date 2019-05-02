@@ -1,4 +1,6 @@
 import types;
+import position;
+
 
 /**
  * まだ指していない指し手mが局面pにおいて王手をかける手かどうかを返す
@@ -18,6 +20,43 @@ import types;
 //     }
 //     return false;
 // }
+
+
+/**
+ * 局面pにおいて手番のある側が打ち歩詰めされているかどうかを返す
+ */
+bool inUchifuzume(Position p)
+{
+    if (!p.previousMove.isDrop || p.previousMove.from != Type.PAWN || !p.inCheck) {
+        return false; // 直前の指し手が打ち歩でない，または現局面が王手をかけられていない場合は，打ち歩詰めでない
+    }
+
+    Move[593] moves;
+    int length = p.legalMoves(moves);
+    foreach (Move move; moves[0..length]) {
+        if (!p.doMove(move).doMove(Move.NULL_MOVE).inCheck) {
+            return false; // 王手を解除する手があれば打ち歩詰めでない
+        }
+    }
+    return true; // 王手を解除する手がなければ打ち歩詰め
+}
+
+
+/**
+ * 局面pにおいて手番のある側が詰んでいるかどうかを返す
+ */
+bool inMate(Position p)
+{
+    Move[593] moves;
+    int length = p.legalMoves(moves);
+    foreach (Move move; moves[0..length]) {
+        if (!p.doMove(move).doMove(Move.NULL_MOVE).inCheck) {
+            return false;
+        }
+    }
+    return true;
+}
+
 
 /**
  * 局面pにおいて手番のある側が王手をかけられているかどうかを返す
@@ -42,6 +81,7 @@ bool inCheck(Position p)
     }
     return false;
 }
+
 
 /**
  * 局面pにおいて指し手mが有効（不正でない）かどうかを返す

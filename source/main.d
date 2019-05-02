@@ -24,6 +24,9 @@ __gshared private File RECV_LOG;
 
 int main(string[] args)
 {
+    // info
+    stdout.writeln(tt.info());
+
     if (args.length >= 2 && args[1] == "test") {
         test();
         return 0;

@@ -1,10 +1,10 @@
 module tt;
 
+
+import core.atomic;
+import std.format;
 import std.stdio;
-import core.atomic;
 import types;
-import text;
-import core.atomic;
 static import config;
 
 
@@ -22,6 +22,7 @@ struct TTEntry
     ushort _;
 }
 
+
 Move probe(ulong key)
 {
     for (int i = 0; i < 5; i++)
@@ -29,20 +30,21 @@ Move probe(ulong key)
         TTEntry e = TT[((key & config.TT_SIZE) + i * 2) % (config.TT_SIZE + 1)];
         if (e.key32 == 0)
         {
-            atomicOp!"+="(stat_nothing, 1);
+            //atomicOp!"+="(stat_nothing, 1);
             return cast(Move)(0);
         }
         if (e.key32 == (key >> 32))
         {
-            atomicOp!"+="(stat_hit, 1);
+            //atomicOp!"+="(stat_hit, 1);
             return cast(Move)(e.move16);
         }
         //atomicOp!"+="(stat_misshit, 1);
         //return cast(Move)(0);
     }
-    atomicOp!"+="(stat_misshit, 1);
+    //atomicOp!"+="(stat_misshit, 1);
     return cast(Move)(0);
 }
+
 
 void store(ulong key, Move m)
 {
@@ -52,12 +54,13 @@ void store(ulong key, Move m)
         if (TT[address].key32 == 0 || TT[address].key32 == (key >> 32))
         {
             TT[address] = TTEntry((key >> 32), m.i);
-            atomicOp!"+="(stat_stored, 1);
+            //atomicOp!"+="(stat_stored, 1);
             return;
         }
         //return;
     }
 }
+
 
 long hashfull()
 {
@@ -68,4 +71,13 @@ long hashfull()
     }
     return cnt * 1000 / (config.TT_SIZE + 1);
     //return cnt;
+}
+
+
+/**
+ * 例："TT: 33,554,432 entries, 268,435,456 bytes"
+ */
+string info()
+{
+    return format("TT: %,d entries, %,d bytes", (config.TT_SIZE + 1), (config.TT_SIZE + 1) * TTEntry.sizeof);
 }

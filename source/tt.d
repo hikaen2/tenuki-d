@@ -3,6 +3,7 @@ module tt;
 
 import core.atomic;
 import std.format;
+import std.stdint;
 import std.stdio;
 import types;
 static import config;
@@ -23,13 +24,13 @@ shared static this()
 
 struct TTEntry
 {
-    uint key32;
-    ushort move16;
-    ushort _;
+    uint32_t key32;
+    uint16_t move16;
+    uint16_t _;
 }
 
 
-Move probe(ulong key)
+Move probe(uint64_t key)
 {
     for (int i = 0; i < 5; i++)
     {
@@ -52,7 +53,7 @@ Move probe(ulong key)
 }
 
 
-void store(ulong key, Move m)
+void store(uint64_t key, Move m)
 {
     for (int i = 0; i < 5; i++)
     {

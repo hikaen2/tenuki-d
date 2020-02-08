@@ -1,9 +1,11 @@
 module zobrist;
 
-immutable ulong SIDE = 0x0000000000000001;
+import std.stdint;
+
+immutable uint64_t SIDE = 0x0000000000000001;
 
 // zobrist.HAND[color_t][type_t][n]
-immutable ulong[19][8][2] HAND = [
+immutable uint64_t[19][8][2] HAND = [
     [
         [0x81d46d4532bb5b70, 0xc233fb0061cb04ca, 0xef7181b8ba900872, 0x9f85d5782f918302, 0x0043080f71ffcad4, 0x4f828c215b813b40, 0xd443966b442cb1be, 0xc81cfae902106f7c, 0xf3d345eeec420328, 0x8d68740b03fa7f62, 0xd99f0398bd2503da, 0xca67ca8e70bb63ac, 0x5fc8b7b396bd9a1a, 0x9f6d43f908deddfa, 0x0ac4f9a19b41566c, 0x6806bc622cac732c, 0x10281554f9c14f36, 0xdb590d709ddba6e0, 0x6303ed38e749c2c4, ],
         [0x9ebf75cf43947366, 0xf2a44653ef050a9a, 0xb336cb8a5fd5301c, 0x76d853b54d757878, 0x7a8c86989604e768, 0x295783cbe5a1b6d2, 0x25015ff14187a388, 0xbb30333f8a20bce0, 0xaeb05c08a37cdb2e, 0xf5ef6e9542afa4de, 0x96213114ca0681ca, 0x6b2e0fa331d32552, 0xabc565de1e913fbe, 0xad22fd14b0633400, 0xf02741a887e5ee28, 0xca59e7567f742d4e, 0xa66bdccd2f0aa1c6, 0x0304d94ec9c25fd8, 0x772eed56083fcfc0, ],
@@ -27,7 +29,7 @@ immutable ulong[19][8][2] HAND = [
 ];
 
 // zobrist.PSQ[square_t][index]
-immutable ulong[81][29] PSQ = [
+immutable uint64_t[81][29] PSQ = [
     // 0
     [
         0xc069d58f9299eb5e, 0xa5c00c90c14dcf1e, 0x4f9868b62dc116f2, 0x302d701ae40096ae, 0xcee89d83cafe9e12, 0xa0666e6b42a6f918, 0x46ed24d9239dfd8e, 0x3599137f53f7ca1a, 0xdc223e1355809a14, 

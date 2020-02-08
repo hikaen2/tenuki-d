@@ -1,6 +1,7 @@
+import std.stdint;
 
-alias color_t = ubyte;
-alias type_t = ubyte;
+alias color_t = uint8_t;
+alias type_t = uint8_t;
 
 /**
  * 局面
@@ -22,10 +23,10 @@ alias type_t = ubyte;
 struct Position
 {
     Square[81] board;
-    ubyte[8][2] piecesInHand;
+    uint8_t[8][2] piecesInHand;
     bool sideToMove;
-    ulong key;
-    ushort moveCount = 1;
+    uint64_t key;
+    uint16_t moveCount = 1;
     Move previousMove; // 直前の指し手
 }
 
@@ -89,9 +90,9 @@ struct Square
     enum Square W_PROMOTED_ROOK   = Square(27);
     enum Square EMPTY             = Square(28);
 
-    ubyte i;
-    this(ubyte i) { this.i = i; }
-    this(color_t c, type_t t) { this.i = cast(ubyte)(c * Square.W_PAWN.i + t); }
+    uint8_t i;
+    this(uint8_t i) { this.i = i; }
+    this(color_t c, type_t t) { this.i = cast(uint8_t)(c * Square.W_PAWN.i + t); }
     bool isBlack() const { return COLOR[i] == Color.BLACK; }
     bool isWhite() const { return COLOR[i] == Color.WHITE; }
     bool isFriendOf(color_t c) const { return COLOR[i] == c; }
@@ -130,7 +131,7 @@ struct Dir {
     enum Dir FSE = {SE.i | 1};
     enum Dir FSW = {SW.i | 1};
 
-    byte i;
+    int8_t i;
     bool isFly() const { return (i & 1) != 0; }
     int  value() const { return i >> 1; }
 }
@@ -148,18 +149,18 @@ struct Move
     enum Move NULL_MOVE = {0b00111111_11111110};
     enum Move TORYO     = {0b00111111_11111111};
 
-    ushort i;
-    ubyte type() const { return cast(ubyte)((i >> 7) & 0b01111111); }
-    ubyte from() const { return cast(ubyte)((i >> 7) & 0b01111111); }
-    ubyte to() const { return cast(ubyte)(i & 0b01111111); }
+    uint16_t i;
+    uint8_t type() const { return cast(uint8_t)((i >> 7) & 0b01111111); }
+    uint8_t from() const { return cast(uint8_t)((i >> 7) & 0b01111111); }
+    uint8_t to() const { return cast(uint8_t)(i & 0b01111111); }
     bool isPromote() const { return (i & 0b1000000000000000) != 0; }
     bool isDrop() const { return (i & 0b0100000000000000) != 0; }
 }
 
 // move_tを返す関数
-Move createMove(int from, int to) { return Move(cast(ushort)(from << 7 | to)); }
-Move createPromote(int from, int to) { return Move(cast(ushort)(from << 7 | to | 0b1000000000000000)); }
-Move createDrop(type_t t, int to) { return Move(cast(ushort)(t << 7 | to | 0b0100000000000000)); }
+Move createMove(int from, int to) { return Move(cast(uint16_t)(from << 7 | to)); }
+Move createPromote(int from, int to) { return Move(cast(uint16_t)(from << 7 | to | 0b1000000000000000)); }
+Move createDrop(type_t t, int to) { return Move(cast(uint16_t)(t << 7 | to | 0b0100000000000000)); }
 
 
 enum SQ11 = 0;

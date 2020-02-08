@@ -1,14 +1,14 @@
-import types;
-import text;
 import movegen;
-import std.string;
-import std.stdio;
-import std.format;
-import std.conv;
 import std.array;
 import std.container;
 import std.conv;
+import std.conv;
+import std.format;
 import std.regex;
+import std.stdio;
+import std.string;
+import text;
+import types;
 static import parser;
 static import zobrist;
 

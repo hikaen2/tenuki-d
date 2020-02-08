@@ -1,11 +1,11 @@
-import types;
-import parser;
-import text;
 import movegen;
-import std.stdio;
-import std.string;
+import parser;
 import std.random;
 import std.regex;
+import std.stdio;
+import std.string;
+import text;
+import types;
 
 
 immutable Move[][string] BOOK;

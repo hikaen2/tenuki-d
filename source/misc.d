@@ -1,11 +1,11 @@
 module misc;
 
 
+import core.stdc.errno;
 import std.algorithm.iteration;
+import std.random;
 import std.socket;
 import std.stdio;
-import std.random;
-import core.stdc.errno;
 
 /**
  * ソケットに文字列を書き込む

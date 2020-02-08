@@ -1,9 +1,9 @@
-import types;
 import std.array;
 import std.ascii;
 import std.conv;
 import std.regex;
 import std.string;
+import types;
 static import zobrist;
 
 Move parseMove(string s, const ref Position p)

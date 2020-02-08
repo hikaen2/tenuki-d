@@ -1,20 +1,20 @@
 import book;
-import types;
-import text;
-import search;
-import position;
+import core.thread;
 import movegen;
 import parser;
+import position;
+import search;
+import std.algorithm.comparison;
 import std.conv;
+import std.datetime.systime : SysTime, Clock;
 import std.format;
 import std.getopt;
 import std.regex;
 import std.socket;
 import std.stdio;
-import std.algorithm.comparison;
-import core.thread;
+import text;
+import types;
 static import config, misc, tt;
-import std.datetime.systime : SysTime, Clock;
 
 
 __gshared private Socket SOCKET;

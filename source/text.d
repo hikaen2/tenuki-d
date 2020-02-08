@@ -1,10 +1,10 @@
-import types;
 import eval;
 import position;
 import std.array;
 import std.conv;
 import std.format;
 import std.stdio;
+import types;
 static import tt;
 
 /**

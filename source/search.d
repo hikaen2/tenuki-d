@@ -1,15 +1,15 @@
-import types;
-import text;
-import position;
-import movegen;
+import core.thread;
 import eval;
-import std.random;
-import std.stdio;
+import movegen;
+import position;
 import std.algorithm.comparison;
 import std.algorithm.mutation;
 import std.algorithm.searching;
 import std.datetime.stopwatch;
-import core.thread;
+import std.random;
+import std.stdio;
+import text;
+import types;
 static import book, config, tt;
 
 

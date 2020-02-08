@@ -1,11 +1,11 @@
+import core.stdc.stdio;
+import std.stdint;
 import types;
-import std.stdio;
-
 
 private enum FV_SCALE = 32;
-private immutable int[2][81][81] KK;
-private immutable int[2][1548][81][81] KKP;
-private immutable short[2][1548][1548][81] KPP;
+private immutable int32_t[2][81][81] KK;
+private immutable int32_t[2][1548][81][81] KKP;
+private immutable int16_t[2][1548][1548][81] KPP;
 
 
 /**
@@ -14,45 +14,19 @@ private immutable short[2][1548][1548][81] KPP;
  */
 shared static this()
 {
-    {
-        File f = File("KK_synthesized.bin", "r");
-        scope (exit) f.close();
-        assert(f.size == 52488); // 81 x 81 x 8
-        for (int i = 0; i < 81; i++) {
-            for (int j = 0; j < 81; j++) {
-                int[2] buf;
-                KK[i][j] = f.rawRead(buf);
-            }
-        }
-    }
+    FILE* fp;
 
-    {
-        File f = File("KKP_synthesized.bin", "r");
-        scope (exit) f.close();
-        assert(f.size == 81251424); // 81 x 81 x 1548 x 8
-        for (int i = 0; i < 81; i++) {
-            for (int j = 0; j < 81; j++) {
-                for (int k = 0; k < 1548; k++) {
-                    int[2] buf;
-                    KKP[i][j][k] = f.rawRead(buf);
-                }
-            }
-        }
-    }
+    fp = fopen("KK_synthesized.bin", "r");
+    fread(cast(void*)KK, int32_t.sizeof, 2 * 81 * 81, fp);
+    fclose(fp);
 
-    {
-        File f = File("KPP_synthesized.bin", "r");
-        scope (exit) f.close();
-        assert(f.size == 776402496); // 81 x 1548 x 1548 x 4
-        for (int i = 0; i < 81; i++) {
-            for (int j = 0; j < 1548; j++) {
-                for (int k = 0; k < 1548; k++) {
-                    short[2] buf;
-                    KPP[i][j][k] = f.rawRead(buf);
-                }
-            }
-        }
-    }
+    fp = fopen("KKP_synthesized.bin", "r");
+    fread(cast(void*)KKP, int32_t.sizeof, 2 * 1548 * 81 * 81, fp);
+    fclose(fp);
+
+    fp = fopen("KPP_synthesized.bin", "r");
+    fread(cast(void*)KPP, int16_t.sizeof, 2 * 1548 * 1548 * 81, fp);
+    fclose(fp);
 }
 
 

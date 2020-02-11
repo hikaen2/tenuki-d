@@ -1,15 +1,15 @@
-% lualatex tenuki30
+%% lualatex tenuki30
 \nonstopmode
 
 
 \documentclass[11pt,a4paper]{ltjsarticle}
+%% \usepackage[noembed]{luatexja-preset}  %% for draft
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage{here}
 \title{手抜きについて}
-\author{手抜きチーム}
-\date{2020年2月9日}
-
+\author{手抜きチーム \thanks{鈴木太朗, 玉川直樹}}
+\date{2020年2月11日}
 
 \begin{document}
 
@@ -19,134 +19,119 @@
 リポジトリ：https://github.com/hikaen2/tenuki-d
 
 
-
-\section{作者について}
+\section{作者}
 
 \subsubsection*{鈴木太朗}
-鈴木はプログラマです。
+プログラマ。
 自転車とEmacsが好きです。
-小学校のとき将棋部でしたが，将棋は強くありません（推定30級）。
+小学校のとき将棋部でした。
+棋力は30級程度です。
 Twitter: @hikaen2
 
 \subsubsection*{玉川直樹}
-玉川はP兼召喚士です。KPPとレーティングシステムを疑っています。将棋ウォーズ2段。
-手抜きの定跡を手入力で作りました。
+好きなコードはadd9です。
+将棋ウォーズ2段。
+手抜きの定跡を作りました。
 Twitter: @Neakih\_kick
 
 
 
-\section{おまけ}
-
-\subsection{D言語について}
-
-\subsection{CSAプロトコルについて}
-手抜きはCSAプロトコル (http://www2.computer-shogi.org/protocol/) で対局します。
-ほかに有名なプロトコルとしてUSI (Universal Shogi Interface) プロトコルがあります (http://shogidokoro.starfree.jp/usi.html)。
-WCSCの場合，対戦サーバがCSAプロトコルですから，USIプロトコルでは対局できません。
-
-CSAプロトコルの注意点
-
-・本番用サーバで指し手のパケットを分割すると受理されない
-WCSC28のときに，CSAプロトコルで指し手を複数パケットに分けて送信したところ，受理されませんでした。
-shogi-server (http://shogi-server.osdn.jp/) ではこの現象が起きません。
-
-・指し手がエラーでないことが分からない
-
-エラーがある手を指すと，サーバは\verb|#ILLEGAL_MOVE|というレスポンスを返します：
-\begin{verbatim*}
-+0032FU,T1
-#ILLEGAL_MOVE
-#LOSE
-\end{verbatim}
-
-この場合，エラーがあることが分かります。
-
-一方，エラーがない手を指すと，サーバはエラーがなかったことを示すレスポンスを返しません：
-\begin{verbatim*}
-+0032FU,T1
-\end{verbatim}
-
-この場合，エラーがなかったことが分かりません。
-
-期待する挙動：
-エラーがあればエラーがあったことを示すレスポンスが返り，エラーがなければエラーがなかったことを示すレスポンスが返る。
+\section{今年の目標}
 
 
+\subsection{リモート参加}
+会場外の計算機で指し手を生成することをリモート参加といいます\footnote{世界コンピュータ将棋選手権 大会ルール 第3章 第12条}。
+参加者が会場に来ないことではありません。
+
+通信にはインターネットを使いますが，対戦サーバがインターネットに接続されていないためどうにかしてプロキシする必要があります。
 
 
+\subsection{GUI}
+何かしらの方法で盤面をグラフィカルに見たいわけです。
+これはHTMLでテーブルを書いてWebブラウザで見る方法が簡単そうです。
+去年はRailsで盤面を生成しました (https://github.com/hikaen2/tui)。
+今年は盤面をリアルタイムに更新したいです。
 
-\section{目標}
+\subsection{時間管理}
+いつも1手10秒で指していますが，持ち時間をadaptiveに使いたいです。
+そのための方法は分かりません。
 
-\subsection{今年の目標}
+\subsection{undoMove}
+手抜きは手抜きのため局面をundoMoveするかわりに毎回コピーしています。
+そのほうがコードが簡単ですが，局所性が悪そうな気がします。
+
+\subsection{駒背番号制}
+手抜きは局面を盤面の1次元配列で表しています。
+一方で局面を駒の1次元配列で表す方法がありそうです。
+これを駒背番号制と呼ぶことにします。
+
+駒背番号制のほうがKPPTで評価しやすそうです。
+ただし持ち駒の扱いと，後手番から見たとき（先後反転したとき）の駒の扱いが難しそうな気がします。
+
+\subsection{置換表をStockfishっぽくする}
+現在の手抜きの置換表には指し手だけを格納しています。
+ハッシュ値，評価値，スコアも入れたほうが良さそうな気がします。
+
+\subsection{指し手のオーダリング}
+現在の手抜きは合法手の並び替えをしていませんが，強そうな手から生成したほうがいいと思います。
+
+\subsection{詰将棋}
+df-pnできる気がしません。
+
+\subsection{評価バイナリの自作}
+できる気がしません。
+
+\subsection{その他}
 
 \begin{itemize}
-  \item リモート参加
-  \item GUI
-  \item 時間管理
-  \item undoMove
-  \item 駒背番号制にする
-  \item 置換表をStockfishっぽくする
-  \item movePickerを作る
-  \item aspiration searchする
-  \item 差分評価する
-  \item futility pruningする
+  \item 差分評価
+  \item aspiration search
+  \item futility pruning
   \item ponder
-  \item df-pnする
 \end{itemize}
 
 
-\begin{itemize}
-  \item リモート参加
-\end{itemize}
-
-指し手の生成を選手権の会場外にあるリモートマシンで実行することをリモート参加といいます
-（世界コンピュータ将棋選手権 大会ルール 第３章　第１２条）。
-リモートマシンとはインターネットで接続するのですが，おそらく間にNAT (NAPT) があります（明言されていない）。
-そして対戦用サーバはインターネットに接続されていません。
 
 
-\begin{itemize}
-  \item 探索をマルチスレッドにする
-\end{itemize}
 
-Ryzenを買っちゃったのでマルチスレッドにします。
-これからLazy SMPを実装します。
-スレッドがよくわかりません。
-実装できても正しく実装できているか分からない予感がします。
+%% \section{おまけ}
 
-\begin{itemize}
-  \item KPPTで評価する
-\end{itemize}
+%% \subsection{D言語について}
 
-去年はなのはさんの評価バイナリでKP + PPで評価しました。
-今年はAperyの評価バイナリ（大樹の枝形式）でKPPTで評価しようと思います。
-Aperyの選定理由は評価バイナリがKPPTだからです。
-予想として，静的評価に手番が含まれると静止探索がいらないか，もしくは軽くていいのではないかと思っています。
+%% \subsection{CSAプロトコルについて}
+%% 手抜きはCSAプロトコル (http://www2.computer-shogi.org/protocol/) で対局します。
+%% ほかに有名なプロトコルとしてUSI (Universal Shogi Interface) プロトコルがあります (http://shogidokoro.starfree.jp/usi.html)。
+%% WCSCの場合，対戦サーバがCSAプロトコルですから，USIプロトコルでは対局できません。
 
-評価バイナリの自作については来年挑戦します。
+%% CSAプロトコルの注意点
+
+%% ・本番用サーバで指し手のパケットを分割すると受理されない
+%% WCSC28のときに，CSAプロトコルで指し手を複数パケットに分けて送信したところ，受理されませんでした。
+%% shogi-server (http://shogi-server.osdn.jp/) ではこの現象が起きません。
+
+%% ・指し手がエラーでないことが分からない
+
+%% エラーがある手を指すと，サーバは\verb|#ILLEGAL_MOVE|というレスポンスを返します：
+%% \begin{verbatim*}
+%% +0032FU,T1
+%% #ILLEGAL_MOVE
+%% #LOSE
+%% \end{verbatim}
+
+%% この場合，エラーがあることが分かります。
+
+%% 一方，エラーがない手を指すと，サーバはエラーがなかったことを示すレスポンスを返しません：
+%% \begin{verbatim*}
+%% +0032FU,T1
+%% \end{verbatim}
+
+%% この場合，エラーがなかったことが分かりません。
+
+%% 期待する挙動：
+%% エラーがあればエラーがあったことを示すレスポンスが返り，エラーがなければエラーがなかったことを示すレスポンスが返る。
 
 
-\subsection{来年の目標}
 
-\begin{itemize}
-  \item 評価バイナリを自作する
-\end{itemize}
-
-
-\subsection{去年までの目標と結果}
-
-第28回世界コンピュータ将棋選手権：
-\begin{itemize}
-  \item ルール通りに指す → 結果：ルール通り指した（けど千日手のチェックをしてない）
-  \item 投了する（第27回では王手放置していた） → 結果：投了した。一次予選4勝4敗
-  \item KPで評価する → 結果：なのはさんの評価バイナリでKP + PPで評価した
-\end{itemize}
-
-第27回世界コンピュータ将棋選手権：
-\begin{itemize}
-  \item 出場する → 結果：出場した
-  \item 対局する → 結果：対局した。一次予選2勝5敗
-\end{itemize}
 
 
 

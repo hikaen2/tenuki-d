@@ -21,7 +21,7 @@ def main
   sock.gets_expect(/^LOGIN:.+ OK$/)
 
   sock.gets_expect(/^BEGIN Game_Summary$/)
-  us = sock.gets_until(/Your_Turn:(\+|-)/)[1]
+  us = sock.gets_until(/^Your_Turn:(\+|-)$/)[1]
   sock.gets_until(/^END Game_Summary$/)
 
   sock.write("AGREE\n")
@@ -31,7 +31,7 @@ def main
 
   sock.write("+7776FU")
   sock.write("\n")  # ←分割する
-  sock.gets_until(/^\+7776FU,T%d+$/)
+  sock.gets_until(/^\+7776FU,T\d+$/)
 end
 
 # TCPSocket extension

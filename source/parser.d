@@ -1,3 +1,5 @@
+module parser;
+
 import std.array;
 import std.ascii;
 import std.conv;

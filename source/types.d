@@ -1,3 +1,5 @@
+module types;
+
 import std.stdint;
 
 alias color_t = uint8_t;

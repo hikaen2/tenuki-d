@@ -1,3 +1,5 @@
+module search;
+
 import core.thread;
 import eval;
 import movegen;

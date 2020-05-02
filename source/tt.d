@@ -1,6 +1,5 @@
 module tt;
 
-
 import core.atomic;
 import std.format;
 import std.stdint;

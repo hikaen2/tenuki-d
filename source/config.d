@@ -1,4 +1,4 @@
-
+module config;
 
 enum SEARCH_THREADS = 2;
 enum SEARCH_SECONDS = 20;

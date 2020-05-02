@@ -1,3 +1,5 @@
+module text;
+
 import eval;
 import position;
 import std.array;

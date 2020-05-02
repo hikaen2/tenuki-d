@@ -1,5 +1,5 @@
 // eval.d.nanoha_mini
-
+module eval;
 
 import types;
 import std.stdio;

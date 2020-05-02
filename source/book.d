@@ -1,3 +1,5 @@
+module book;
+
 import movegen;
 import parser;
 import std.random;

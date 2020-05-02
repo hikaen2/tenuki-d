@@ -1,3 +1,5 @@
+module position;
+
 import movegen;
 import std.array;
 import std.container;

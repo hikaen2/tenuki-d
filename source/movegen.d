@@ -1,3 +1,5 @@
+module movegen;
+
 import position;
 import types;
 

@@ -1,6 +1,5 @@
 module misc;
 
-
 import core.stdc.errno;
 import std.algorithm.iteration;
 import std.random;

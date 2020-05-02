@@ -1,3 +1,5 @@
+module main;
+
 import book;
 import core.thread;
 import movegen;

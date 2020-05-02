@@ -1,3 +1,6 @@
+// eval.d.twig
+module eval;
+
 import core.stdc.stdio;
 import std.stdint;
 import types;

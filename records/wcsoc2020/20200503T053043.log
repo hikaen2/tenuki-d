@@ -1,0 +1,76 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:WCSO1_P5_TEN_762
+Name+:tenuki
+Name-:762alpha
+Your_Turn:+
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:320
+BEGIN Time
+Time_Unit:1sec
+Total_Time:900
+Increment:5
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
+P+
+P-
++
+END Position
+END Game_Summary
+START:WCSO1_P5_TEN_762
++5756FU,T0
+-8242HI,T33
++3948GI,T20
+-4152KI,T32
++5968OU,T20
+-4232HI,T31
++2726FU,T20
+-3142GI,T30
++2625FU,T20
+-2231KA,T29
++2524FU,T20
+-2324FU,T29
++2824HI,T20
+-3222HI,T34
++2422RY,T20
+-3122KA,T33
++0025HI,T20
+-0023FU,T32
++2523RY,T20
+-0026HI,T31
++2326RY,T20
+-3334FU,T30
++2622RY,T20
+-5162OU,T29
++2221RY,T20
+-4251GI,T28
++7776FU,T20
+-3435FU,T27
++8811UM,T20
+-3536FU,T26
++3736FU,T20
+-7374FU,T25
++0046KA,T20
+-6364FU,T25
++4664KA,T20
+-8173KE,T24
++0066KY,T20
+-7172GI,T23
++6453UM,T20
+%TORYO,T0
+#RESIGN
+#WIN

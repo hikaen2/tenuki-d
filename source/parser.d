@@ -6,7 +6,7 @@ import std.conv;
 import std.regex;
 import std.string;
 import types;
-static import zobrist;
+import zobrist;
 
 Move parseMove(string s, const ref Position p)
 {
@@ -153,15 +153,15 @@ Position parsePosition(string sfen)
     // ハッシュ値
     p.key = 0;
     for (int i = SQ11; i <= SQ99; i++) {
-        p.key ^= zobrist.PSQ[ p.board[i].i ][i];
+        p.key ^= Zobrist.PSQ[ p.board[i].i ][i];
     }
     for (color_t s = Color.BLACK; s <= Color.WHITE; s++) {
         for (type_t t = Type.PAWN; t <= Type.KING; t++) {
-            p.key ^= zobrist.HAND[s][t][ p.piecesInHand[s][t] ];
+            p.key ^= Zobrist.HAND[s][t][ p.piecesInHand[s][t] ];
         }
     }
     if (sideToMove == "w") {
-        p.key ^= zobrist.SIDE;
+        p.key ^= Zobrist.SIDE;
     }
     return p;
 }

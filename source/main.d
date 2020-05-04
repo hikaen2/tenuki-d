@@ -59,11 +59,7 @@ int main(string[] args)
     scope(exit) SOCKET.close();
     SOCKET.setOption(SocketOptionLevel.SOCKET, SocketOption.RCVTIMEO, dur!"seconds"(3600));
 
-    {
-        SysTime now = Clock.currTime();
-        now.fracSecs(Duration.zero());
-        RECV_LOG = File(format("log/%s.log", now.toISOString()), "w");
-    }
+    RECV_LOG = File(format("log/%s.log", Clock.currTime().apply((ref SysTime it) => it.fracSecs = hnsecs(0)).toISOString()), "w");
     scope(exit) RECV_LOG.close();
 
     SOCKET.writeLine(format("LOGIN %s %s", username, password));
@@ -230,4 +226,13 @@ private Captures!string readLineUntil(ref Socket s, string re)
     Captures!string m;
     for (string str = s.readLine(); (m = str.matchFirst(re)).empty; str = s.readLine()) {}
     return m;
+}
+
+
+/**
+ * see https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/apply.html
+ */
+T apply(T)(T it, void function(ref T) action) {
+    action(it);
+    return it;
 }

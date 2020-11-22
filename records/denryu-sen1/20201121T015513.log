@@ -1,0 +1,50 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr1prd+sr1p-3_kifuwarakei_tenuki-600-2F+kifuwarakei+tenuki+20201121113026
+Name+:kifuwarakei
+Name-:tenuki
+Your_Turn:-
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
+END Position
+END Game_Summary
+START:dr1prd+sr1p-3_kifuwarakei_tenuki-600-2F+kifuwarakei+tenuki+20201121113026
++4746FU,T1
+-8384FU,T10
++3736FU,T1
+-8485FU,T10
++8786FU,T2
+-8586FU,T10
++5756FU,T2
+-8687TO,T10
++9998KY,T2
+-8798TO,T10
++5968OU,T1
+-9888TO,T10
++7988GI,T1
+-8288RY,T10
+#ILLEGAL_MOVE
+#WIN

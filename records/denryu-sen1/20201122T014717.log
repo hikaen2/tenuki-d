@@ -1,0 +1,60 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr1prd+sr2pb-3_tenuki_iroha-600-2F+tenuki+iroha+20201122113012
+Name+:tenuki
+Name-:iroha
+Your_Turn:+
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
+END Position
+END Game_Summary
+START:dr1prd+sr2pb-3_tenuki_iroha-600-2F+tenuki+iroha+20201122113012
++5756FU,T0
+-7162GI,T0
++2726FU,T10
+-9192KY,T0
++2625FU,T10
+-3334FU,T0
++2524FU,T10
+-2324FU,T0
++2824HI,T10
+-0023FU,T0
++2423RY,T10
+-3132GI,T0
++2322RY,T10
+-2133KE,T0
++0024FU,T10
+-3223GI,T0
++2423TO,T10
+-1112KY,T0
++7776FU,T10
+-6171KI,T0
++8833UM,T10
+-4142KI,T0
++2231RY,T10
+%TORYO
+#RESIGN
+#WIN

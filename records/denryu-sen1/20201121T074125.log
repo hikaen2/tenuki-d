@@ -1,0 +1,67 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr1prd+sr1p-9_suishohiragana_tenuki-600-2F+suishohiragana+tenuki+20201121170023
+Name+:suishohiragana
+Name-:tenuki
+Your_Turn:-
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
+END Position
+END Game_Summary
+START:dr1prd+sr1p-9_suishohiragana_tenuki-600-2F+suishohiragana+tenuki+20201121170023
++5968OU,T5
+-8384FU,T10
++4959KI,T5
+-8485FU,T10
++2858HI,T5
+-8586FU,T10
++8786FU,T5
+-8286HI,T10
++6978KI,T5
+-0087FU,T10
++0082FU,T5
+-8682HI,T10
++7887KI,T5
+-8287RY,T10
++5969KI,T5
+-8782RY,T10
++6978KI,T5
+-0087FU,T10
++7887KI,T5
+-8287RY,T10
++0085FU,T5
+-0078KI,T10
++7978GI,T5
+-8788RY,T10
++0048KI,T5
+-0087KA,T10
++6869OU,T1
+-8889RY,T10
++6968OU,T0
+-8778UM,T10
+%TORYO
+#RESIGN
+#WIN

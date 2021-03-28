@@ -1,11 +1,12 @@
 {
-	"name": "tenuki",
-	"authors": [
-		"hikaen2"
-	],
-	"dependencies": {
-	},
-	"description": "A minimal D application.",
-	"copyright": "Copyright © 2018, hikaen2",
-	"license": "MIT License"
+    "name": "tenuki",
+    "authors": [
+        "hikaen2"
+    ],
+    "dependencies": {
+    },
+    "description": "A minimal D application.",
+    "copyright": "Copyright © 2018, hikaen2",
+    "license": "MIT License",
+    "dflags": ["-mcpu=native", "-flto=full"]
 }

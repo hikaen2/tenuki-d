@@ -106,7 +106,7 @@ AffineTransform[32<-32](ClippedReLU[32](AffineTransform[32<-512](InputSlice[512(
 
 \noindent
 と書かれている。
-この文字列の長さはニューラルネットワークの構造によって変わるので，その長さ（バイト数）がNo.3 sizeに格納されている。
+この文字列の長さはニューラルネットワークの構造によって変わるので，その長さ（バイト数）がNo.3: sizeに格納されている。
 どうたぬきの場合は0x000000b2 = 178である。
 
 No.7: FeatureTransformer.weights ($\bm{W}_1$) は $256 \times 125388$ 行列である：
@@ -282,7 +282,7 @@ No.9: HiddenLayer1.biases ($\vec{\bm{b}}_2$ : 32次元ベクトル) に入力す
     \begin{array}{c}
       z_{1(0)}   \\
       \vdots    \\
-      z_{1(512)} 
+      z_{1(511)} 
     \end{array}  
   \right)}_{\vec{\bm{z}_1}}
 \]

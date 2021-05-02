@@ -48,7 +48,7 @@ int ponder(const ref Position pos, Move[] outPv)
     int d = int.min;
     stderr.writefln("");
     foreach (ref t; threadContexts) {
-        stderr.writefln("[%2d] %2d,%6d,%s", t.id, t.completedDepth, t.bestValue, t.bestMoves.toString(pos));
+        //stderr.writefln("[%2d] %2d,%6d,%s", t.id, t.completedDepth, t.bestValue, t.bestMoves.toString(pos));
         if (v < t.bestValue && d <= t.completedDepth) {
             v = t.bestValue;
             d = t.completedDepth;

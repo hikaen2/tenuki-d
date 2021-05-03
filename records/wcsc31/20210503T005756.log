@@ -1,0 +1,56 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:WCSC31_L1_TEN_ANS
+Name+:tenuki
+Name-:AI_AN_shogi_ver1
+Your_Turn:+
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:320
+BEGIN Time
+Time_Unit:1sec
+Total_Time:900
+Increment:5
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
+P+
+P-
++
+END Position
+END Game_Summary
+START:WCSC31_L1_TEN_ANS
++2726FU,T0
+-1314FU,T0
++7776FU,T20
+-2324FU,T0
++3938GI,T20
+-8384FU,T0
++2625FU,T20
+-6364FU,T0
++2524FU,T20
+-4132KI,T0
++2423TO,T20
+-6465FU,T0
++2332TO,T20
+-4344FU,T0
++3231TO,T20
+-6566FU,T0
++0063GI,T20
+-2113KE,T0
++0041KI,T20
+%TORYO,T0
+#RESIGN
+#WIN

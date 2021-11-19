@@ -1,0 +1,57 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr1prd+sr1p-7_kifuwarazusa_tenuki-600-2F+kifuwarazusa+tenuki+20201121153045
+Name+:kifuwarazusa
+Name-:tenuki
+Your_Turn:-
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
+END Position
+END Game_Summary
+START:dr1prd+sr1p-7_kifuwarazusa_tenuki-600-2F+kifuwarazusa+tenuki+20201121153045
++8786FU,T1
+-8384FU,T10
++2726FU,T1
+-8485FU,T10
++8685FU,T2
+-8285HI,T10
++2878HI,T2
+-0087FU,T10
++7776FU,T2
+-8788TO,T10
++7988GI,T6
+-3334FU,T10
++9796FU,T7
+-2288UM,T10
++7888HI,T12
+-8588RY,T10
++0056KA,T26
+-0086KA,T10
++6968KI,T0
+-8868RY,T10
+%TORYO
+#RESIGN
+#WIN

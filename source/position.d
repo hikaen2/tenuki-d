@@ -11,8 +11,8 @@ import std.stdio;
 import std.string;
 import text;
 import types;
+import zobrist;
 static import parser;
-static import zobrist;
 
 /**
  * do_move
@@ -23,27 +23,27 @@ Position doMove(Position p, Move m)
         if (m.isDrop) {
             type_t t = m.type;
             p.board[m.to] = Square(p.sideToMove, t);
-            p.key ^= zobrist.PSQ[p.board[m.to].i][m.to];
-            p.key ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
+            p.key ^= Zobrist.PSQ[p.board[m.to].i][m.to];
+            p.key ^= Zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             p.piecesInHand[p.sideToMove][t]--;
-            p.key ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
+            p.key ^= Zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
         } else {
             // capture
             if (p.board[m.to] != Square.EMPTY) {
                 type_t t = p.board[m.to].baseType;
-                p.key ^= zobrist.PSQ[p.board[m.to].i][m.to];
-                p.key ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
+                p.key ^= Zobrist.PSQ[p.board[m.to].i][m.to];
+                p.key ^= Zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
                 p.piecesInHand[p.sideToMove][t]++;
-                p.key ^= zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
+                p.key ^= Zobrist.HAND[p.sideToMove][t][ p.piecesInHand[p.sideToMove][t] ];
             }
             p.board[m.to] = m.isPromote ? p.board[m.from].promote : p.board[m.from];
-            p.key ^= zobrist.PSQ[p.board[m.to].i][m.to];
-            p.key ^= zobrist.PSQ[p.board[m.from].i][m.from];
+            p.key ^= Zobrist.PSQ[p.board[m.to].i][m.to];
+            p.key ^= Zobrist.PSQ[p.board[m.from].i][m.from];
             p.board[m.from] = Square.EMPTY;
         }
     }
     p.sideToMove ^= 1;
-    p.key ^= zobrist.SIDE;
+    p.key ^= Zobrist.SIDE;
     p.moveCount++;
     p.previousMove = m;
 

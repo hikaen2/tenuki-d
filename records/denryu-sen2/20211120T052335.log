@@ -1,0 +1,76 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr2prod+dr2prdy1-6_tenuki_ponkotsu-600-2F+tenuki+ponkotsu+20211120144538
+Name+:tenuki
+Name-:ponkotsu
+Your_Turn:+
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
+END Position
+END Game_Summary
+START:dr2prod+dr2prdy1-6_tenuki_ponkotsu-600-2F+tenuki+ponkotsu+20211120144538
++2726FU,T0
+-8384FU,T12
++7776FU,T0
+-8485FU,T12
++8877KA,T0
+-3334FU,T4
++7968GI,T0
+-4344FU,T7
++3938GI,T12
+-6152KI,T12
++4746FU,T12
+-7162GI,T10
++2625FU,T12
+-2233KA,T10
++4645FU,T12
+-4445FU,T12
++2524FU,T12
+-2324FU,T10
++7733UM,T12
+-2133KE,T5
++2824HI,T12
+-8586FU,T16
++8786FU,T12
+-8286HI,T10
++6979KI,T12
+-4546FU,T27
++0077KA,T12
+-8685HI,T17
++0086FU,T12
+-8545HI,T19
++7733UM,T12
+-3142GI,T24
++3334UM,T12
+-4595HI,T20
++2421RY,T12
+-9594HI,T0
++0044KE,T12
+-0022FU,T0
++4452NK,T12
+%TORYO
+#RESIGN
+#WIN

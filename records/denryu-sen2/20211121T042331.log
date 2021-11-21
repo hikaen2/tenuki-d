@@ -1,0 +1,95 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr2prod+dr2prdb-8_sugar_tenuki-600-2F+sugar+tenuki+20211121135522
+Name+:sugar
+Name-:tenuki
+Your_Turn:-
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
+END Position
+END Game_Summary
+START:dr2prod+dr2prdb-8_sugar_tenuki-600-2F+sugar+tenuki+20211121135522
++2726FU,T135
+-8384FU,T0
++2625FU,T31
+-8485FU,T0
++7776FU,T0
+-4132KI,T0
++8877KA,T1
+-3334FU,T0
++7968GI,T0
+-2277UM,T0
++6877GI,T0
+-3122GI,T0
++3948GI,T1
+-2233GI,T12
++3736FU,T1
+-7162GI,T12
++4746FU,T3
+-6364FU,T12
++2937KE,T0
+-5142OU,T12
++6978KI,T2
+-6263GI,T12
++1716FU,T0
+-1314FU,T12
++5968OU,T1
+-7374FU,T12
++4847GI,T1
+-8173KE,T12
++2829HI,T4
+-6354GI,T12
++4948KI,T1
+-4344FU,T12
++9796FU,T28
+-6162KI,T12
++9695FU,T55
+-8281HI,T12
++6879OU,T1
+-7475FU,T12
++7675FU,T3
+-7365KE,T12
++7776GI,T63
+-8586FU,T12
++8786FU,T1
+-0055KA,T12
++0066KA,T9
+-8186HI,T12
++7887KI,T4
+-5566KA,T12
++6766FU,T15
+-8676HI,T12
++8776KI,T1
+-0067GI,T12
++0085KA,T45
+-0068KA,T12
++7969OU,T69
+-5463GI,T12
++6665FU,T14
+-0078FU,T12
+%TORYO
+#RESIGN
+#WIN

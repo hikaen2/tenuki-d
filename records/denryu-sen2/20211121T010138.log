@@ -1,0 +1,100 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr2prod+dr2prdb-4_daigorillaz_tenuki-600-2F+daigorillaz+tenuki+20211121103028
+Name+:daigorillaz
+Name-:tenuki
+Your_Turn:-
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
+END Position
+END Game_Summary
+START:dr2prod+dr2prdb-4_daigorillaz_tenuki-600-2F+daigorillaz+tenuki+20211121103028
++2726FU,T16
+-8384FU,T0
++7776FU,T10
+-3334FU,T0
++2625FU,T5
+-8485FU,T0
++6978KI,T7
+-4132KI,T0
++2524FU,T7
+-2324FU,T0
++2824HI,T10
+-8586FU,T0
++8786FU,T3
+-8286HI,T0
++2434HI,T6
+-2233KA,T0
++5958OU,T15
+-3122GI,T0
++3736FU,T4
+-5142OU,T12
++2937KE,T1
+-6152KI,T12
++3938GI,T8
+-7162GI,T12
++9796FU,T4
+-8682HI,T12
++0083FU,T14
+-8283HI,T12
++8833UM,T14
+-2233GI,T12
++0084FU,T4
+-8382HI,T12
++3433RY,T1
+-2133KE,T12
++0083GI,T1
+-0027FU,T12
++0029FU,T1
+-0035FU,T12
++8382NG,T14
+-3536FU,T12
++0021HI,T1
+-2728TO,T12
++8281NG,T4
+-5251KI,T12
++2928FU,T6
+-3637TO,T12
++3837GI,T1
+-0029HI,T12
++0024KE,T6
+-0069KA,T12
++5869OU,T3
+-2949RY,T12
++6968OU,T1
+-0069KI,T12
++6877OU,T1
+-6979KI,T12
++2432NK,T0
+-4232OU,T12
++0023KA,T0
+-3242OU,T12
++2122RY,T0
+-0032FU,T12
++2232RY,T0
+%TORYO
+#RESIGN
+#LOSE

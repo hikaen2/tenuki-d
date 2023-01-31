@@ -1,0 +1,33 @@
+graph G {
+node [fixedsize=true]
+margin=0
+a [shape="triangle",label="75",xlabel="a",height=0.8];
+a -- b;
+a -- i;
+b [shape="invtriangle",label="75",xlabel="b",height=0.8];
+b -- c;
+b -- f;
+c [shape="triangle",label="75",xlabel="c",height=0.8];
+c -- d;
+c -- e;
+d [shape="invtriangle",label="23",xlabel="d",height=0.8];
+e [shape="invtriangle",label="75",xlabel="e",height=0.8];
+f [shape="triangle",label="≥84",xlabel="f",height=0.8];
+f -- g;
+f -- h;
+g [shape="invtriangle",label="84",xlabel="g",height=0.8];
+h [shape="invtriangle",label="98",xlabel="h",height=0.8];
+i [shape="invtriangle",label="≤30",xlabel="i",height=0.8];
+i -- j;
+i -- m;
+j [shape="triangle",label="30",xlabel="j",height=0.8];
+j -- k;
+j -- l;
+k [shape="invtriangle",label="30",xlabel="k",height=0.8];
+l [shape="invtriangle",label="5",xlabel="l",height=0.8];
+m [shape="triangle",label="",xlabel="m",height=0.8];
+m -- n;
+m -- o;
+n [shape="invtriangle",label="-12",xlabel="n",height=0.8];
+o [shape="invtriangle",label="-49",xlabel="o",height=0.8];
+}

@@ -1,0 +1,731 @@
+%% lualatex tenuki33
+\nonstopmode
+
+\documentclass[11pt,a4paper]{ltjsarticle}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{listings}
+\usepackage{graphicx}
+\usepackage{threeparttable}
+\usepackage{url}
+\usepackage{subcaption}
+\renewcommand{\lstlistingname}{リスト}
+
+\title{手抜きについて}
+\author{手抜きチーム \thanks{鈴木太朗 @hikaen2, 玉川直樹 @Neakih\_kick} }
+\date{2023年3月28日}
+
+\lstset{
+  basicstyle=\small,
+  frame=lines,
+  numbers=left,
+  xleftmargin=2em,
+}
+
+\begin{document}
+
+\maketitle
+
+
+本稿は第33回世界コンピュータ将棋選手権における手抜きのアピール文書です。
+% 本稿の最新版は\url{https://github.com/hikaen2/tenuki-d}にあります。
+
+
+\section{手抜きについて}
+
+手抜きはCSAプロトコルで対局を行うコンピュータ将棋プログラムです。開発者らが将棋のプログラムの仕組みを理解するために開発しています。 \\
+リポジトリ：\url{https://github.com/hikaen2/tenuki-d}
+
+
+\subsection{使用ライブラリ}
+
+『どうたぬき』(tanuki- 第1回世界将棋AI 電竜戦バージョン)の評価関数ファイル nn.bin\footnote{\url{https://github.com/nodchip/tanuki-/releases/tag/tanuki-denryu1}}
+
+
+
+\subsection{特長}
+
+\begin{itemize}
+  \item NNUE
+  \item αβ探索
+  \item D言語
+%  \item 差分評価してません
+%  \item 千日手チェックしてません
+%  \item 詰将棋してません
+%  \item ponderしてません
+\end{itemize}
+
+
+% \subsection{今年の目標}
+
+% \begin{itemize}
+%   \item df-pn
+% \end{itemize}
+
+
+\subsection{Q\&A}
+
+
+Q1. なぜD言語なのですか
+
+A1. 1.関数プロトタイプがいらない 2.配列をスタック領域に置ける 3.ガベージコレクションがある 4.メモリ安全である 5.速い からです
+
+\medskip 1.関数プロトタイプがいらない
+
+C/C++では使っている関数のシグネチャをコンパイラに教えるために、プログラマが関数プロトタイプを書かなければなりません。
+これはDRYではありません。
+関数のシグネチャは関数本体に書いてあるのですから、本来はコンパイラが関数本体を見に行けばよいはずです。
+D（やRustやその他の多くの言語）ではそのようになっているため、プログラマが関数プロトタイプを書く必要がありません。
+
+\medskip 2.配列をスタック領域に置ける
+
+JavaやC\#などの高級な言語では配列やオブジェクトはヒープ領域に置かれます。
+そのため、たとえば探索で配列やオブジェクトを作るとそのたびにヒープアロケーションが発生して時間がかかります。
+配列をスタック領域に置くのであれば、スタックポインタを進めるだけなのでとくに時間がかかりません。
+Dでは配列やオブジェクトをスタック領域に置くことができます。
+
+\medskip 3.ガベージコレクションがある
+
+普通のプログラム（システムプログラムでないプログラム）を書くのであればガベージコレクションがあったほうが便利だと思います。
+CやC++やRustはシステムプログラミング言語なのでガベージコレクションがありません。
+Dはガベージコレクションがあります。
+
+\medskip 4.メモリ安全である
+
+C/C++は配列の境界チェックをしないためメモリ安全ではありません。
+C/C++で配列の境界を超えたアクセスは未定義動作であり、わかりにくく再現性のないバグを引き起こします。
+Dは配列の境界チェックをチェックをするのでメモリ安全です。
+
+\medskip 5.速い
+
+ldc2\footnote{\url{https://github.com/ldc-developers/ldc}}でコンパイルしたDのコードは、
+clangでコンパイルしたCのコードと同等の速さが期待できると思います。
+
+\bigskip Q2. Rustでもよいのではありませんか
+
+A2. Rustでもよいと思いますが、普通のプログラムを書くのであればガベージコレクションがあったほうが便利だと思います。
+
+
+
+
+\section{付録1：私のためのMinimax入門}
+
+本章では私にむけてMinimaxの解説をします。
+
+関連する前提知識：再帰関数、木構造、ゲーム木、深さ優先探索、Ruby など
+
+また、次の内容は本解説の対象外です：合法手生成、静止探索、静的評価、反復深化、置換表 など
+
+
+\subsection{Minimax}
+
+
+\subsubsection{やりたいこと}
+
+図\ref{fig/tree}のゲーム木で局面$a$の評価値を求めたい。どうすればよいか。
+ただし先手番の局面が△、後手番の局面が▽とする。
+△、▽の中に先手から見た評価値を記入するものとする。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.6]{fig/tree.pdf}
+  \caption{}
+  \label{fig/tree}
+\end{figure}
+
+
+\subsubsection{手順}
+
+まず$c$と$f$の評価値を求める。$c$と$f$は先手番なので子局面の中からなるべく評価値の大きいものを選ぶ。すなわち：
+
+$c = \max(d, e) = \max(23, 75) = 75$
+
+$f = \max(g, h) = \max(84, 98) = 98$
+
+つぎに$b$の評価値を求める。$b$は後手番なので子局面の中からなるべく評価値の小さいものを選ぶ。すなわち：
+
+$b = \min(c, f) = \min(75, 98) = 75$
+
+同じように$j$と$m$と$i$の評価値を求める：
+
+$j = \max(k, l) = \max(30, 5) = 30$
+
+$m = \max(n, o) = \max(-12, -49) = -12$
+
+$i = \min(j, m) = \min(30, -12) = -12$
+
+最後に$a$の評価値を求める：
+
+$a = \max(b, i) = \max(75, -12) = 75$
+
+以上の結果を記入すると図\ref{fig/minimax}になる。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.6]{fig/minimax.pdf}
+  \caption{}
+  \label{fig/minimax}
+\end{figure}
+
+また、以上の結果を一つの式にまとめると：
+\begin{equation}
+  \label{eq1}
+  \begin{split}
+    a &= \max\Bigl(
+      \min\bigl(  
+        \max(d, e), \max(g, h)
+      \bigr),
+      \min\bigl(   
+        \max(k, l), \max(n, o) 
+      \bigr)
+    \Bigr) \\
+    &= \max\Bigl(
+      \min\bigl(  
+        \max(23, 75), \max(84, 98)
+      \bigr),
+      \min\bigl(   
+        \max(30, 5), \max(-12, -49) 
+      \bigr)
+    \Bigr) \\
+    &= \max\Bigl(
+      \min\bigl(75, 98\bigr),
+      \min\bigl(30, -12\bigr)
+    \Bigr) \\
+    &= \max\Bigl(75, -12\Bigr) \\
+    &= 75
+  \end{split}
+\end{equation}
+
+
+\subsubsection{コード(Ruby)}
+
+\begin{lstlisting}[language=ruby,caption=minimax.rb,label=list/minimax]
+tree =
+  {side: :MAX, children: [
+    {side: :MIN, children: [
+      {side: :MAX, children: [
+        {side: :MIN, value: 23},
+        {side: :MIN, value: 75},
+      ]},
+      {side: :MAX, children: [
+        {side: :MIN, value: 84},
+        {side: :MIN, value: 98},
+      ]},
+    ]},
+    {side: :MIN, children: [
+      {side: :MAX, children: [
+        {side: :MIN, value: 30},
+        {side: :MIN, value: 5},
+      ]},
+      {side: :MAX, children: [
+        {side: :MIN, value: -12},
+        {side: :MIN, value: -49},
+      ]},
+    ]},
+  ]}
+
+def minimax(p)
+  return p[:value] if p[:children] == nil
+  return p[:children].map{|q| minimax(q)}.max if p[:side] == :MAX
+  return p[:children].map{|q| minimax(q)}.min if p[:side] == :MIN
+end
+
+puts minimax(tree) # => 75
+\end{lstlisting}
+
+1行目で定義しているtreeが図\ref{fig/tree}のゲーム木である。
+
+25行目でminimax関数を定義している。pはPosition（局面）の頭文字である。qはpの子局面である。
+
+26行目は終端局面のときのコードである。（静的）評価値を返している。
+
+27行目は先手の場合のコードである。子局面のminimax値のうち最も大きいものを返している。
+
+28行目は後手の場合のコードである。子局面のminimax値のうち最も小さいものを返している。
+
+
+\subsubsection{Q\&A}
+
+Q1. なぜRubyなのですか
+
+A1. 簡潔で表現力が高いので説明に適していると考えたからです。
+疑似コードと違い実際に実行できるという利点もあります。
+一方、CやDやRustに比べて実行速度は遅いので、実戦には向きません。
+
+
+\bigskip Q2. 式(\ref{eq1})からどのようにしたらリスト\ref{list/minimax}が得られるのですか
+
+A2. 式(\ref{eq1})は$\min$と$\max$が再帰的に連なっています。そこでどうにかして式(\ref{eq1})を次の漸化式にします：
+
+\begin{equation}
+  \mathrm{minimax}(p) = 
+  \begin{cases}
+    \text{value of \it{p}}      & (pが終端局面のとき) \\
+    \displaystyle\max_{q \in \text{children of \it{p}}}^{\mathstrut{}} \mathrm{minimax}(q) & (上記以外でpが先手番のとき) \\
+    \displaystyle\min_{q \in \text{children of \it{p}}}^{\mathstrut{}} \mathrm{minimax}(q) & (上記以外でpが後手番のとき)
+  \end{cases} 
+\end{equation}
+
+これをRubyで書くとリスト\ref{list/minimax}が得られます。
+
+
+\subsection{Negamax}
+
+リスト\ref{list/minimax}では先手か後手かで場合分けしている（27行目と28行目）。
+Negamaxではこれを先後の区別なく共通化する。
+子局面の評価値の最小を求めることは、子局面の評価値の正負を反転して最大を求め、結果の正負を反転することと同じである。
+すなわち$\min(x,y) = \mathrm{-max}(-x, -y)$。
+これを用いて式(\ref{eq1})を変形すると：
+
+\begin{equation}
+  \begin{split}
+    a &= \max\Bigl(
+      \min\bigl(  
+        \max(d, e), \max(g, h)
+      \bigr),
+      \min\bigl(   
+        \max(k, l), \max(n, o) 
+      \bigr)
+    \Bigr) \\
+    &= \max\Bigl(
+      \mathrm{-max}\bigl(  
+        \mathrm{-max}(d, e), \mathrm{-max}(g, h)
+      \bigr),
+      \mathrm{-max}\bigl(   
+        \mathrm{-max}(k, l), \mathrm{-max}(n, o)
+      \bigr)
+    \Bigr) \\
+    &= \max\Bigl(
+      \mathrm{-max}\bigl(  
+        \mathrm{-max}(23, 75), \mathrm{-max}(84, 98)
+      \bigr),
+      \mathrm{-max}\bigl(   
+        \mathrm{-max}(30, 5), \mathrm{-max}(-12, -49)
+      \bigr)
+    \Bigr) \\
+    &= \max\Bigl(
+      \mathrm{-max}\bigl(  
+        -75, -98
+      \bigr),
+       \mathrm{-max}\bigl(   
+        -30, -(-12)
+      \bigr)
+    \Bigr) \\
+    &= \max\Bigl(
+      -(-75),
+       -12
+    \Bigr) \\
+    &= 75
+  \end{split}
+\end{equation}
+
+
+\subsubsection{コード(Ruby)}
+
+treeの定義はリスト\ref{list/minimax}と同じなので省略する。以下同様。
+
+\begin{lstlisting}[language=ruby,caption=negamax.rb,label=list/negamax]
+def negamax(p)
+  return p[:side] == :MAX ? p[:value] : -p[:value] if p[:children] == nil
+  p[:children].map{|q| -negamax(q)}.max
+end
+
+puts negamax(tree) # => 75
+\end{lstlisting}
+
+
+Minimaxが常に先手から見た評価値を返すのに対して、Negamaxは手番がある側から見た評価値を返す（表\ref{table1}）。
+たとえば後手番の局面でNegamaxが正の値が返したら、それは後手が有利（先手が不利）という意味である。
+そのために2行目では、後手番であれば評価値の符号を反転して返している。
+言い換えると、Negamaxでは静的評価関数が手番のある側から見た評価値を返す必要がある。
+
+3行目には -negamax(q) という式がある。マイナスが付いているのは相手の言い分を反転させるためである。
+たとえば後手が「わたしは $+100$ 点である」と言うのなら、それは先手にとっては $-100$ 点の意味だからである。
+
+\begin{table}[h]
+  \caption{Minimax値/Negamax値の正負}
+  \label{table1}
+  \centering
+  \begin{tabular}{ccc}
+    局面                 & Minimax値 & Negamax値 \\
+    \hline
+    先手有利 かつ 先手番 & 正        & 正 \\
+    先手有利 かつ 後手番 & 正        & 負 \\
+    後手有利 かつ 先手番 & 負        & 負 \\
+    後手有利 かつ 後手番 & 負        & 正 \\
+  \end{tabular}
+\end{table}
+
+
+\subsubsection{Q\&A}
+
+Q1. MinimaxをNegamaxにするとどのくらいよいですか
+
+A1. 性能は変わりません。先手と後手の場合分けが一つなくなるのでコードが簡潔になります。
+これは後述するAlpha-Beta Pruningを適用したときにとくにうれしいです。
+
+
+\subsection{Alpha-Beta Pruning}
+
+Minimaxでは局面$a$の値を求めるために子局面の全ての値を計算したが、実際のところ全ての値を計算する必要はない。
+たとえば図\ref{betacut}aの$h$はどのような値であっても$b$に影響を及ぼすことがない。
+仮に$h$に$-\infty$と$\infty$を入れた結果を図\ref{betacut}bと図\ref{betacut}cに示す。
+どちらも$b$は75であり、$h$の影響がない。
+このことから$h$は探索しなくてよいことがわかる。
+
+\begin{figure}[h]
+  \centering
+  \subcaptionbox{評価中の$b$の周辺}
+  {\includegraphics[scale=0.6]{fig/betacut1.pdf}}
+  \subcaptionbox{$h$に$-\infty$を入れた}
+  {\includegraphics[scale=0.6]{fig/betacut2.pdf}}
+  \subcaptionbox{$h$に$\infty$を入れた}
+  {\includegraphics[scale=0.6]{fig/betacut3.pdf}}
+  \caption{}
+  \label{betacut}
+\end{figure}
+
+なぜこのようになっているのかを説明する。
+①${c=75}$で、なおかつ$b$は後手番なので${b = \min(75, f)}$であり、$f$が75を下回らない限り$b$に採用されないことがわかる。
+②一方${g=84}$で、なおかつ$f$は先手番なので${f = \max(84,h)}$であり、$h$がどのような値であっても$f$は84を下回らないことがわかる。
+①、②より$f$は$h$の値に関わらず$b$に採用されないことがわかる。したがって$h$を探索する必要がない。
+
+
+同様に図\ref{alphacut}では局面$m$の値を計算する必要がない。
+
+\begin{figure}[h]
+  \centering
+  \subcaptionbox{評価中の$a$の周辺}
+  {\includegraphics[scale=0.6]{fig/alphacut1.dot.pdf}}
+  \subcaptionbox{$m$に$-\infty$を入れた}
+  {\includegraphics[scale=0.6]{fig/alphacut2.dot.pdf}}
+  \subcaptionbox{$m$に$\infty$を入れた}
+  {\includegraphics[scale=0.6]{fig/alphacut3.dot.pdf}}
+  \caption{}
+  \label{alphacut}
+\end{figure}
+
+
+
+
+\subsubsection{コード(Ruby)}
+
+\begin{lstlisting}[language=ruby,caption=alphabeta.rb]
+def alphabeta(p, alpha, beta)
+  raise 'assertion error' unless alpha < beta
+  return p[:value] if p[:children] == nil
+  if p[:side] == :MAX
+    p[:children].each do |e|
+      alpha = [alpha, alphabeta(e, alpha, beta)].max
+      return beta if beta <= alpha
+    end
+    return alpha
+  else
+    p[:children].each do |e|
+      beta = [beta, alphabeta(e, alpha, beta)].min
+      return alpha if beta <= alpha
+    end
+    return beta
+  end
+end
+
+puts alphabeta(tree, -Float::INFINITY, Float::INFINITY) # => 75
+\end{lstlisting}
+  
+alphaとbetaは探索する評価値の範囲を表す窓である。
+alphaが窓の下限、betaが窓の上限であり、alpha < betaである必要がある（2行目）。
+初期値は $-\infty$ 〜 $+\infty$ である（19行目）。
+窓は開区間である。すなわち $\mathrm{alpha} < x < \mathrm{beta}$ の $x$ が窓に収まる値である。
+
+探索中に評価値が窓に収まらないことがわかった場合は、その局面は実現しないため探索を打ち切ることができる。
+探索を打ち切る場合の評価値は、alpha以下の適当な値や、beta以上の適当な値を返しておけばよい。
+このとき、ちょうどalphaやbetaを返す方法をfail-hardという。
+alpha以下やbeta以上の、より真の値に近い値を返す方法をfail-softという。
+
+探索中に先手番はalphaを押し上げながら探索を進める（6行目）。
+このとき、alphaがbeta以上になれば、その局面は窓の範囲外なのでbetaを返して終了する（7行目）。これをbeta-cutoffという。
+
+探索中に後手番はbetaを引き下げなから探索を進める（12行目）。
+このとき、betaがalpha以下になれば、その局面は窓の範囲外なのでalphaを返して終了する（13行目）。これをalpha-cutoffという。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[scale=0.6]{fig/alphabeta.pdf}
+  \caption{}
+  \label{alphabeta}
+\end{figure}
+
+
+\subsubsection{Q\&A}
+
+
+Q1. MinimaxをAlpha-Beta Pruningするとどのくらいよいですか
+
+A1. ゲーム木の1局面あたりの枝の数を$d$ (degree)、ゲーム木の高さを$h$ (height)とすると、
+Minimaxの計算量が $O(d^h)$、Alpha-Beta Pruningの計算量が最良で $O(d^{h/2})$ なのでだいぶよいです\cite{knuth1975alphabeta}。
+
+
+\bigskip Q2. 7行目のbeta <= alphaをbeta < alphaにしたらどうなりますか
+
+A2. これはalphaが窓の上限を越えたかどうかを判定する式です。
+窓は開区間なので\mbox{alpha == beta}のときにすでにalphaは窓の上限を越えています。
+したがって判定式を\mbox{beta < alpha}にすると、ちょうどalpha == betaのときにalphaが本当は上限を越えているのに上限を越えていないと判定されることになり、枝刈りが弱くなります。
+
+
+\bigskip Q3. 7行目のreturn betaをreturn alphaにしたらどうなりますか
+
+A3. beta-cutoffをfail-softにするということになります。
+ここではbeta以上の値を返せばよく、このときのalphaはbeta以上なのでalphaを返しても問題ありません。
+ただし評価値がalphaより下だったときに9行目でfail-hardしています。
+したがって、評価値がbetaより上のときはfail-softして、評価値がalphaより下のときはfail-hardするという一貫性のないコードになってしまいます。
+全体をfail-softで実装する方法については\ref{failsoft}節で説明します。
+
+
+\subsection{Negamax Alpha-Beta Pruning}
+
+NegamaxをAlpha-Beta Pruningすることができる。
+Negamax Alpha-Beta PruningはただのNegamaxと同様に、手番のある側から見た評価値を返す。
+
+
+\subsubsection{コード(Ruby)}
+
+\begin{lstlisting}[language=ruby,caption=nega-alphabeta.rb]
+def nega_alphabeta(p, alpha, beta)
+  raise 'assertion error' unless alpha < beta
+  return p[:side] == :MAX ? p[:value] : -p[:value] if p[:children] == nil
+  p[:children].each do |e|
+    alpha = [alpha, -nega_alphabeta(e, -beta, -alpha)].max
+    return beta if beta <= alpha
+  end
+  alpha
+end
+
+puts negaalpha(tree, -Float::INFINITY, Float::INFINITY) # => 75
+\end{lstlisting}
+
+5行目の -beta, -alpha では窓をひっくり返している。
+たとえば窓が $-100$ 〜 $+200$ であれば、ひっくり返した窓は $-200$ 〜 $+100$ となる。
+これはたとえば先手が持つ $-100$ 〜 $+200$ の窓は、後手から見ると $-200$ 〜 $+100$ の窓だからである。
+
+
+\subsubsection{Q\&A}
+
+Q1. Minimax Alpha-Beta PruningとNegamax Alpha-Beta Pruningはどちらがいいですか
+
+A1. 性能は同じです。Negamax Alpha-Beta Pruningのほうがコードが簡潔なのがいいです。
+
+
+\newpage
+
+\subsection{fail-soft Alpha-Beta}
+\label{failsoft}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=12cm]{fig/alphabeta-failsoft.pdf}
+  \caption{}
+  \label{alphabeta-failsoft}
+\end{figure}
+
+
+\subsubsection{コード(Ruby)}
+
+\begin{lstlisting}[language=ruby,caption=failsoft-alphabeta.rb]
+def failsoft_alphabeta(p, alpha, beta)
+  raise 'assertion error' unless alpha < beta
+  return p[:side] == :MAX ? p[:value] : -p[:value] if p[:children] == nil
+  score = -Float::INFINITY
+  p[:children].each do |q|
+    score = [score, -failsoft_alphabeta(q, -beta, -alpha)].max
+    alpha = [alpha, score].max
+    return score if beta <= alpha
+  end
+  score
+end
+
+puts alphabeta_failsoft(tree, -Float::INFINITY, Float::INFINITY) # => 75
+\end{lstlisting}
+
+
+\subsubsection{Q\&A}
+
+Q1. fail-hardとfail-softはどっちがいいですか
+
+A1. 性能は同じです。コードはfail-hardのほうがちょっと簡単です。
+本稿では扱いませんが置換表に評価値を保存している場合はfail-softのほうが真の値に近いのでよさそうな気がします\cite{journals/sigart/Fishburn83}。
+
+
+\subsection{Principal Variation Search}
+
+
+\subsubsection{コード(Ruby)}
+
+\begin{lstlisting}[language=ruby,caption=pv-search.rb]
+def pv_search(node, alpha, beta)
+  return p[:side] == :MAX ? p[:value] : -p[:value] if p[:children] == nil
+  score = -Float::INFINITY
+  first = true
+  p[:children].each do |q|
+    if first
+      v = -pv_search(q, -beta, -alpha)
+      first = false
+    else
+      v = -pv_search(q, -alpha - 1, -alpha)
+      v = -pv_search(q, -beta, -alpha) if alpha < v && v < beta
+    end
+    score = [score, v].max
+    alpha = [alpha, score].max
+    return score if beta <= alpha
+  end
+  score
+end
+\end{lstlisting}
+
+
+\subsubsection{Q\&A}
+
+Q1. 8行目をfirst = false if alpha < vとしている実装がありますが、どっちがいいですか
+
+A1. わかりません
+
+
+
+
+
+
+
+% \subsection{df-pn}
+
+% df-pnは詰将棋のアルゴリズムである。
+% 即詰みがあるのか、ないのか、不明なのかを判定する。
+
+% \subsubsection{前提}
+
+% 局面pの証明数を$\mathrm{pn}(p)$、反証明数を$\mathrm{dn}(p)$とすると、
+
+% \begin{equation}
+%   \mathrm{pn}(p) = 
+%   \begin{cases}
+%     0      & (詰んでいるとき) \\
+%     \infty & (不詰のとき) \\
+%     1      & (不明のとき) \\
+%     \displaystyle\min_{q \in \text{children of \it{p}}}^{\mathstrut{}} \mathrm{pn}(q) & (上記以外でpが攻め方のとき) \\
+%     \displaystyle\sum_{q \in \text{children of \it{p}}}^{\mathstrut{}} \mathrm{pn}(q) & (上記以外でpが玉方のとき)
+%   \end{cases} 
+% \end{equation}
+
+% \begin{equation}
+%   \mathrm{dn}(p) = 
+%   \begin{cases}
+%     \infty & (詰んでいるとき) \\
+%     0      & (不詰のとき) \\
+%     1      & (不明のとき) \\
+%     \displaystyle\sum_{q \in \text{children of \it{p}}}^{\mathstrut{}} \mathrm{dn}(q) & (上記以外でpが攻め方のとき) \\
+%     \displaystyle\min_{q \in \text{children of \it{p}}}^{\mathstrut{}} \mathrm{dn}(q) & (上記以外でpが玉方のとき)
+%   \end{cases} 
+% \end{equation}
+
+
+% \subsubsection{コード(Ruby)}
+
+% （未着手）
+
+
+
+
+
+
+% \subsection{おわりに}
+
+% コードをまとめたものをgistに置く。
+
+
+% \subsubsection{Q\&A}
+
+% Q1. 説明/図/コードに間違いを見つけました
+
+% A1. \url{https://github.com/hikaen2/tenuki-d}にプルリクエストをください
+
+
+
+
+
+
+\section{付録2：関数についての考察}
+
+高階関数は、関数を受け取る関数や、関数を返す関数と説明される。
+しかしこの説明には関数とは何であるかの説明が足りていない。
+そこで本章では関数について考察する。
+
+歴史的経緯により関数には次の2通りの定義がある\cite{koda}：
+
+
+\begin{enumerate}
+  \item 古典的定義：相伴って変化する数（あるいは量）；すなわち関数は数である
+  \item 近代的定義：（一意）対応、あるいは対応関係；すなわち関数は対応関係である
+\end{enumerate}
+
+
+ここで数と対応関係は明らかに異なるものであることに注意されたい。
+たとえば1や2や3が数である。
+一方、対応関係とは$x$に対して$x^2$が対応するといった関係である。
+
+古典的には関数はたとえば$y = x^2$とか$f(x) = x^2$のように書かれ、
+それぞれ
+「$y$は$x$の関数である ($y$ is a function of $x$)」、
+「$f(x)$は$x$の関数である ($f(x)$ is a function of $x$)」、
+あるいは単に
+「$y$は関数である ($y$ is a function)」、
+「$f(x)$は関数である ($f(x)$ is a function)」
+と呼ばれる。
+
+ここで$y$や$f(x)$は、$x$に相伴って変化する数である。
+したがって関数は数である。
+ここでは$f$は関数を表すためのただの記号である。
+
+一方、近代的定義では関数は数ではなく、対応関係であると解釈される。
+そこでは$f$こそが関数であり、$f(x)$は「関数$f$の$x$における値 (value of a function $f$ at $x$)」と呼ばれる。
+したがって関数は対応関係である。
+
+以上の違いを表\ref{table2}に記す。
+
+\begin{table}[h]
+  \caption{}
+  \label{table2}
+  \centering
+  \begin{tabular}{l|ll}
+             & 古典的定義では         & 近代的定義では   \\
+    \hline
+    $f$は    & 関数を表す記号         & 関数（すなわち対応関係） \\
+    $f(x)$は & $x$の関数（すなわち数）& 関数$f$の$x$における値 \\
+  \end{tabular}
+\end{table}
+
+
+古典的定義においては$f$はただの記号だが、近代的定義においては$f$こそが関数である。
+そこで近代的定義においては$f$を数式で表す。
+たとえば式$f(x) = x^2$において、$f$は
+矢印表記を用いると$f: x \mapsto x^2$と表せる。
+ラムダ式を用いると$f = λx.x^2$と表せる。
+
+関数に近代的定義を導入すると、関数の対応関係そのものを論ずることができる。
+冒頭で、高階関数とは、関数を受け取る関数や、関数を返す関数であると述べた。
+ここで関数とは対応関係のことである。
+すなわち高階関数とは、対応関係を受け取る関数や、対応関係を返す関数と言うことができる。
+これは高階でない関数が、数を受け取り、数を返すのと比べて、明らかに異なる。
+
+たとえば、受け取った関数を2回適用する関数を返す高階関数 apply\_twice をラムダ式を用いて次のように定義できる：
+$\mathrm{apply\_twice} = λf.λx.f(f(x))$
+
+ここで$λf.λx.f(f(x))$は$f$を受け取り($λf$)、$λx.f(f(x))$を返す関数を意味する。
+返す値である$λx.f(f(x))$もまた関数である。
+したがって$λf.λx.f(f x)$は関数を返す関数であり、高階関数である。
+
+
+
+\nocite{*}
+\bibliographystyle{junsrt}
+\bibliography{ref.bib}
+
+
+\end{document}

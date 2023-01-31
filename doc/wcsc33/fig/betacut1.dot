@@ -1,0 +1,13 @@
+graph G {
+node [fixedsize=true]
+margin=0
+b [shape="invtriangle",label="",xlabel="b",height=0.8];
+b -- c;
+b -- f;
+c [shape="triangle",label="75",xlabel="c",height=0.8];
+f [shape="triangle",label="",xlabel="f",height=0.8];
+f -- g;
+f -- h;
+g [shape="invtriangle",label="84",xlabel="g",height=0.8];
+h [shape="invtriangle",label="",xlabel="h",height=0.8];
+}

@@ -12,15 +12,16 @@
 ## ビルドのしかた
 
 ~~~
+$ sudo apt install build-essential llvm-dev ldc dub
 $ git clone https://github.com/hikaen2/tenuki-d.git
 $ cd tenuki-d
-$ dub build -b release
+$ make
 ~~~
 
 
 ## 動かしかた
 
-評価ベクターに『どうたぬき』(tanuki- 第 1 回世界将棋 AI 電竜戦バージョン) の評価関数ファイル nn.bin を使っています。
+評価ベクターに[『どうたぬき』(tanuki- 第 1 回世界将棋 AI 電竜戦バージョン)](https://github.com/nodchip/tanuki-/releases/tag/tanuki-denryu1)の評価関数ファイル nn.bin を使っています。
 nn.binを作業ディレクトリに置いて実行してください。
 
 ~~~

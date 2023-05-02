@@ -15,7 +15,7 @@ immutable Move[][string] BOOK;
 
 shared static this()
 {
-    File f = File("kick.txt", "r");
+    File f = File("book.db", "r");
     scope(exit) f.close();
 
     string line;

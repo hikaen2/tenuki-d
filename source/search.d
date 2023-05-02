@@ -17,7 +17,14 @@ import types;
 static import book, config, tt;
 
 
-__gshared int REMAIN_SECONDS = config.TOTAL_SECONDS;
+// 残り持ち時間（ミリ秒）
+__gshared long RemainingMillis = (config.TOTAL_SECONDS - 1) * 1000; // 残り時間が0秒になると時間切れなので、1秒引いておく
+
+// この時間から探索を始めた（ミリ秒）
+__gshared long startTime;
+
+// この時間まで探索する（ミリ秒）
+__gshared long endTime;
 
 
 int ponder(const ref Position pos, Move[] outPv)
@@ -38,11 +45,11 @@ int ponder(const ref Position pos, Move[] outPv)
         }
     }
 
+    startTime = getMonotonicTimeMillis();
+    endTime = startTime + min(config.SEARCH_MILLIS, RemainingMillis); // この時間まで探索する（ミリ秒）
     foreach (ref e; threadContexts) e.pos = pos;
-    foreach (ref e; threadContexts) pthread_cond_signal(&e.cond); // スレッドを起こす
-    Thread.sleep(dur!("seconds")(min(config.SEARCH_SECONDS, REMAIN_SECONDS))); // 待つ
-    foreach (ref e; threadContexts) e.stop_request = true;
-    do { usleep(1000); } while(any!((e) => e.is_busy)(threadContexts[]));
+    foreach (ref e; threadContexts) e.running = true; // 探索を開始する
+    while(any!((e) => e.running)(threadContexts[])) Thread.sleep(1.msecs); // すべてのスレッドの探索が終了するまで待つ
 
     int v = int.min;
     int d = int.min;
@@ -65,8 +72,6 @@ shared static this()
 {
     foreach (int i, ref e; threadContexts) {
         e.id = i;
-        pthread_mutex_init(&e.mutex, null);
-        pthread_cond_init(&e.cond, null);
         pthread_create(&e.thread, null, &start_routine, cast(void*)&e);
     }
 }
@@ -74,38 +79,30 @@ shared static this()
 extern (C) void* start_routine(void* arg)
 {
     ThreadContext* threadContext = cast(ThreadContext*)arg;
-    pthread_mutex_lock(&threadContext.mutex);
-    while (pthread_cond_wait(&threadContext.cond, &threadContext.mutex) == 0) {
-
-        threadContext.is_busy = true;
+    while(true) {
+        while (!threadContext.running) Thread.sleep(1.msecs); // runningがtureにされるまで待つ
         threadContext.run();
-        threadContext.is_busy = false;
-
+        threadContext.running = false;
     }
-    pthread_mutex_unlock(&threadContext.mutex);
-    return null;
 }
 
 struct ThreadContext {
     int id;
     pthread_t thread;
-    pthread_mutex_t mutex;
-    pthread_cond_t cond;
-
-    bool is_busy = false;
+    bool running = false;
     Position pos;
 
-    bool stop_request = false;
     Move[64] bestMoves;
     int bestValue = int.min;
     int completedDepth;
 
     private void run()
     {
-        this.stop_request = false;
         this.bestMoves = Move.NULL;
         this.bestValue = int.min;
-        for (int depth = 1; !this.stop_request; depth++) {
+
+        // 反復深化
+        for (int depth = 1; getMonotonicTimeMillis() < endTime; depth++) {
             this.search0(this.pos, depth, this.bestMoves, this.bestValue);
         }
         return;
@@ -133,11 +130,13 @@ struct ThreadContext {
 
         int a = short.min;
         const int b = short.max;
-        if (this.id == 0) stderr.writef("%d: ", depth);
+        if (this.id == 0) {
+            stderr.writef("%d: ", depth);
+        }
 
         foreach (Move move; moves[0..length]) {
             int value = -this.search(pos.doMove(move), depth - 1, -b, -a, pv);
-            if (this.stop_request) return;
+            if (getMonotonicTimeMillis() >= endTime) return;
 
             if (a < value) {
                 a = value;
@@ -145,10 +144,15 @@ struct ThreadContext {
                 outPv[1..64] = pv[0..63];
                 outValue = value;
                 this.completedDepth = depth;
-                if (this.id == 0) stderr.writef("%s(%d) ", move.toString(pos), value);
+                if (this.id == 0) {
+                    stderr.writef("%s(%d) ", move.toString(pos), value);
+                    endTime = getMonotonicTimeMillis() + min(config.SEARCH_MILLIS, RemainingMillis - (getMonotonicTimeMillis() - startTime)); // この時間まで探索する（ミリ秒）を延長する
+                }
             }
         }
-        if (this.id == 0) stderr.writefln("-> %s", outPv.toString(pos));
+        if (this.id == 0) {
+            stderr.writefln("-> %s", outPv.toString(pos));
+        }
         return;
     }
 
@@ -165,7 +169,7 @@ struct ThreadContext {
         assert(a < b);
 
         outPv[0] = Move.NULL;
-        if (this.stop_request) return b;
+        if (getMonotonicTimeMillis() >= endTime) return b;
 
         if (pos.inUchifuzume) return 15000; // 打ち歩詰めされていれば勝ち
 
@@ -253,4 +257,17 @@ struct ThreadContext {
         }
         return a;
     }
+}
+
+/**
+ * OSが起動してからのミリ秒を取る
+ */
+long getMonotonicTimeMillis()
+{
+    import core.sys.linux.time; // Linux専用
+    timespec ts;
+    //clock_gettime(CLOCK_MONOTONIC, &ts);
+    clock_gettime(CLOCK_MONOTONIC_COARSE, &ts);
+    assert(ts.tv_nsec / 1000000 < 1000);
+    return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }

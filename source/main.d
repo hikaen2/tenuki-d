@@ -91,7 +91,7 @@ int csaloop(const color_t us)
     stdout.writeln(p.toString());
 
     if (us == Color.BLACK) {
-        search.REMAIN_SECONDS += config.INCREMENT_SECONDS;
+        search.RemainingMillis += config.INCREMENT_SECONDS * 1000;
         new SearchThread(p).start(); // search & send
     }
 
@@ -101,14 +101,14 @@ int csaloop(const color_t us)
         if (line.matchFirst(r"^(\+|-)\d{4}\D{2},T\d+$")) {
 
             if (p.sideToMove == us) {
-                search.REMAIN_SECONDS -= to!int(line.matchFirst(r",T(\d+)")[1]);
+                search.RemainingMillis -= to!int(line.matchFirst(r",T(\d+)")[1]) * 1000; // 秒 -> ミリ秒
             }
 
             p = p.doMove(parseMove(line, p));
             stderr.writeln(toString(p));
-            stderr.writeln(search.REMAIN_SECONDS);
+            stderr.writefln("%d seconds.", search.RemainingMillis / 1000); // ミリ秒 -> 秒
             if (p.sideToMove == us) {
-                search.REMAIN_SECONDS += config.INCREMENT_SECONDS;
+                search.RemainingMillis += config.INCREMENT_SECONDS * 1000;
                 new SearchThread(p).start(); // search & send
             }
 

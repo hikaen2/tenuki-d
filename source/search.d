@@ -95,6 +95,7 @@ struct ThreadContext {
     Move[64] bestMoves;
     int bestValue = int.min;
     int completedDepth;
+    Move previous = Move.NULL;
 
     private void run()
     {
@@ -146,7 +147,10 @@ struct ThreadContext {
                 this.completedDepth = depth;
                 if (this.id == 0) {
                     stderr.writef("%s(%d) ", move.toString(pos), value);
-                    endTime = getMonotonicTimeMillis() + min(config.SEARCH_MILLIS, RemainingMillis - (getMonotonicTimeMillis() - startTime)); // この時間まで探索する（ミリ秒）を延長する
+                    if (previous != move) { // 前回と違う手が見つかったら探索延長する
+                        previous = move;
+                        endTime = getMonotonicTimeMillis() + min(config.SEARCH_MILLIS, RemainingMillis - (getMonotonicTimeMillis() - startTime)); // この時間まで探索する（ミリ秒）を延長する
+                    }
                 }
             }
         }

@@ -100,23 +100,33 @@ bool isValid(Move m, const ref Position p)
             && RANK_MAX[Square(p.sideToMove, m.type).i] >= RANK_OF[m.to];
     }
 
+    // 移動元の位置と移動先に位置が11から99の範囲であること
     if (m.from < SQ11 || SQ99 < m.from || m.to < SQ11 || SQ99 < m.to) {
         return false;
     }
-    Square sq_from = p.board[m.from];
-    Square sq_to = p.board[m.to];
+
+    Square sq_from = p.board[m.from]; // 移動元の枡を取る
+    Square sq_to = p.board[m.to]; // 移動先の枡を取る
+
+    // 移動元の枡には味方の駒があるはず
     if (!sq_from.isFriendOf(p.sideToMove)) {
         return false;
     }
+
+    // 移動先の枡は空か、相手の駒があるはず
     if (sq_to != Square.EMPTY && !sq_to.isEnemyOf(p.sideToMove)) {
         return false;
     }
+
+    // 成る場合は、成れる駒であること
     if (m.isPromote && !canPromote(sq_from, m.from, m.to)) {
         return false;
     }
+
     foreach (Dir d; DIRECTIONS[sq_from.i]) {
         for (int to = m.from + d.value; !isOverBound(to - d.value, to) && (p.board[to] == Square.EMPTY || p.board[to].isEnemyOf(p.sideToMove)); to += d.value) {
-            if (to == m.to && RANK_MIN[sq_from.i] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[sq_from.i]) {
+            Square sq = m.isPromote ? sq_from.promote() : sq_from; // 成る手であれば成ったあとの駒を取る
+            if (to == m.to && RANK_MIN[sq.i] <= RANK_OF[to] && RANK_OF[to] <= RANK_MAX[sq.i]) {
                 return true;
             }
             if (!d.isFly || p.board[to].isEnemyOf(p.sideToMove)) {

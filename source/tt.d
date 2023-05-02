@@ -67,7 +67,10 @@ void store(uint64_t key, Move m)
     }
 }
 
-
+/**
+ * デバッグ用.
+ * 実行に1秒くらいかかるので実戦で呼んではいけない.
+ */
 long hashfull()
 {
     long cnt = 0;

@@ -1,0 +1,107 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr4prd+buoy_blackbid300_dr4y-4-top_4_tenuki_shotgun-600-2F+tenuki+shotgun+20231202140017
+Name+:tenuki
+Name-:shotgun
+Your_Turn:+
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
++5958OU,T302
+-5152OU,T2
++5859OU,T2
+-5251OU,T2
+END Position
+END Game_Summary
+START:dr4prd+buoy_blackbid300_dr4y-4-top_4_tenuki_shotgun-600-2F+tenuki+shotgun+20231202140017
++2726FU,T0
+-8384FU,T0
++2625FU,T0
+-8485FU,T0
++7776FU,T0
+-4132KI,T0
++8877KA,T0
+-3334FU,T0
++7968GI,T0
+-2277UM,T0
++6877GI,T0
+-3122GI,T0
++6978KI,T0
+-2233GI,T0
++3948GI,T0
+-7162GI,T0
++4746FU,T0
+-6152KI,T0
++4847GI,T9
+-6364FU,T0
++3736FU,T9
+-5142OU,T0
++9796FU,T9
+-7374FU,T10
++5968OU,T17
+-9394FU,T0
++2937KE,T9
+-8173KE,T0
++4938KI,T9
+-1314FU,T9
++3635FU,T9
+-3435FU,T10
++3745KE,T9
+-3322GI,T0
++2524FU,T9
+-2324FU,T0
++2824HI,T9
+-3223KI,T0
++2464HI,T20
+-6263GI,T0
++6466HI,T13
+-8586FU,T2
++7786GI,T18
+-0044KA,T0
++7675FU,T10
+-8284HI,T9
++7574FU,T16
+-8474HI,T0
++0083KA,T9
+-7478RY,T0
++6878OU,T9
+-4466KA,T2
++6766FU,T9
+-0067FU,T2
++0024FU,T16
+-0068HI,T0
++7877OU,T9
+-0076FU,T8
++7776OU,T9
+-0084KI,T2
++2423TO,T9
+-6878RY,T0
++0077KI,T9
+-0075FU,T0
++8675GI,T9
+-8485KI,T0
+%TORYO
+#RESIGN
+#LOSE

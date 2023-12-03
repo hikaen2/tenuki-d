@@ -1,0 +1,120 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr4prd+buoy_blackbid300_dr4c-2-bottom_4_irohamahoro_tenuki-600-2F+irohamahoro+tenuki+20231203101511
+Name+:irohamahoro
+Name-:tenuki
+Your_Turn:-
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
++5958OU,T302
+-5152OU,T2
++5859OU,T2
+-5251OU,T2
+END Position
+END Game_Summary
+START:dr4prd+buoy_blackbid300_dr4c-2-bottom_4_irohamahoro_tenuki-600-2F+irohamahoro+tenuki+20231203101511
++2726FU,T0
+-3334FU,T0
++9796FU,T0
+-8384FU,T32
++6978KI,T0
+-8485FU,T18
++7776FU,T0
+-4132KI,T19
++2625FU,T0
+-8586FU,T18
++8786FU,T0
+-8286HI,T18
++2524FU,T0
+-2324FU,T18
++2824HI,T0
+-8676HI,T22
++8877KA,T0
+-5152OU,T18
++7988GI,T0
+-7374FU,T18
++5968OU,T11
+-8173KE,T18
++2428HI,T2
+-0027FU,T30
++2827HI,T5
+-7365KE,T18
++7722UM,T4
+-6557NK,T18
++6857OU,T2
+-7678RY,T18
++2266UM,T7
+-2133KE,T18
++2721RY,T11
+-3345KE,T18
++5756OU,T2
+-7889RY,T18
++0059FU,T2
+-0054KE,T18
++6677UM,T4
+-0087FU,T18
++8887GI,T4
+-0086FU,T26
++8798GI,T4
+-8979RY,T19
++0078FU,T2
+-8687TO,T18
++9887GI,T4
+-0086FU,T18
++8798GI,T11
+-0087KI,T52
++7711UM,T11
+-8798KI,T18
++0024KE,T5
+-0044GI,T40
++2432NK,T4
+-7968RY,T18
++0084KA,T2
+-4557NK,T19
++8457KA,T2
+-4445GI,T20
++5645OU,T4
+-6857RY,T18
++2131RY,T2
+-0056KA,T14
++4536OU,T2
+-5647UM,T2
++3627OU,T2
+-0026FU,T2
++2716OU,T1
+-5262OU,T2
++0083KI,T0
+-7172GI,T2
++0051GI,T0
+-6151KI,T2
++0071GI,T0
+-6271OU,T2
++3151RY,T0
+-0061GI,T2
++0082KI,T0
+%TORYO
+#RESIGN
+#LOSE

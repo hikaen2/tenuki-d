@@ -1,0 +1,65 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr4prd+buoy_blackbid300_dr4c-5-top_4_asura_tenuki-600-2F+asura+tenuki+20231203141024
+Name+:asura
+Name-:tenuki
+Your_Turn:-
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
++5958OU,T302
+-5152OU,T2
++5859OU,T2
+-5251OU,T2
+END Position
+END Game_Summary
+START:dr4prd+buoy_blackbid300_dr4c-5-top_4_asura_tenuki-600-2F+asura+tenuki+20231203141024
++9796FU,T0
+-9394FU,T0
++9695FU,T0
+-9495FU,T18
++9997KY,T0
+-8292HI,T18
++9796KY,T0
+-9596FU,T18
++8997KE,T0
+-9697TO,T18
++8786FU,T0
+-3334FU,T29
++8685FU,T0
+-9788TO,T18
++1918KY,T0
+-8879TO,T18
++6979KI,T0
+-2277UM,T18
++7968KI,T0
+-9299RY,T18
++0079FU,T0
+-9979RY,T18
++5958OU,T0
+-7968RY,T18
+%TORYO
+#RESIGN
+#WIN

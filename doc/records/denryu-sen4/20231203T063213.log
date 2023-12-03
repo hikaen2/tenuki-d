@@ -1,0 +1,90 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:dr4prd+buoy_blackbid300_dr4c-6-bottom_4_tenuki_kougakuinb-600-2F+tenuki+kougakuinb+20231203155537
+Name+:tenuki
+Name-:kougakuinb
+Your_Turn:+
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:512
+BEGIN Time
+Time_Unit:1sec
+Total_Time:600
+Byoyomi:0
+Increment:2
+Least_Time_Per_Move:0
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
++
++5958OU,T302
+-5152OU,T2
++5859OU,T2
+-5251OU,T2
+END Position
+END Game_Summary
+START:dr4prd+buoy_blackbid300_dr4c-6-bottom_4_tenuki_kougakuinb-600-2F+tenuki+kougakuinb+20231203155537
++2726FU,T0
+-8384FU,T11
++2625FU,T0
+-8485FU,T10
++7776FU,T0
+-4132KI,T10
++8877KA,T0
+-3334FU,T10
++7968GI,T0
+-2277UM,T10
++6877GI,T0
+-3122GI,T11
++1716FU,T0
+-1314FU,T19
++3938GI,T0
+-2233GI,T12
++3736FU,T0
+-7162GI,T17
++4746FU,T0
+-5142OU,T42
++2937KE,T0
+-7374FU,T44
++2524FU,T14
+-3324GI,T22
++0055KA,T9
+-8173KE,T59
++5511UM,T9
+-2133KE,T51
++0027KY,T9
+-7365KE,T40
++7766GI,T10
+-8586FU,T13
++2724KY,T9
+-2324FU,T6
++2824HI,T9
+-0023KY,T11
++2414HI,T14
+-0027FU,T36
++0021GI,T9
+-3231KI,T6
++1412RY,T9
+-4251OU,T14
++1133UM,T9
+-0042KA,T7
++3342UM,T10
+-3142KI,T0
++1242RY,T9
+-5142OU,T0
++0031KA,T9
+%TORYO
+#RESIGN
+#WIN

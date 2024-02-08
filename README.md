@@ -44,3 +44,5 @@ $ ./tenuki wdoor.c.u-tokyo.ac.jp tenuki floodgate-300-10F
 - 2021-05-03 [第31回世界コンピュータ将棋選手権](http://www2.computer-shogi.org/wcsc31/) 一次予選15位
 - 2021-11-20 [第二回電竜戦](https://golan.sakura.ne.jp/denryusen/dr2_production/dr1_live.php) B級16位
 - 2022-05-03 [第32回世界コンピュータ将棋選手権](http://www2.computer-shogi.org/wcsc32/) 二次予選28位
+- 2023-05-03 [第33回世界コンピュータ将棋選手権](http://www2.computer-shogi.org/wcsc33/) 一次予選12位
+- 2023-12-02,03 [第四回電竜戦](https://denryu-sen.jp/denryusen/dr4_production/dr1_live.php) C級12位

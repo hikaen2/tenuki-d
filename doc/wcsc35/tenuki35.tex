@@ -1,0 +1,48 @@
+%% lualatex tenuki35
+\nonstopmode
+
+\documentclass[11pt,a4paper]{ltjsarticle}
+\usepackage{url}
+
+\title{
+  手抜きについて
+  \large{\\ 第35回世界コンピュータ将棋選手権アピール文書}
+}
+\author{手抜きチーム \thanks{鈴木太朗 (https://mastodon.ttg6.net/@hikaen2), 玉川直樹 (https://twitter.com/Neakih\_kick)} }
+\date{2025年3月25日}
+
+\begin{document}
+
+\maketitle
+
+
+\section*{手抜きについて}
+
+手抜きはCSAプロトコルで対局を行うコンピュータ将棋プログラムです。開発者らが将棋のプログラムの仕組みを理解するために開発しています。 \\
+リポジトリ：\url{https://github.com/hikaen2/tenuki-d}
+
+
+\subsection*{使用ライブラリ}
+
+『どうたぬき』(tanuki- 第1回世界将棋AI 電竜戦バージョン)の評価関数ファイル nn.bin\footnote{\url{https://github.com/nodchip/tanuki-/releases/tag/tanuki-denryu1}}
+
+
+\subsection*{特長}
+
+\begin{itemize}
+  \item NNUE
+  \item $\alpha\beta$探索
+  \item D言語
+\end{itemize}
+
+
+\section*{今年の目標}
+
+\begin{itemize}
+  \item トランスポジションテーブルの強化
+\end{itemize}
+
+現在の実装ではトランスポジションテーブルに指し手のみを保存しています。
+これに加えて評価値と探索の深さも保存するのが良いように思います。
+
+\end{document}

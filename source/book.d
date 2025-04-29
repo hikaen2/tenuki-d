@@ -10,7 +10,7 @@ import text;
 import types;
 
 
-immutable Move[][string] BOOK;
+__gshared Move[][string] BOOK;
 
 
 shared static this()

@@ -7,7 +7,6 @@ import std.conv;
 import std.format;
 import std.stdio;
 import types;
-static import tt;
 
 /**
  * mのCSA形式の文字列を返す

@@ -7,86 +7,43 @@ import std.stdio;
 import types;
 import config;
 
-
 __gshared private TTEntry[] TT;
-shared long stat_nothing = 0;
-shared long stat_misshit = 0;
-shared long stat_hit = 0;
-shared long stat_stored = 0;
-
 
 shared static this()
 {
     TT.length = Config.TT_SIZE + 1;
 }
 
-
 struct TTEntry
 {
-    uint32_t key32;
+    uint64_t key;
     uint16_t move16;
-    uint16_t _;
 }
 
-
-Move probe(uint64_t key)
+Move tt_probe(uint64_t key)
 {
-    for (int i = 0; i < 5; i++)
+    TTEntry e = TT[key & Config.TT_SIZE];
+    if (e.key == key)
     {
-        TTEntry e = TT[((key & Config.TT_SIZE) + i * 2) % (Config.TT_SIZE + 1)];
-        if (e.key32 == 0)
-        {
-            //atomicOp!"+="(stat_nothing, 1);
-            return cast(Move)(0);
-        }
-        if (e.key32 == (key >> 32))
-        {
-            //atomicOp!"+="(stat_hit, 1);
-            return cast(Move)(e.move16);
-        }
-        //atomicOp!"+="(stat_misshit, 1);
-        //return cast(Move)(0);
+        return cast(Move)(e.move16);
     }
-    //atomicOp!"+="(stat_misshit, 1);
     return cast(Move)(0);
 }
 
-
-void store(uint64_t key, Move m)
+void tt_store(uint64_t key, Move m)
 {
-    for (int i = 0; i < 5; i++)
+    const long address = (key & Config.TT_SIZE);
+    if (TT[address].key == 0 || TT[address].key == key)
     {
-        const long address = ((key & Config.TT_SIZE) + i * 2) % (Config.TT_SIZE + 1);
-        if (TT[address].key32 == 0 || TT[address].key32 == (key >> 32))
-        {
-            TT[address] = TTEntry((key >> 32), m.i);
-            //atomicOp!"+="(stat_stored, 1);
-            return;
-        }
-        //return;
+        TT[address] = TTEntry(key, m.i);
+        return;
     }
 }
-
-/**
- * デバッグ用.
- * 実行に1秒くらいかかるので実戦で呼んではいけない.
- */
-long hashfull()
-{
-    long cnt = 0;
-    foreach (TTEntry e; TT)
-    {
-        cnt += e.move16 == 0 ? 0 : 1;
-    }
-    return cnt * 1000 / (Config.TT_SIZE + 1);
-    //return cnt;
-}
-
 
 /**
  * 例："TT: 33,554,432 entries, 268,435,456 bytes"
  */
-string info()
+string tt_info()
 {
     return format("TT: %,d entries, %,d bytes", TT.length, TT.length * TTEntry.sizeof);
 }

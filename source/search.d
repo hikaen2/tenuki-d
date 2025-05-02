@@ -15,7 +15,8 @@ import std.stdio;
 import text;
 import types;
 import config;
-static import book, tt;
+import tt;
+static import book;
 
 
 // 残り持ち時間（ミリ秒）
@@ -191,7 +192,7 @@ struct ThreadContext {
         }
 
         {
-            Move move =  tt.probe(pos.key);
+            Move move =  tt_probe(pos.key);
             if (move.isValid(pos)) {
                 int value = -this.search(pos.doMove(move), depth - 1, -b, -a, pv);
                 if (a < value) {
@@ -211,7 +212,7 @@ struct ThreadContext {
             int value = -this.search(pos.doMove(move), depth - 1, -b, -a, pv);
             if (a < value) {
                 a = value;
-                tt.store(pos.key, move);
+                tt_store(pos.key, move);
                 if (b <= a) return b;
                 outPv[0] = move;
                 outPv[1..64] = pv[0..63];
@@ -236,7 +237,7 @@ struct ThreadContext {
         if (b <= a) return b;
 
         {
-            Move move =  tt.probe(pos.key);
+            Move move =  tt_probe(pos.key);
             if (move.isValid(pos) && pos.board[move.to].isEnemyOf(pos.sideToMove)) {
                 int value = -this.qsearch(pos.doMove(move), depth - 1, -b, -a, pv);
                 if (a < value) {
@@ -254,7 +255,7 @@ struct ThreadContext {
             int value = -this.qsearch(pos.doMove(move), depth - 1, -b, -a, pv);
             if (a < value) {
                 a = value;
-                tt.store(pos.key, move);
+                tt_store(pos.key, move);
                 if (b <= a) return b;
                 outPv[0] = move;
                 outPv[1..64] = pv[0..63];

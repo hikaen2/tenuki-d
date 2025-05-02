@@ -17,7 +17,8 @@ import std.stdio;
 import text;
 import types;
 import config;
-static import misc, tt;
+import tt;
+static import misc;
 
 
 __gshared private Socket SOCKET;
@@ -28,7 +29,7 @@ __gshared private File RECV_LOG;
 int main(string[] args)
 {
     // info
-    stdout.writeln(tt.info());
+    stdout.writeln(tt_info());
 
     if (args.length >= 2 && args[1] == "test") {
         test();
@@ -184,10 +185,10 @@ private void test()
     stdout.writeln(p.toString());
     Move[64] pv;
     p.ponder(pv);
-    stdout.writefln("stored: %12d", tt.stat_stored);
-    stdout.writefln("nothing:%12d", tt.stat_nothing);
-    stdout.writefln("hit:    %12d", tt.stat_hit);
-    stdout.writefln("misshit:%12d", tt.stat_misshit);
+    //stdout.writefln("stored: %12d", tt.stat_stored);
+    //stdout.writefln("nothing:%12d", tt.stat_nothing);
+    //stdout.writefln("hit:    %12d", tt.stat_hit);
+    //stdout.writefln("misshit:%12d", tt.stat_misshit);
 
     // Position p = parsePosition("sfen 9/9/9/9/9/9/9/9/P8 b - 1");
     // stdout.writeln(p.toString());

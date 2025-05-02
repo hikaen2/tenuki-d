@@ -5,7 +5,7 @@ import std.format;
 import std.stdint;
 import std.stdio;
 import types;
-static import config;
+import config;
 
 
 __gshared private TTEntry[] TT;
@@ -17,7 +17,7 @@ shared long stat_stored = 0;
 
 shared static this()
 {
-    TT.length = config.TT_SIZE + 1;
+    TT.length = Config.TT_SIZE + 1;
 }
 
 
@@ -33,7 +33,7 @@ Move probe(uint64_t key)
 {
     for (int i = 0; i < 5; i++)
     {
-        TTEntry e = TT[((key & config.TT_SIZE) + i * 2) % (config.TT_SIZE + 1)];
+        TTEntry e = TT[((key & Config.TT_SIZE) + i * 2) % (Config.TT_SIZE + 1)];
         if (e.key32 == 0)
         {
             //atomicOp!"+="(stat_nothing, 1);
@@ -56,7 +56,7 @@ void store(uint64_t key, Move m)
 {
     for (int i = 0; i < 5; i++)
     {
-        const long address = ((key & config.TT_SIZE) + i * 2) % (config.TT_SIZE + 1);
+        const long address = ((key & Config.TT_SIZE) + i * 2) % (Config.TT_SIZE + 1);
         if (TT[address].key32 == 0 || TT[address].key32 == (key >> 32))
         {
             TT[address] = TTEntry((key >> 32), m.i);
@@ -78,7 +78,7 @@ long hashfull()
     {
         cnt += e.move16 == 0 ? 0 : 1;
     }
-    return cnt * 1000 / (config.TT_SIZE + 1);
+    return cnt * 1000 / (Config.TT_SIZE + 1);
     //return cnt;
 }
 

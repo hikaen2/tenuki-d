@@ -16,7 +16,8 @@ import std.socket;
 import std.stdio;
 import text;
 import types;
-static import config, misc, tt;
+import config;
+static import misc, tt;
 
 
 __gshared private Socket SOCKET;
@@ -91,7 +92,7 @@ int csaloop(const color_t us)
     stdout.writeln(p.toString());
 
     if (us == Color.BLACK) {
-        search.RemainingMillis += config.INCREMENT_SECONDS * 1000;
+        search.RemainingMillis += Config.INCREMENT_SECONDS * 1000;
         new SearchThread(p).start(); // search & send
     }
 
@@ -108,7 +109,7 @@ int csaloop(const color_t us)
             stderr.writeln(toString(p));
             stderr.writefln("%d seconds.", search.RemainingMillis / 1000); // ミリ秒 -> 秒
             if (p.sideToMove == us) {
-                search.RemainingMillis += config.INCREMENT_SECONDS * 1000;
+                search.RemainingMillis += Config.INCREMENT_SECONDS * 1000;
                 new SearchThread(p).start(); // search & send
             }
 

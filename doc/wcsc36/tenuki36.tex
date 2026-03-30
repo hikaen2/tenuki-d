@@ -1,0 +1,58 @@
+%% lualatex tenuki35
+\nonstopmode
+
+\documentclass[11pt,a4paper]{ltjsarticle}
+
+\title{
+  手抜きについて
+  \large{\\ 第36回世界コンピュータ将棋選手権アピール文書}
+}
+\author{手抜きチーム \thanks{鈴木太朗 (https://mastodon.ttg6.net/@hikaen2), 玉川直樹 (https://twitter.com/Neakih\_kick)} }
+\date{2026年3月30日}
+
+\begin{document}
+
+\maketitle
+
+
+\section*{手抜きについて}
+
+手抜きはCSAプロトコルで対局を行うコンピュータ将棋プログラムです。開発者らが将棋のプログラムの仕組みを理解するために開発しています。 \\
+リポジトリ：https://github.com/hikaen2/tenuki-d
+
+
+\subsection*{使用ライブラリ}
+
+『どうたぬき』(tanuki- 第1回世界将棋AI 電竜戦バージョン)の評価関数ファイル nn.bin\footnote{https://github.com/nodchip/tanuki-/releases/tag/tanuki-denryu1}
+
+
+\subsection*{特長}
+
+\begin{itemize}
+  \item NNUE
+  \item $\alpha\beta$探索
+  \item D言語
+\end{itemize}
+
+
+\section*{TODO}
+
+\begin{itemize}
+  \item 差分評価
+  \item 千日手チェック
+  \item 詰将棋
+  \item ponder
+\end{itemize}
+
+なにしろ手抜きなのでいろいろな機能がTODOとなっております。
+
+
+\section*{おまけ：有用かもしれない過去のアピール文書}
+
+\begin{itemize}
+  \item 第29回世界コンピュータ将棋選手権, データ構造, \\ https://www.apply.computer-shogi.org/wcsc29/appeal/Tenuki/tenuki29.pdf
+  \item 第31回世界コンピュータ将棋選手権, nn.binの構造について（NNUEの解説文書）, \\ https://www.apply.computer-shogi.org/wcsc31/appeal/tenuki/tenuki31.pdf
+  \item 第33回世界コンピュータ将棋選手権, 私のためのMinimax入門（Minimaxの解説文書）, \\ https://www.apply.computer-shogi.org/wcsc33/appeal/Tenuki/tenuki33.pdf
+\end{itemize}
+
+\end{document}

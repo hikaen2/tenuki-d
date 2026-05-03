@@ -1,0 +1,85 @@
+LOGIN:tenuki OK
+BEGIN Game_Summary
+Protocol_Version:1.2
+Protocol_Mode:Server
+Format:Shogi 1.0
+Declaration:Jishogi 1.1
+Game_ID:WCSC36test+WCSC36_L4_31_2-900-5F+tenuki+auaushogi+20260503135706
+Name+:tenuki
+Name-:auaushogi
+Your_Turn:+
+Rematch_On_Draw:NO
+To_Move:+
+Max_Moves:320
+BEGIN Time
+Time_Unit:1sec
+Total_Time:900
+Increment:5
+END Time
+BEGIN Position
+P1-KY-KE-GI-KI-OU-KI-GI-KE-KY
+P2 * -HI *  *  *  *  * -KA * 
+P3-FU-FU-FU-FU-FU-FU-FU-FU-FU
+P4 *  *  *  *  *  *  *  *  * 
+P5 *  *  *  *  *  *  *  *  * 
+P6 *  *  *  *  *  *  *  *  * 
+P7+FU+FU+FU+FU+FU+FU+FU+FU+FU
+P8 * +KA *  *  *  *  * +HI * 
+P9+KY+KE+GI+KI+OU+KI+GI+KE+KY
+P+
+P-
++
+END Position
+END Game_Summary
+START:WCSC36test+WCSC36_L4_31_2-900-5F+tenuki+auaushogi+20260503135706
++2726FU,T0
+-9394FU,T11
++2625FU,T17
+-3334FU,T11
++2524FU,T17
+-2324FU,T11
++2824HI,T17
+-8232HI,T11
++3938GI,T32
+-0028FU,T11
++2428HI,T17
+-6162KI,T11
++0024FU,T17
+-3252HI,T11
++2423TO,T17
+-2255KA,T11
++7776FU,T17
+-5588UM,T11
++7988GI,T17
+-0055KA,T11
++0077KA,T23
+-5577KA,T11
++8877GI,T17
+-0055KA,T11
++0065KA,T17
+-5354FU,T11
++6583UM,T17
+-3142GI,T11
++6978KI,T20
+-5544KA,T11
++2324TO,T17
+-6272KI,T11
++8365UM,T17
+-6364FU,T11
++6575UM,T19
+-7374FU,T11
++7574UM,T17
+-7273KI,T11
++7452UM,T17
+-4152KI,T11
++2434TO,T17
+-4455KA,T11
++2821RY,T17
+-5162OU,T11
++0061HI,T17
+-6253OU,T11
++0045KE,T17
+%TORYO
+T0
+#RESIGN
+#WIN

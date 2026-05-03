@@ -3,7 +3,7 @@ module config;
 class Config
 {
     enum SEARCH_THREADS = 192;
-    enum SEARCH_MILLIS = 10_000;
+    enum SEARCH_MILLIS = 17_000;
 
     //enum TT_SIZE =     0xfffff; // 8MB
     //enum TT_SIZE =    0x1fffff; // 16MB
@@ -18,8 +18,8 @@ class Config
     //enum TT_SIZE =  0x3fffffff; // 8192MB
     //enum TT_SIZE =  0x7fffffff; // 32GB
     //enum TT_SIZE =  0xffffffff; // 64GB
-    enum TT_SIZE = 0x1ffffffff; // 128GB
-    //enum TT_SIZE = 0x3ffffffff; // 256GB
+    //enum TT_SIZE = 0x1ffffffff; // 128GB
+    enum TT_SIZE = 0x3ffffffff; // 256GB
 
     // floodgate
     //enum TOTAL_SECONDS = 290;

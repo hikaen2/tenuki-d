@@ -1,7 +1,7 @@
 module tt;
 
 import core.atomic;
-import core.stdc.stdlib : malloc;
+import core.stdc.stdlib : calloc;
 import std.format;
 import std.stdint;
 import std.stdio;
@@ -14,9 +14,9 @@ shared static this()
 {
     immutable size_t n = Config.TT_SIZE + 1;
     immutable size_t bytes = n * TTEntry.sizeof;
-    // malloc でレイジー確保（物理ページは実アクセス時にのみ割り当て → 起動が速い）
-    void* p = malloc(bytes);
-    assert(p !is null, "malloc failed for TT");
+    // calloc で確保＋ゼロ初期化（全ページに触れるため起動時に物理RAM を確保）
+    void* p = calloc(n, TTEntry.sizeof);
+    assert(p !is null, "calloc failed for TT");
     TT = (cast(TTEntry*) p)[0 .. n];
 }
 

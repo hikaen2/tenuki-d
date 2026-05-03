@@ -2,6 +2,7 @@ module tt;
 
 import core.atomic;
 import core.sys.posix.sys.mman;
+import core.sys.linux.sys.mman : MAP_ANONYMOUS, MAP_POPULATE;
 import std.format;
 import std.stdint;
 import std.stdio;

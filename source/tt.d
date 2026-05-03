@@ -1,6 +1,7 @@
 module tt;
 
 import core.atomic;
+import core.stdc.stdlib : malloc;
 import std.format;
 import std.stdint;
 import std.stdio;
@@ -11,7 +12,12 @@ __gshared private TTEntry[] TT;
 
 shared static this()
 {
-    TT.length = Config.TT_SIZE + 1;
+    immutable size_t n = Config.TT_SIZE + 1;
+    immutable size_t bytes = n * TTEntry.sizeof;
+    // malloc でレイジー確保（物理ページは実アクセス時にのみ割り当て → 起動が速い）
+    void* p = malloc(bytes);
+    assert(p !is null, "malloc failed for TT");
+    TT = (cast(TTEntry*) p)[0 .. n];
 }
 
 struct TTEntry

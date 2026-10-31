@@ -8,5 +8,19 @@
     "description": "A minimal D application.",
     "copyright": "Copyright © 2018, hikaen2",
     "license": "MIT License",
-    "dflags": ["-mcpu=native", "-flto=full"]
+    "dflags": ["-mcpu=native", "-flto=full"],
+    "configurations": [
+        {
+            "name": "application",
+            "targetType": "executable",
+            "excludedSourceFiles": ["source/learn.d"]
+        },
+        {
+            "name": "learn",
+            "targetType": "executable",
+            "targetName": "tenuki-learn",
+            "mainSourceFile": "source/learn.d",
+            "excludedSourceFiles": ["source/main.d", "source/search.d", "source/tt.d", "source/book.d"]
+        }
+    ]
 }

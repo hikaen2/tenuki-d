@@ -24,6 +24,7 @@ private enum A = 0.0273;        // T(x) の傾き
 private enum QS_FULL = 4;       // 静止探索で駒を取る手をすべて読む手数
 private enum INF = 32000;
 private enum FIXED = 1 << 20;   // 勾配の固定小数点の倍率
+private enum CHUNK = 4096;      // 棋譜と読み筋を一度に読む対局数。スレッド数が多くても1スレッドに何局も行き渡るようにする
 private enum HIRATE = "sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1";
 
 __gshared private TaskPool POOL;
@@ -68,64 +69,118 @@ int main(string[] args)
         stderr.writefln("%s does not satisfy the symmetry", ppPath);
         return 1;
     }
-    Record[] train = readRecords(args[1]);
-    Record[] test = readRecords(args[2]);
+    const string trainPath = args[1];
+    const string testPath = args[2];
+    const string pvPath = ppPath ~ ".pv";
+    countGames(trainPath);
+    countGames(testPath);
 
-    writefln("iteration 0  match %.4f", matchRate(test));
+    writefln("iteration 0  match %.4f", matchRate(testPath));
     foreach (iteration; 1 .. iterations + 1) {
         auto sw = StopWatch(AutoStart.yes);
 
-        // 探索段階
-        auto pvs = new Move[][][train.length];
-        auto js = new double[train.length];
-        foreach (i, ref r; POOL.parallel(train)) {
-            js[i] = searchRecord(r, pvs[i]);
+        // 探索段階：棋譜を CHUNK 局ずつ読んで探索し、読み筋をファイルに書く
+        double j = 0;
+        File pvFile = File(pvPath, "wb");
+        auto reader = GameReader(trainPath);
+        for (Record[][] games; (games = reader.next).length > 0; ) {
+            auto bufs = new ushort[][games.length];
+            auto js = new double[games.length];
+            foreach (i, game; POOL.parallel(games, 1)) {
+                js[i] = searchGame(game, bufs[i]);
+            }
+            j += js.sum;
+            foreach (buf; bufs) {
+                writePv(pvFile, buf);
+            }
         }
+        pvFile.close();
 
         // 更新段階
         foreach (step; 0 .. steps) {
-            update(gradientSum(train, pvs));
+            update(gradientSum(pvPath));
         }
 
         savePP(ppPath);
         writefln("iteration %d  J %.1f  match %.4f  (%.0f sec)",
-            iteration, js.sum, matchRate(test), sw.peek.total!"msecs" / 1000.0);
+            iteration, j, matchRate(testPath), sw.peek.total!"msecs" / 1000.0);
         stdout.flush();
+    }
+    if (pvPath.exists) {
+        std.file.remove(pvPath);
     }
     return 0;
 }
 
 
 /**
- * 学習用棋譜ファイルを読む
+ * 棋譜ファイルを先頭から CHUNK 局ずつ読む
  * ファイルは1行1局で、CSA 形式の指し手を空白区切りで並べたもの
  */
-private Record[] readRecords(string path)
+private struct GameReader
 {
-    Record[] records;
-    int games = 0;
-    int skipped = 0;
-    foreach (line; File(path).byLineCopy) {
-        Record[] game;
-        Position p = parsePosition(HIRATE);
-        foreach (s; line.split) {
-            Move m = toMove(s, p);
-            if (m == Move.NULL) {
-                game = null;
+    File file;
+    long games = 0;
+    long positions = 0;
+    long skipped = 0;
+
+    this(string path)
+    {
+        file = File(path);
+    }
+
+    /**
+     * returns: 次の最大 CHUNK 局。ファイルの終わりでは空
+     */
+    Record[][] next()
+    {
+        Record[][] chunk;
+        while (chunk.length < CHUNK) {
+            string line = file.readln;
+            if (line.length == 0) {
                 break;
             }
-            game ~= Record(p, m);
-            p = p.doMove(m);
+            Record[] game = parseGame(line);
+            if (game is null) {
+                skipped++;
+                continue;
+            }
+            chunk ~= game;
+            games++;
+            positions += game.length;
         }
-        if (game is null) {
-            skipped++;
-            continue;
-        }
-        records ~= game;
-        games++;
+        return chunk;
     }
-    writefln("%s: %d games, %d positions (%d games skipped)", path, games, records.length, skipped);
-    return records;
+}
+
+/**
+ * 棋譜ファイルの1行を局面と手の列にする
+ * returns: 局面と手の列。解析できない手があれば null
+ */
+private Record[] parseGame(string line)
+{
+    Record[] game;
+    Position p = parsePosition(HIRATE);
+    foreach (s; line.split) {
+        Move m = toMove(s, p);
+        if (m == Move.NULL) {
+            return null;
+        }
+        game ~= Record(p, m);
+        p = p.doMove(m);
+    }
+    return game;
+}
+
+/**
+ * 棋譜ファイルの対局数と局面数を表示する
+ */
+private void countGames(string path)
+{
+    auto reader = GameReader(path);
+    while (reader.next.length > 0) {
+    }
+    writefln("%s: %d games, %d positions (%d games skipped)", path, reader.games, reader.positions, reader.skipped);
 }
 
 /**
@@ -191,12 +246,12 @@ private int searchMove(const ref Position p, Move m, int a, int b, ref Move[64] 
 }
 
 /**
- * 読み筋を Move.NULL の手前までの配列にする
+ * 読み筋の Move.NULL の手前まで
  */
-private Move[] line(const ref Move[64] pv)
+private const(Move)[] line(return ref const Move[64] pv)
 {
     long length = pv[].countUntil(Move.NULL);
-    return pv[0 .. (length < 0 ? 64 : length)].dup;
+    return pv[0 .. (length < 0 ? 64 : length)];
 }
 
 /**
@@ -205,8 +260,12 @@ private Move[] line(const ref Move[64] pv)
  * pvs には、棋譜の手の読み筋と、窓の中の手の読み筋が入る
  * returns: J への寄与
  */
-private double searchRecord(const ref Record r, out Move[][] pvs, int window = WINDOW)
+private double searchRecord(const ref Record r, ref ushort[] buf, int window = WINDOW)
 {
+    buf ~= r.move.i;
+    const size_t at = buf.length;
+    buf ~= 0;
+
     Move[600] moves;
     int length = r.pos.legalMoves(moves);
     if (length <= 1) {
@@ -215,7 +274,8 @@ private double searchRecord(const ref Record r, out Move[][] pvs, int window = W
 
     Move[64] pv;
     int record = searchMove(r.pos, r.move, -INF, INF, pv);
-    pvs ~= line(pv);
+    appendPv(buf, line(pv));
+    int n = 1;
 
     double j = 0;
     foreach (Move move; moves[0 .. length]) {
@@ -225,10 +285,72 @@ private double searchRecord(const ref Record r, out Move[][] pvs, int window = W
         int x = clamp(searchMove(r.pos, move, record - window, record + window, pv) - record, -WINDOW, WINDOW);
         j += t(x);
         if (abs(x) < WINDOW) {
-            pvs ~= line(pv);
+            appendPv(buf, line(pv));
+            n++;
         }
     }
+    buf[at] = cast(ushort)n;
     return j;
+}
+
+/**
+ * 1局の探索段階
+ * buf には局面ごとに、棋譜の手、読み筋の数、読み筋（手数と手の列）を並べる。読み筋の1本目は棋譜の手の読み筋
+ * returns: この対局の J
+ */
+private double searchGame(const Record[] game, out ushort[] buf)
+{
+    double j = 0;
+    foreach (ref r; game) {
+        j += searchRecord(r, buf);
+    }
+    return j;
+}
+
+static assert(Move.sizeof == ushort.sizeof);
+
+private void appendPv(ref ushort[] buf, const Move[] pv)
+{
+    buf ~= cast(ushort)pv.length;
+    buf ~= cast(const(ushort)[])pv;
+}
+
+/**
+ * buf の pos から読み筋を1本取り出し、pos を次に進める
+ */
+private const(Move)[] nextPv(const ushort[] buf, ref size_t pos)
+{
+    const size_t length = buf[pos];
+    auto pv = cast(const(Move)[])buf[pos + 1 .. pos + 1 + length];
+    pos += 1 + length;
+    return pv;
+}
+
+/**
+ * 1局分の読み筋をファイルに書く
+ */
+private void writePv(ref File f, const ushort[] buf)
+{
+    uint[1] length = [cast(uint)buf.length];
+    f.rawWrite(length);
+    f.rawWrite(buf);
+}
+
+/**
+ * returns: ファイルから読んだ次の最大 games 局分の読み筋。ファイルの終わりでは空
+ */
+private ushort[][] readPvs(ref File f, size_t games = CHUNK)
+{
+    ushort[][] chunk;
+    uint[1] length;
+    while (chunk.length < games && f.rawRead(length).length == 1) {
+        auto buf = new ushort[length[0]];
+        if (f.rawRead(buf).length != buf.length) {
+            throw new Exception("truncated pv file: " ~ f.name);
+        }
+        chunk ~= buf;
+    }
+    return chunk;
 }
 
 private double t(double x)
@@ -259,18 +381,18 @@ private int leafValue(const ref Position p, const ref Position l)
  * 更新段階の勾配
  * 保存した読み筋を再生し、末端局面を今の pp で評価し直して、grad に足す
  */
-private void gradient(long[] grad, const ref Position p, const Move[][] pvs)
+private void gradient(long[] grad, const ref Position p, const ushort[] buf, ref size_t pos, int n)
 {
-    if (pvs.length == 0) {
+    if (n == 0) {
         return;
     }
     const long s = p.sideToMove == Color.BLACK ? 1 : -1;
-    Position recordLeaf = leaf(p, pvs[0]);
+    Position recordLeaf = leaf(p, nextPv(buf, pos));
     int record = leafValue(p, recordLeaf);
 
     long sum = 0;
-    foreach (pv; pvs[1 .. $]) {
-        Position l = leaf(p, pv);
+    foreach (k; 1 .. n) {
+        Position l = leaf(p, nextPv(buf, pos));
         int x = leafValue(p, l) - record;
         if (abs(x) >= WINDOW) {
             continue;
@@ -283,14 +405,33 @@ private void gradient(long[] grad, const ref Position p, const Move[][] pvs)
 }
 
 /**
- * 全局面の勾配を足し合わせる
+ * 1局分の読み筋 buf（searchGame の形式）の勾配を grad に足す
+ */
+private void gradientGame(long[] grad, const ushort[] buf)
+{
+    Position p = parsePosition(HIRATE);
+    size_t pos = 0;
+    while (pos < buf.length) {
+        Move m = Move(buf[pos]);
+        int n = buf[pos + 1];
+        pos += 2;
+        gradient(grad, p, buf, pos, n);
+        p = p.doMove(m);
+    }
+}
+
+/**
+ * 読み筋ファイルの全局面の勾配を足し合わせる
  * スレッドごとに勾配を足してから、全スレッドの勾配を足す。整数の和なので、スレッド数によらず同じ結果になる
  */
-private long[] gradientSum(const Record[] records, const Move[][][] pvs)
+private long[] gradientSum(string pvPath)
 {
     auto grads = new long[][](POOL.size + 1, REP.length);
-    foreach (i, ref r; POOL.parallel(records)) {
-        gradient(grads[POOL.workerIndex], r.pos, pvs[i]);
+    File f = File(pvPath, "rb");
+    for (ushort[][] bufs; (bufs = readPvs(f)).length > 0; ) {
+        foreach (buf; POOL.parallel(bufs, 1)) {
+            gradientGame(grads[POOL.workerIndex], buf);
+        }
     }
     foreach (g; grads[1 .. $]) {
         grads[0][] += g[];
@@ -337,13 +478,20 @@ private void update(const long[] grad)
 /**
  * 検証用棋譜の一致率
  */
-private double matchRate(const Record[] records)
+private double matchRate(string path)
 {
-    auto matched = new bool[records.length];
-    foreach (i, ref r; POOL.parallel(records)) {
-        matched[i] = bestMove(r.pos) == r.move;
+    long matched = 0;
+    long positions = 0;
+    auto reader = GameReader(path);
+    for (Record[][] games; (games = reader.next).length > 0; ) {
+        auto counts = new long[games.length];
+        foreach (i, game; POOL.parallel(games, 1)) {
+            counts[i] = game.count!(r => bestMove(r.pos) == r.move);
+        }
+        matched += counts.sum;
+        positions += games.map!(g => g.length).sum;
     }
-    return cast(double)matched.count(true) / records.length;
+    return cast(double)matched / positions;
 }
 
 /**
@@ -457,6 +605,8 @@ private void savePP(string path)
 
 version (unittest)
 {
+    import std.array;
+    import std.path;
     import std.random;
 
     /**
@@ -499,9 +649,18 @@ version (unittest)
      */
     private Record[] randomRecords(int games, int plies)
     {
+        return randomGames(games, plies).join;
+    }
+
+    /**
+     * 平手から手をでたらめに選んで指した対局
+     */
+    private Record[][] randomGames(int games, int plies)
+    {
         auto rnd = Random(2);
-        Record[] records;
+        Record[][] records;
         foreach (g; 0 .. games) {
+            Record[] game;
             Position p = parsePosition(HIRATE);
             foreach (ply; 0 .. plies) {
                 Move[600] moves;
@@ -511,9 +670,10 @@ version (unittest)
                 if (q.piecesInHand[Color.BLACK][Type.KING] + q.piecesInHand[Color.WHITE][Type.KING] > 0) {
                     break;
                 }
-                records ~= Record(p, m);
+                game ~= Record(p, m);
                 p = q;
             }
+            records ~= game;
         }
         return records;
     }
@@ -554,7 +714,7 @@ unittest
     Position p = parsePosition("sfen k8/9/4l4/4r4/4+r4/3+R5/2+B6/1B7/8K b - 1");
     Move[64] pv;
     int value = qsearch(p, 0, -INF, INF, pv);
-    Move[] l = line(pv);
+    const(Move)[] l = line(pv);
     writefln("exchange: value %d, pv %s", value, pv.toString(p));
     assert(value == naiveQsearch(p));
     assert(l.length >= 5);
@@ -568,26 +728,32 @@ unittest
     setRandom();
     int stored = 0;
     foreach (ref r; randomRecords(5, 80)) {
-        Move[][] pvs1, pvs2;
-        double j1 = searchRecord(r, pvs1);
-        double j2 = searchRecord(r, pvs2, INF);
+        ushort[] buf1, buf2;
+        double j1 = searchRecord(r, buf1);
+        double j2 = searchRecord(r, buf2, INF);
         assert(j1 == j2);
-        assert(pvs1 == pvs2);
-        if (pvs1.length == 0) {
+        assert(buf1 == buf2);
+        assert(Move(buf1[0]) == r.move);
+        const int n = buf1[1];
+        if (n == 0) {
+            assert(buf1.length == 2);
             continue;
         }
         // 保存した読み筋を再生した末端の評価値が、探索の評価値と一致する
+        size_t pos = 2;
         Move[64] pv;
         int record = searchMove(r.pos, r.move, -INF, INF, pv);
-        Position q = leaf(r.pos, pvs1[0]);
+        Position q = leaf(r.pos, nextPv(buf1, pos));
         assert(leafValue(r.pos, q) == record);
-        foreach (l; pvs1[1 .. $]) {
+        foreach (k; 1 .. n) {
+            const(Move)[] l = nextPv(buf1, pos);
             int value = searchMove(r.pos, l[0], -INF, INF, pv);
             q = leaf(r.pos, l);
             assert(leafValue(r.pos, q) == value);
             assert(abs(value - record) < WINDOW);
         }
-        stored += pvs1.length;
+        assert(pos == buf1.length);
+        stored += n;
     }
     writefln("search: %d pvs stored", stored);
 }
@@ -597,16 +763,29 @@ unittest
 {
     setRandom();
     makeGroups();
-    Record[] records = randomRecords(5, 80);
-    auto pvs = new Move[][][records.length];
-    foreach (i, ref r; records) {
-        searchRecord(r, pvs[i]);
+    Record[][] games = randomGames(20, 40);
+    auto bufs = new ushort[][games.length];
+    string path = tempDir.buildPath("tenuki-learn-unittest.pv");
+    File f = File(path, "wb");
+    foreach (i, game; games) {
+        searchGame(game, bufs[i]);
+        writePv(f, bufs[i]);
     }
+    f.close();
+    scope (exit) std.file.remove(path);
+
+    // 書いた読み筋をそのまま読み戻せる
+    f = File(path, "rb");
+    assert(readPvs(f, 16) == bufs[0 .. 16]);
+    assert(readPvs(f, 16) == bufs[16 .. $]);
+    assert(readPvs(f, 16).length == 0);
+    f.close();
+
     POOL = new TaskPool(0);
-    long[] g1 = gradientSum(records, pvs);
+    long[] g1 = gradientSum(path);
     POOL = new TaskPool(7);
     POOL.isDaemon = true;
-    long[] g8 = gradientSum(records, pvs);
+    long[] g8 = gradientSum(path);
     writefln("gradient: %d nonzero groups", g1.count!(e => e != 0));
     assert(g1.any!(e => e != 0));
     assert(g1 == g8);

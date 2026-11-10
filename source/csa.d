@@ -133,7 +133,8 @@ struct GameClock
     this(color_t us, long totalSeconds, long incrementSeconds)
     {
         this.us = us;
-        this.remainingMillis = (totalSeconds - 1) * 1000; // 残り時間が0秒になると時間切れなので、1秒引いておく
+        // 通信の遅れで時間切れにならないよう、持ち時間から TIME_MARGIN_SECONDS 引いておく
+        this.remainingMillis = (totalSeconds > TIME_MARGIN_SECONDS ? totalSeconds - TIME_MARGIN_SECONDS : 0) * 1000;
         this.incrementMillis = incrementSeconds * 1000;
     }
 
@@ -166,6 +167,10 @@ struct GameClock
         }
     }
 }
+
+
+/// 通信の遅れに備えて、持ち時間からこの秒数を引いておく
+enum TIME_MARGIN_SECONDS = 10;
 
 
 /// 対局開始時の残り時間を、この手数で使い切るように1手の探索時間を決める
@@ -228,9 +233,9 @@ unittest
 
     auto c = GameClock(s.us, s.totalSeconds, s.incrementSeconds);
     c.replay(s.initialMoves);
-    assert(c.remainingMillis == 179_000);
+    assert(c.remainingMillis == 170_000);
     c.startTurn();
-    assert(c.remainingMillis == 181_000);
+    assert(c.remainingMillis == 172_000);
 }
 
 // 電竜戦7 blackbid420: 後手
@@ -240,7 +245,7 @@ unittest
     assert(s.us == Color.WHITE);
     auto c = GameClock(s.us, s.totalSeconds, s.incrementSeconds);
     c.replay(s.initialMoves);
-    assert(c.remainingMillis == 599_000);
+    assert(c.remainingMillis == 590_000);
 }
 
 // 電竜戦4 blackbid300: 先手
@@ -249,7 +254,7 @@ unittest
     auto s = parseGameSummary(summaryLines("+", TIME_600_2, BUOY_300.dup));
     auto c = GameClock(s.us, s.totalSeconds, s.incrementSeconds);
     c.replay(s.initialMoves);
-    assert(c.remainingMillis == 299_000);
+    assert(c.remainingMillis == 290_000);
 }
 
 // 初期指し手なし（test+default-1500-0）
@@ -263,7 +268,7 @@ unittest
     assert(s.warnings.length == 0);
     auto c = GameClock(s.us, s.totalSeconds, s.incrementSeconds);
     c.replay(s.initialMoves);
-    assert(c.remainingMillis == 1_499_000);
+    assert(c.remainingMillis == 1_490_000);
 }
 
 version(unittest)
@@ -305,23 +310,34 @@ unittest
 // 探索時間の配分: 対局開始時の残り時間を60手で使い切る
 unittest
 {
-    // 電竜戦7 先手（3分+2秒）: ブイ反映後の残り179秒 → 179000/60 + 2000 = 4,983ms
+    // 電竜戦7 先手（3分+2秒）: ブイ反映後の残り170秒 → 170000/60 + 2000 = 4,833ms
     auto c = GameClock(Color.BLACK, 600, 2);
     c.replay(["+5958OU,T422", "-5152OU,T2", "+5859OU,T2", "-5251OU,T2"]);
     c.planMoves(MOVES_TO_USE_UP);
-    assert(c.searchMillis == 4_983);
+    assert(c.searchMillis == 4_833);
 
-    // 電竜戦7 後手（10分+2秒）: 残り599秒 → 599000/60 + 2000 = 11,983ms
+    // 電竜戦7 後手（10分+2秒）: 残り590秒 → 590000/60 + 2000 = 11,833ms
     c = GameClock(Color.WHITE, 600, 2);
     c.replay(["+5958OU,T422", "-5152OU,T2", "+5859OU,T2", "-5251OU,T2"]);
     c.planMoves(MOVES_TO_USE_UP);
-    assert(c.searchMillis == 11_983);
+    assert(c.searchMillis == 11_833);
 
     // 1手の探索時間は対局中に変わらない
     c.startTurn();
     c.consume("-3334FU,T12");
     c.startTurn();
-    assert(c.searchMillis == 11_983);
+    assert(c.searchMillis == 11_833);
+}
+
+// 持ち時間が余裕の秒数以下なら残り時間は0（負にしない）
+unittest
+{
+    auto c = GameClock(Color.BLACK, 5, 1);
+    assert(c.remainingMillis == 0);
+    c.planMoves(MOVES_TO_USE_UP);
+    assert(c.searchMillis == 1_000);
+    c = GameClock(Color.BLACK, 60, 1);
+    assert(c.remainingMillis == 50_000);
 }
 
 // 指し手行の判定と消費時間
@@ -341,5 +357,5 @@ unittest
 {
     auto c = GameClock(Color.BLACK, 600, 2);
     c.replay(["+7776FU,T5"]);
-    assert(c.remainingMillis == 596_000);
+    assert(c.remainingMillis == 587_000);
 }

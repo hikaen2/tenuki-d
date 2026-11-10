@@ -6,6 +6,7 @@ import movegen;
 import parser;
 import position;
 import search;
+import settings;
 import std.algorithm.comparison;
 import std.conv;
 import std.datetime.systime : SysTime, Clock;
@@ -29,8 +30,31 @@ __gshared private File RECV_LOG;
 
 int main(string[] args)
 {
-    // info
-    stdout.writeln(tt_info());
+    ushort port = 4081;
+    string settingsPath = null;
+    try {
+        getopt(args, "e", &USE_ENHANCED_CSA_PROTOCOL, "p", &port, "c", &settingsPath);
+    } catch (Exception e) {
+        usage();
+        return 1;
+    }
+
+    // 設定を読んでから、置換表と探索スレッドを確保する
+    try {
+        const EngineSettings s = (settingsPath is null)
+            ? loadSettings("tenuki.conf", false)
+            : loadSettings(settingsPath, true);
+        stdout.writefln("settings: %s (hash_mb = %d, threads = %d)",
+            s.source == EngineSettings.DEFAULT_SOURCE ? "defaults (tenuki.conf not found)" : s.source,
+            s.hashMb, s.threads);
+        stdout.flush();
+        tt_init(s.hashMb);
+        search_init(s.threads);
+        stdout.writefln("%s, %d threads", tt_info(), s.threads);
+    } catch (Exception e) {
+        stderr.writefln("error: %s", e.msg);
+        return 1;
+    }
 
     if (args.length >= 2 && args[1] == "test") {
         test();
@@ -41,16 +65,8 @@ int main(string[] args)
         return 0;
     }
 
-    ushort port = 4081;
-    try {
-        getopt(args, "e", &USE_ENHANCED_CSA_PROTOCOL, "p", &port);
-        if (args.length < 4) {
-            throw new Exception("");
-        }
-    } catch (Exception e) {
-        stderr.writeln("usage: tenuki [-e] [-p port] hostname username password");
-        stderr.writeln("  -e  send enhanced CSA protocol");
-        stderr.writeln("  -p  default: 4081");
+    if (args.length < 4) {
+        usage();
         return 1;
     }
     const string hostname = args[1];
@@ -95,6 +111,16 @@ int main(string[] args)
     }
 
     return csaloop(summary.us, p, clock);
+}
+
+
+private void usage()
+{
+    stderr.writeln("usage: tenuki [-c file] [-e] [-p port] hostname username password");
+    stderr.writeln("       tenuki [-c file] test|validate");
+    stderr.writeln("  -c  settings file (default: tenuki.conf in the current directory)");
+    stderr.writeln("  -e  send enhanced CSA protocol");
+    stderr.writeln("  -p  default: 4081");
 }
 
 

@@ -2,6 +2,7 @@ module search;
 
 import core.sys.posix.pthread;
 import core.sys.posix.unistd;
+import core.stdc.stdlib : calloc;
 import core.thread;
 import eval;
 import movegen;
@@ -10,6 +11,7 @@ import std.algorithm.comparison;
 import std.algorithm.mutation;
 import std.algorithm.searching;
 import std.datetime.stopwatch;
+import std.format;
 import std.random;
 import std.stdio;
 import text;
@@ -68,13 +70,34 @@ int ponder(const ref Position pos, Move[] outPv)
 }
 
 
-__gshared ThreadContext[Config.SEARCH_THREADS] threadContexts;
+/// 探索スレッドの状態。search_init で1回だけ確保し、長さを変えない（要素のアドレスを各スレッドに渡しているため）
+/// GC ヒープではなく calloc で確保し、解放しない。探索スレッドは druntime の管理外で動き続けるので、
+/// GC ヒープに置くとプロセス終了時の GC の後始末で解放され、スレッドが解放後のメモリを読んで落ちる。
+__gshared ThreadContext[] threadContexts;
 
-shared static this()
+/**
+ * 探索スレッドを生成する（1回だけ呼ぶ）
+ */
+void search_init(int threads)
 {
-    foreach (int i, ref e; threadContexts) {
-        e.id = i;
-        pthread_create(&e.thread, null, &start_routine, cast(void*)&e);
+    if (threads < 1) {
+        throw new Exception(format("threads must be positive: %d", threads));
+    }
+    if (threadContexts.length != 0) {
+        throw new Exception("search_init called twice");
+    }
+    auto p = cast(ThreadContext*) calloc(threads, ThreadContext.sizeof);
+    if (p is null) {
+        throw new Exception(format("calloc failed for %d search threads", threads));
+    }
+    threadContexts = p[0 .. threads];
+    foreach (ref e; threadContexts) e = ThreadContext.init;
+    foreach (i, ref e; threadContexts) {
+        e.id = cast(int) i;
+        const rc = pthread_create(&e.thread, null, &start_routine, cast(void*)&e);
+        if (rc != 0) {
+            throw new Exception(format("pthread_create failed for search thread %d: error %d", i, rc));
+        }
     }
 }
 

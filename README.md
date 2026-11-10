@@ -33,6 +33,30 @@ $ ./tenuki hostname username password
 $ ./tenuki wdoor.c.u-tokyo.ac.jp tenuki floodgate-300-10F
 ~~~
 
+### 設定ファイル
+
+置換表のサイズと探索スレッド数は、作業ディレクトリの `tenuki.conf` から読みます。
+`-c <path>` で別のファイルを指定できます。
+`tenuki.conf` が無いときは `hash_mb = 16`、`threads = 1` で起動します。
+
+本番マシンでは、設定例をコピーして使ってください（置換表 256GiB・192スレッド）。
+
+~~~
+$ cp tenuki.conf.example tenuki.conf
+$ ./tenuki hostname username password
+settings: tenuki.conf (hash_mb = 262144, threads = 192)
+TT: 17,179,869,184 entries, 274,877,906,944 bytes, 192 threads
+~~~
+
+| キー | 意味 | 既定値 |
+|---|---|---|
+| `hash_mb` | 置換表のサイズ（MiB）。収まる最大の2のべき乗エントリに切り捨てる | 16 |
+| `threads` | 探索スレッド数 | 1 |
+
+形式は1行に1つの `key = value` で、`#` から行末まではコメントです。
+知らないキーや不正な値があると、エラーを出して接続せずに終了します。
+起動ログの先頭の `settings:` 行で、どの設定で動いているかを確認してください。
+
 
 ## 履歴
 

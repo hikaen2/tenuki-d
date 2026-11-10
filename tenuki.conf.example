@@ -1,0 +1,11 @@
+# tenuki の設定ファイル（本番マシン用の例）
+#
+# 使い方: cp tenuki.conf.example tenuki.conf
+# tenuki はカレントディレクトリの tenuki.conf を読む（-c <path> で別のファイルを指定できる）。
+# tenuki.conf が無いときは hash_mb = 16, threads = 1 で起動する。
+
+# 置換表のサイズ（MiB）。収まる最大の2のべき乗エントリ（1エントリ16バイト）に切り捨てる
+hash_mb = 262144  # 256GiB
+
+# 探索スレッド数
+threads = 192

@@ -16,3 +16,6 @@ tenuki-test-*
 # add
 *.bin
 
+
+# 実行時の設定ファイル（tenuki.conf.example をコピーして使う）
+tenuki.conf

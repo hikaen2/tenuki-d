@@ -1,6 +1,5 @@
 module csa;
 
-import config;
 import std.conv;
 import std.format;
 import std.regex;
@@ -17,7 +16,7 @@ struct GameSummary
     long incrementSeconds;          /// 1手ごとの加算（秒）
     string[] initialMoves;          /// BEGIN Position 内の指し手（"+5958OU,T422" 形式）
     string[string] fields;          /// BEGIN Time / BEGIN Position 以外の key:value
-    string[] warnings;              /// 既定値を使った、未対応の値だった、などの警告
+    string[] warnings;              /// 未対応の値だった、などの警告
 }
 
 
@@ -61,8 +60,8 @@ GameSummary parseGameSummary(const string[] lines)
     }
     s.us = (*yourTurn == "+" ? Color.BLACK : Color.WHITE);
 
-    s.totalSeconds = readSeconds(time, "Total_Time", Config.TOTAL_SECONDS, s.warnings);
-    s.incrementSeconds = readSeconds(time, "Increment", Config.INCREMENT_SECONDS, s.warnings);
+    s.totalSeconds = readSeconds(time, "Total_Time");
+    s.incrementSeconds = readSeconds(time, "Increment");
 
     auto unit = "Time_Unit" in time;
     if (unit !is null && *unit != "1sec") {
@@ -72,19 +71,22 @@ GameSummary parseGameSummary(const string[] lines)
 }
 
 
-private long readSeconds(const string[string] time, string key, long defaultValue, ref string[] warnings)
+private long readSeconds(const string[string] time, string key)
 {
     auto v = key in time;
-    if (v !is null) {
-        try {
-            return to!long(*v);
-        } catch (ConvException e) {
-            warnings ~= format("%s:%s is not an integer; using default %d", key, *v, defaultValue);
-            return defaultValue;
-        }
+    if (v is null) {
+        throw new Exception(format("Game_Summary: %s is missing in BEGIN Time", key));
     }
-    warnings ~= format("%s is missing; using default %d", key, defaultValue);
-    return defaultValue;
+    long n;
+    try {
+        n = to!long(*v);
+    } catch (ConvException e) {
+        throw new Exception(format("Game_Summary: %s:%s is not an integer", key, *v));
+    }
+    if (n < 0) {
+        throw new Exception(format("Game_Summary: %s:%s is negative", key, *v));
+    }
+    return n;
 }
 
 
@@ -126,6 +128,7 @@ struct GameClock
     color_t us;
     long remainingMillis;
     long incrementMillis;
+    long searchMillis;      /// 1手の探索時間（planMoves で決める）
 
     this(color_t us, long totalSeconds, long incrementSeconds)
     {
@@ -148,6 +151,12 @@ struct GameClock
         }
     }
 
+    /// 今の残り時間を moves 手で使い切るように、1手の探索時間を決める（対局開始時に1回呼ぶ）
+    void planMoves(int moves)
+    {
+        searchMillis = remainingMillis / moves + incrementMillis;
+    }
+
     /// 初期指し手を反映する（再生中は探索しないので、自分の手ごとに加算してから引く）
     void replay(const string[] moves)
     {
@@ -157,6 +166,10 @@ struct GameClock
         }
     }
 }
+
+
+/// 対局開始時の残り時間を、この手数で使い切るように1手の探索時間を決める
+enum MOVES_TO_USE_UP = 60;
 
 
 version(unittest)
@@ -253,26 +266,62 @@ unittest
     assert(c.remainingMillis == 1_499_000);
 }
 
-// Increment が無い / 整数でない / Time_Unit が 1sec 以外
+version(unittest)
+{
+    private bool throws(lazy GameSummary e)
+    {
+        try {
+            e();
+        } catch (Exception ex) {
+            return true;
+        }
+        return false;
+    }
+}
+
+// Total_Time / Increment が無い・整数でない → 例外
 unittest
 {
-    auto s = parseGameSummary(summaryLines("+", "BEGIN Time\nTime_Unit:1sec\nTotal_Time:600\nEND Time", []));
-    assert(s.totalSeconds == 600);
-    assert(s.incrementSeconds == Config.INCREMENT_SECONDS);
-    assert(s.warnings.length == 1);
+    assert(throws(parseGameSummary(summaryLines("+", "BEGIN Time\nTime_Unit:1sec\nTotal_Time:600\nEND Time", []))));
+    assert(throws(parseGameSummary(summaryLines("+", "BEGIN Time\nTotal_Time:abc\nIncrement:2\nEND Time", []))));
+    assert(throws(parseGameSummary(summaryLines("+", "BEGIN Time\nTotal_Time:-1\nIncrement:2\nEND Time", []))));
+}
 
-    s = parseGameSummary(summaryLines("+", "BEGIN Time\nTime_Unit:1min\nTotal_Time:abc\nIncrement:2\nEND Time", []));
-    assert(s.totalSeconds == Config.TOTAL_SECONDS);
-    assert(s.incrementSeconds == 2);
-    assert(s.warnings.length == 2);
+// Time_Unit が 1sec 以外 → 警告
+unittest
+{
+    auto s = parseGameSummary(summaryLines("+", "BEGIN Time\nTime_Unit:1min\nTotal_Time:10\nIncrement:0\nEND Time", []));
+    assert(s.totalSeconds == 10);
+    assert(s.warnings.length == 1);
 }
 
 // BEGIN Time+ / BEGIN Time- の中身は BEGIN Time として読まない
 unittest
 {
-    auto s = parseGameSummary(summaryLines("+",
-        "BEGIN Time+\nTotal_Time:180\nEND Time+\nBEGIN Time-\nTotal_Time:600\nEND Time-", []));
-    assert(s.totalSeconds == Config.TOTAL_SECONDS);
+    assert(throws(parseGameSummary(summaryLines("+",
+        "BEGIN Time+\nTotal_Time:180\nIncrement:2\nEND Time+\nBEGIN Time-\nTotal_Time:600\nIncrement:2\nEND Time-", []))));
+}
+
+// 探索時間の配分: 対局開始時の残り時間を60手で使い切る
+unittest
+{
+    // 電竜戦7 先手（3分+2秒）: ブイ反映後の残り179秒 → 179000/60 + 2000 = 4,983ms
+    auto c = GameClock(Color.BLACK, 600, 2);
+    c.replay(["+5958OU,T422", "-5152OU,T2", "+5859OU,T2", "-5251OU,T2"]);
+    c.planMoves(MOVES_TO_USE_UP);
+    assert(c.searchMillis == 4_983);
+
+    // 電竜戦7 後手（10分+2秒）: 残り599秒 → 599000/60 + 2000 = 11,983ms
+    c = GameClock(Color.WHITE, 600, 2);
+    c.replay(["+5958OU,T422", "-5152OU,T2", "+5859OU,T2", "-5251OU,T2"]);
+    c.planMoves(MOVES_TO_USE_UP);
+    assert(c.searchMillis == 11_983);
+
+    // 1手の探索時間は対局中に変わらない
+    c.startTurn();
+    c.consume("-3334FU,T12");
+    c.startTurn();
+    assert(c.searchMillis == 11_983);
 }
 
 // 指し手行の判定と消費時間

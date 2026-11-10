@@ -17,7 +17,6 @@ import std.socket;
 import std.stdio;
 import text;
 import types;
-import config;
 import csa;
 import tt;
 static import misc;
@@ -99,11 +98,12 @@ int main(string[] args)
     Position p = parsePosition("sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
     GameClock clock = GameClock(summary.us, summary.totalSeconds, summary.incrementSeconds);
     clock.replay(summary.initialMoves);
+    clock.planMoves(MOVES_TO_USE_UP); // 残り時間を60手で使い切る
     foreach (line; summary.initialMoves) {
         p = p.doMove(parseMove(line, p));
     }
-    stderr.writefln("time: total %d seconds, increment %d seconds, remaining %d seconds after %d initial moves.",
-        summary.totalSeconds, summary.incrementSeconds, clock.remainingMillis / 1000, summary.initialMoves.length);
+    stderr.writefln("time: total %d seconds, increment %d seconds, remaining %d seconds after %d initial moves, search %d ms per move.",
+        summary.totalSeconds, summary.incrementSeconds, clock.remainingMillis / 1000, summary.initialMoves.length, clock.searchMillis);
 
     SOCKET.writeLine("AGREE");
     if (!SOCKET.readLine().matchFirst("^START:")) {
@@ -133,6 +133,7 @@ int csaloop(const color_t us, Position p, GameClock clock)
     {
         if (p.sideToMove == us) {
             clock.startTurn();
+            search.SearchMillis = clock.searchMillis;
             search.RemainingMillis = clock.remainingMillis;
             new SearchThread(p).start(); // search & send
         }
@@ -208,6 +209,9 @@ class SearchThread : Thread
 
 private void test()
 {
+    search.SearchMillis = 17_000;
+    search.RemainingMillis = 10 * 60 * 1000; // 延長の上限（10分）
+
     // Position p = parsePosition("sfen l6nl/5+P1gk/2np1S3/p1p4Pp/3P2Sp1/1PPb2P1P/P5GS1/R8/LN4bKL w RGgsn5p 1");
     // stdout.writeln(p.toString());
     // Move[600] moves;

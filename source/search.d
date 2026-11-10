@@ -16,13 +16,15 @@ import std.random;
 import std.stdio;
 import text;
 import types;
-import config;
 import tt;
 static import book;
 
 
-// 残り持ち時間（ミリ秒）
-__gshared long RemainingMillis = (Config.TOTAL_SECONDS - 1) * 1000; // 残り時間が0秒になると時間切れなので、1秒引いておく
+// 1手の探索時間（ミリ秒）。最善手が変わったら、そこからこの時間だけ延長する
+__gshared long SearchMillis = 0;
+
+// 残り持ち時間（ミリ秒）。延長してもこれを超えない
+__gshared long RemainingMillis = 0;
 
 // この時間から探索を始めた（ミリ秒）
 __gshared long startTime;
@@ -50,7 +52,7 @@ int ponder(const ref Position pos, Move[] outPv)
     }
 
     startTime = getMonotonicTimeMillis();
-    endTime = startTime + min(Config.SEARCH_MILLIS, RemainingMillis); // この時間まで探索する（ミリ秒）
+    endTime = startTime + min(SearchMillis, RemainingMillis); // この時間まで探索する（ミリ秒）
     foreach (ref e; threadContexts) e.pos = pos;
     foreach (ref e; threadContexts) e.running = true; // 探索を開始する
     while(any!((e) => e.running)(threadContexts[])) Thread.sleep(1.msecs); // すべてのスレッドの探索が終了するまで待つ
@@ -174,7 +176,7 @@ struct ThreadContext {
                     stderr.writef("%s(%d) ", move.toString(pos), value);
                     if (previous != move) { // 前回と違う手が見つかったら探索延長する
                         previous = move;
-                        endTime = getMonotonicTimeMillis() + min(Config.SEARCH_MILLIS, RemainingMillis - (getMonotonicTimeMillis() - startTime)); // この時間まで探索する（ミリ秒）を延長する
+                        endTime = getMonotonicTimeMillis() + min(SearchMillis, RemainingMillis - (getMonotonicTimeMillis() - startTime)); // この時間まで探索する（ミリ秒）を延長する
                     }
                 }
             }

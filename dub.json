@@ -13,6 +13,7 @@
         {
             "name": "application",
             "targetType": "executable",
+            "mainSourceFile": "source/main.d",
             "excludedSourceFiles": ["source/learn.d"]
         },
         {

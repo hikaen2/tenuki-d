@@ -17,6 +17,7 @@ import std.stdio;
 import text;
 import types;
 import config;
+import csa;
 import tt;
 static import misc;
 
@@ -69,50 +70,60 @@ int main(string[] args)
         return 1;
     }
 
-    string[string] gameSummary;
+    string[] summaryLines;
     for (string line = SOCKET.readLine(); line != "END Game_Summary"; line = SOCKET.readLine()) {
-        auto m = line.matchFirst(r"^([^:]+):(.+)$");
-        if (!m.empty) {
-            gameSummary[m[1]] = m[2];
-        }
+        summaryLines ~= line;
+    }
+    const GameSummary summary = parseGameSummary(summaryLines);
+    foreach (w; summary.warnings) {
+        stderr.writefln("warning: %s", w);
     }
 
-    const color_t us = (gameSummary["Your_Turn"] == "+" ? Color.BLACK : Color.WHITE);
+    // 開始局面は平手。BEGIN Position 内の指し手（ブイ）を局面と時計に反映する
+    Position p = parsePosition("sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
+    GameClock clock = GameClock(summary.us, summary.totalSeconds, summary.incrementSeconds);
+    clock.replay(summary.initialMoves);
+    foreach (line; summary.initialMoves) {
+        p = p.doMove(parseMove(line, p));
+    }
+    stderr.writefln("time: total %d seconds, increment %d seconds, remaining %d seconds after %d initial moves.",
+        summary.totalSeconds, summary.incrementSeconds, clock.remainingMillis / 1000, summary.initialMoves.length);
+
     SOCKET.writeLine("AGREE");
     if (!SOCKET.readLine().matchFirst("^START:")) {
         return 1;
     }
 
-    return csaloop(us);
+    return csaloop(summary.us, p, clock);
 }
 
 
-int csaloop(const color_t us)
+int csaloop(const color_t us, Position p, GameClock clock)
 {
-    Position p = parsePosition("sfen lnsgkgsnl/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL b - 1");
     stdout.writeln(p.toString());
 
-    if (us == Color.BLACK) {
-        search.RemainingMillis += Config.INCREMENT_SECONDS * 1000;
-        new SearchThread(p).start(); // search & send
+    // 手番が自分なら加算して探索を始める
+    void startTurnIfOurs()
+    {
+        if (p.sideToMove == us) {
+            clock.startTurn();
+            search.RemainingMillis = clock.remainingMillis;
+            new SearchThread(p).start(); // search & send
+        }
     }
+
+    startTurnIfOurs();
 
     for (;;) {
         const string line = SOCKET.readLine();
 
         if (line.matchFirst(r"^(\+|-)\d{4}\D{2},T\d+$")) {
 
-            if (p.sideToMove == us) {
-                search.RemainingMillis -= to!int(line.matchFirst(r",T(\d+)")[1]) * 1000; // 秒 -> ミリ秒
-            }
-
+            clock.consume(line);
             p = p.doMove(parseMove(line, p));
             stderr.writeln(toString(p));
-            stderr.writefln("%d seconds.", search.RemainingMillis / 1000); // ミリ秒 -> 秒
-            if (p.sideToMove == us) {
-                search.RemainingMillis += Config.INCREMENT_SECONDS * 1000;
-                new SearchThread(p).start(); // search & send
-            }
+            stderr.writefln("%d seconds.", clock.remainingMillis / 1000); // ミリ秒 -> 秒
+            startTurnIfOurs();
 
         } else if (line.matchFirst(r"^%TORYO(,T\d+)?$") || line.matchFirst(r"^%KACHI(,T\d+)?$")) {
 

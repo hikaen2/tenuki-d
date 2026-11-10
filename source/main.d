@@ -2,6 +2,7 @@ module main;
 
 import book;
 import core.thread;
+import eval;
 import movegen;
 import parser;
 import position;
@@ -25,6 +26,16 @@ static import misc;
 __gshared private Socket SOCKET;
 __gshared private bool USE_ENHANCED_CSA_PROTOCOL = false;
 __gshared private File RECV_LOG;
+
+
+/**
+ * 静的コンストラクタ
+ * 評価関数バイナリをロードする
+ */
+shared static this()
+{
+    loadPP("pp.bin");
+}
 
 
 int main(string[] args)

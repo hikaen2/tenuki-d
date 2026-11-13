@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tenuki viewer</title>
+<style>
+  :root {
+    /* 盤のマス。画面の高さに収まる大きさと、一覧・指し手欄を除いた幅に収まる大きさの小さい方 */
+    --cell: max(28px, min(calc((100vh - 100px) / 10.6), calc((100vw - 28em - 80px) / 9.6)));
+    --label: max(12px, calc(var(--cell) * 0.3));
+    --text: max(16px, calc(var(--cell) * 0.36));
+  }
+  html, body {
+    margin: 0;
+    background: #fff;
+    color: #000;
+    font-family: sans-serif;
+  }
+  #app {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    align-items: flex-start;
+  }
+  #games {
+    width: 13em;
+    flex: none;
+  }
+  #games ul, #moves {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  #games li, #moves li {
+    padding: 2px 6px;
+    cursor: pointer;
+    white-space: nowrap;
+    font-family: monospace;
+  }
+  #games li.selected, #moves li.selected {
+    background: #ddd;
+  }
+  .live {
+    color: #c00;
+  }
+  main {
+    flex: none;
+  }
+  #header {
+    font-size: var(--text);
+    min-height: 1.5em;
+    margin-bottom: 8px;
+    display: flex;
+    gap: 1em;
+    flex-wrap: wrap;
+  }
+  .hand {
+    font-size: var(--text);
+    min-height: 1.5em;
+    margin: 4px 0;
+  }
+  .files, .board {
+    display: grid;
+    grid-template-columns: repeat(9, var(--cell));
+    gap: 1px;
+  }
+  .files {
+    padding: 0 1px;
+    text-align: center;
+    font-size: var(--label);
+  }
+  .board-row {
+    display: flex;
+  }
+  .board {
+    grid-auto-rows: var(--cell);
+    background: #000;
+    border: 1px solid #000;
+  }
+  .ranks {
+    display: grid;
+    grid-auto-rows: var(--cell);
+    gap: 1px;
+    padding: 1px 0 1px 4px;
+    font-size: var(--label);
+    align-items: center;
+  }
+  .cell {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: calc(var(--cell) * 0.7);
+    line-height: 1;
+  }
+  .cell.last {
+    background: #fff0a8;
+  }
+  .gote {
+    transform: rotate(180deg);
+  }
+  #side {
+    width: 11em;
+    flex: none;
+  }
+  #moves {
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+  }
+  #empty {
+    color: #666;
+  }
+  @media (max-width: 800px) {
+    :root {
+      --cell: calc((100vw - 56px) / 10);
+    }
+    #app {
+      flex-direction: column;
+    }
+    #games, #side {
+      width: 100%;
+    }
+    #games ul {
+      max-height: 8em;
+      overflow-y: auto;
+    }
+    #moves {
+      max-height: 12em;
+    }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <nav id="games">
+    <h3>対局</h3>
+    <ul id="game-list"></ul>
+  </nav>
+  <main id="main"></main>
+  <div id="side">
+    <h3>指し手</h3>
+    <ol id="moves"></ol>
+  </div>
+</div>
+<script>
+"use strict";
+
+// ---- ログの解釈と再生（DOM に依存しない） ----
+
+const KANJI = {
+  FU: "歩", KY: "香", KE: "桂", GI: "銀", KI: "金", KA: "角", HI: "飛", OU: "玉",
+  TO: "と", NY: "杏", NK: "圭", NG: "全", UM: "馬", RY: "竜",
+};
+const UNPROMOTE = { TO: "FU", NY: "KY", NK: "KE", NG: "GI", UM: "KA", RY: "HI" };
+const HAND_ORDER = ["HI", "KA", "KI", "GI", "KE", "KY", "FU"];
+const RESULT_LINES = ["#WIN", "#LOSE", "#DRAW", "#CENSORED", "#CHUDAN"];
+const RANK_KANJI = ["", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+
+/** ログ全文から指し手・対局者名・手番・終局理由・結果を取り出す */
+function parseLog(text) {
+  const game = { moves: [], names: { "+": "", "-": "" }, yourTurn: null, reason: null, result: null };
+  for (const raw of text.split("\n")) {
+    const line = raw.replace(/\r$/, "");
+    let m;
+    if ((m = line.match(/^([+-]\d{4}[A-Z]{2})/))) {
+      game.moves.push(m[1]);
+    } else if ((m = line.match(/^Name([+-]):(.*)$/))) {
+      game.names[m[1]] = m[2];
+    } else if ((m = line.match(/^Your_Turn:([+-])$/))) {
+      game.yourTurn = m[1];
+    } else if (RESULT_LINES.includes(line)) {
+      game.result = line;
+    } else if (/^#[A-Z_]+$/.test(line)) {
+      game.reason = line;
+    }
+  }
+  return game;
+}
+
+/** 平手の初期局面。board[筋][段]（1 始まり）に {side, kind} か null */
+function initialBoard() {
+  const board = Array.from({ length: 10 }, () => Array(10).fill(null));
+  const back = ["KY", "KE", "GI", "KI", "OU", "KI", "GI", "KE", "KY"];
+  for (let f = 1; f <= 9; f++) {
+    board[f][1] = { side: "-", kind: back[f - 1] };
+    board[f][3] = { side: "-", kind: "FU" };
+    board[f][7] = { side: "+", kind: "FU" };
+    board[f][9] = { side: "+", kind: back[f - 1] };
+  }
+  board[8][2] = { side: "-", kind: "HI" };
+  board[2][2] = { side: "-", kind: "KA" };
+  board[8][8] = { side: "+", kind: "KA" };
+  board[2][8] = { side: "+", kind: "HI" };
+  return board;
+}
+
+/** 平手から ply 手目まで指した局面 */
+function replay(moves, ply) {
+  const board = initialBoard();
+  const hands = { "+": {}, "-": {} };
+  let last = null;
+  for (let i = 0; i < ply && i < moves.length; i++) {
+    const mv = moves[i];
+    const side = mv[0];
+    const ff = Number(mv[1]), fr = Number(mv[2]), tf = Number(mv[3]), tr = Number(mv[4]);
+    const kind = mv.slice(5, 7);
+    if (ff === 0) {
+      hands[side][kind] = (hands[side][kind] || 0) - 1;
+      if (hands[side][kind] <= 0) delete hands[side][kind];
+    } else {
+      board[ff][fr] = null;
+    }
+    const captured = board[tf][tr];
+    if (captured) {
+      const k = UNPROMOTE[captured.kind] || captured.kind;
+      hands[side][k] = (hands[side][k] || 0) + 1;
+    }
+    board[tf][tr] = { side, kind };
+    last = { file: tf, rank: tr };
+  }
+  return { board, hands, last };
+}
+
+/** 持ち駒を「角 歩3」の形にする */
+function formatHand(hand) {
+  return HAND_ORDER
+    .filter((k) => hand[k] > 0)
+    .map((k) => KANJI[k] + (hand[k] > 1 ? hand[k] : ""))
+    .join(" ");
+}
+
+/** http.server のディレクトリ一覧から *.log を新しい順に取り出す */
+function parseListing(html) {
+  const names = new Set();
+  for (const m of html.matchAll(/href="([^"]+)"/g)) {
+    let name;
+    try {
+      name = decodeURIComponent(m[1]);
+    } catch (e) {
+      continue;
+    }
+    if (name.endsWith(".log") && !name.includes("/")) names.add(name);
+  }
+  return [...names].sort().reverse();
+}
+
+/** 結果の表示文字列（終局していなければ空） */
+function resultText(game) {
+  if (!game.result) return "";
+  let text;
+  if (game.result === "#WIN" || game.result === "#LOSE") {
+    if (game.yourTurn) {
+      const iWon = game.result === "#WIN";
+      const winner = iWon === (game.yourTurn === "+") ? "+" : "-";
+      text = (winner === "+" ? "▲" : "△") + game.names[winner] + " の勝ち";
+    } else {
+      text = game.result;
+    }
+  } else if (game.result === "#DRAW") {
+    text = "引き分け";
+  } else {
+    text = "中断";
+  }
+  return game.reason ? `${text}（${game.reason}）` : text;
+}
+
+// ---- 画面 ----
+
+const POLL_MS = 2000;
+
+const state = {
+  files: [],              // 新しい順
+  listed: false,          // 一覧を一度でも取得したか
+  games: new Map(),       // ファイル名 -> parseLog の結果
+  finished: new Set(),    // 終局を確認したログ
+  follow: true,           // 最新を追うか
+  wanted: null,           // ハッシュで指定されたログ
+  current: null,          // 表示中のログ
+  ply: null,              // 表示中の手数。null は最新手（追従する）
+};
+
+let renderedKey = null;
+
+function el(tag, props = {}, children = []) {
+  const node = document.createElement(tag);
+  Object.assign(node, props);
+  for (const c of children) node.append(c);
+  return node;
+}
+
+function currentGame() {
+  return state.current ? state.games.get(state.current) || null : null;
+}
+
+function displayedPly(game) {
+  if (!game) return 0;
+  return state.ply === null ? game.moves.length : Math.min(state.ply, game.moves.length);
+}
+
+function setPly(game, ply) {
+  ply = Math.max(0, Math.min(ply, game.moves.length));
+  state.ply = ply === game.moves.length ? null : ply;
+  render();
+}
+
+function applyHash() {
+  let name = "";
+  try {
+    name = decodeURIComponent(location.hash.slice(1));
+  } catch (e) {
+    name = "";
+  }
+  state.follow = name === "";
+  state.wanted = name || null;
+  resolveCurrent();
+}
+
+/** follow とハッシュから表示するログを決める */
+function resolveCurrent() {
+  let next = state.current;
+  if (state.follow) {
+    next = state.files[0] || null;
+  } else if (state.listed) {
+    if (state.files.includes(state.wanted)) {
+      next = state.wanted;
+    } else {
+      // 一覧にないログは最新を追う扱いにする
+      state.follow = true;
+      state.wanted = null;
+      history.replaceState(null, "", location.pathname + location.search);
+      next = state.files[0] || null;
+    }
+  }
+  if (next !== state.current) {
+    state.current = next;
+    state.ply = null;
+  }
+}
+
+async function fetchText(url) {
+  const res = await fetch(url, { cache: "no-store" });
+  if (!res.ok) throw new Error(`${url}: ${res.status}`);
+  return res.text();
+}
+
+async function refresh() {
+  state.files = parseListing(await fetchText("log/"));
+  state.listed = true;
+  resolveCurrent();
+  const pending = state.files.filter((f) => !state.finished.has(f));
+  await Promise.all(pending.map(async (f) => {
+    try {
+      const game = parseLog(await fetchText("log/" + encodeURIComponent(f)));
+      state.games.set(f, game);
+      if (game.result) state.finished.add(f);
+    } catch (e) {
+      // 直前の内容を保ち、次の周期で取り直す
+    }
+  }));
+}
+
+async function tick() {
+  try {
+    await refresh();
+  } catch (e) {
+    // 一覧が取れなくても直前の表示を保つ
+  }
+  render();
+  setTimeout(tick, POLL_MS);
+}
+
+function renderGameList() {
+  const items = [el("li", {
+    textContent: "最新を追う",
+    className: state.follow ? "selected" : "",
+    onclick: () => { location.hash = ""; },
+  })];
+  for (const f of state.files) {
+    const game = state.games.get(f);
+    const live = game && !state.finished.has(f);
+    items.push(el("li", {
+      className: !state.follow && f === state.current ? "selected" : "",
+      onclick: () => { location.hash = encodeURIComponent(f); },
+    }, [f.replace(/\.log$/, ""), ...(live ? [" ", el("span", { className: "live", textContent: "対局中" })] : [])]));
+  }
+  document.getElementById("game-list").replaceChildren(...items);
+}
+
+function renderBoard(pos) {
+  const files = el("div", { className: "files" });
+  for (let f = 9; f >= 1; f--) files.append(el("span", { textContent: String(f) }));
+  const board = el("div", { className: "board" });
+  for (let r = 1; r <= 9; r++) {
+    for (let f = 9; f >= 1; f--) {
+      const cell = el("div", { className: "cell" });
+      if (pos.last && pos.last.file === f && pos.last.rank === r) cell.classList.add("last");
+      const p = pos.board[f][r];
+      if (p) cell.append(el("span", { className: p.side === "-" ? "gote" : "", textContent: KANJI[p.kind] }));
+      board.append(cell);
+    }
+  }
+  const ranks = el("div", { className: "ranks" });
+  for (let r = 1; r <= 9; r++) ranks.append(el("span", { textContent: RANK_KANJI[r] }));
+  return el("div", {}, [files, el("div", { className: "board-row" }, [board, ranks])]);
+}
+
+function renderMain(game, ply) {
+  const main = document.getElementById("main");
+  if (!game) {
+    main.replaceChildren(el("p", {
+      id: "empty",
+      textContent: state.listed ? "ログがありません" : "読み込み中…",
+    }));
+    return;
+  }
+  const pos = replay(game.moves, ply);
+  const names = game.names["+"] || game.names["-"] ? `▲${game.names["+"]} △${game.names["-"]}` : "";
+  main.replaceChildren(
+    el("div", { id: "header" }, [
+      el("span", { id: "players", textContent: names }),
+      el("span", { id: "result", textContent: resultText(game) }),
+    ]),
+    el("div", { id: "hand-gote", className: "hand", textContent: "△持駒: " + (formatHand(pos.hands["-"]) || "なし") }),
+    renderBoard(pos),
+    el("div", { id: "hand-sente", className: "hand", textContent: "▲持駒: " + (formatHand(pos.hands["+"]) || "なし") }),
+  );
+}
+
+function renderMoves(game, ply) {
+  const list = document.getElementById("moves");
+  if (!game) {
+    list.replaceChildren();
+    return;
+  }
+  const items = [el("li", { textContent: "開始局面" })];
+  game.moves.forEach((mv, i) => items.push(el("li", { textContent: `${i + 1} ${mv}` })));
+  items.forEach((li, i) => {
+    if (i === ply) li.className = "selected";
+    li.onclick = () => setPly(game, i);
+  });
+  list.replaceChildren(...items);
+  const key = `${state.current}:${ply}`;
+  if (key !== renderedKey) {
+    items[ply].scrollIntoView({ block: "nearest" });
+    renderedKey = key;
+  }
+}
+
+function render() {
+  const game = currentGame();
+  const ply = displayedPly(game);
+  renderGameList();
+  renderMain(game, ply);
+  renderMoves(game, ply);
+}
+
+function main() {
+  window.addEventListener("hashchange", () => {
+    applyHash();
+    render();
+  });
+  document.addEventListener("keydown", (e) => {
+    const game = currentGame();
+    if (!game) return;
+    if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+      e.preventDefault();
+      setPly(game, displayedPly(game) + (e.key === "ArrowUp" ? -1 : 1));
+    }
+  });
+  applyHash();
+  render();
+  tick();
+}
+
+if (typeof document !== "undefined") main();
+</script>
+</body>
+</html>
